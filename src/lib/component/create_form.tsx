@@ -1,0 +1,104 @@
+
+
+import { CreateParam, ImageInfo } from "@/api/device_define";
+import * as tsx from 'vue-tsx-support';
+import { Component, Prop } from "vue-property-decorator";
+import { ModelEditor } from './model_editor';
+import { Row } from '../container';
+import "./create_form.less";
+import { ImageSelector } from "./image_selector";
+
+
+@Component
+export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
+    @Prop({ default: () => { return []; } }) images!: ImageInfo[];
+    @Prop({ default: () => { } }) data!: CreateParam;
+    @Prop({ default: true }) needName!: boolean;
+
+    protected async created() {
+    }
+
+    public render() {
+        return (
+            <div>
+                {this.$scopedSlots.default ? this.$scopedSlots.default() : ""}
+                {this.$props.needName && (
+                    <el-form-item label={this.$t("create.name")} prop="name">
+                        <el-input v-model={this.data.name} maxlength={50} />
+                    </el-form-item>
+                )}
+                <Row>
+                    <el-form-item label={this.$t("create.sandbox")} prop="sandbox">
+                        <el-switch v-model={this.data.sandbox} active-value={1} inactive-value={0} />
+                    </el-form-item>
+
+                    <el-form-item label={this.$t("create.sandbox_size")} prop="sandbox_size" required={this.data.sandbox == 1}>
+                        <el-input v-model={this.data.sandbox_size} max={16} type="number" />
+                    </el-form-item>
+                </Row>
+                <Row>
+                    <el-form-item label={this.$t("create.mac_vlan")} prop="mac_vlan">
+                        <el-switch v-model={this.data.mac_vlan} active-value={1} inactive-value={0} />
+                    </el-form-item>
+
+                    <el-form-item label={this.$t("create.ip")} prop="ip" required={this.data.mac_vlan == 1}>
+                        <el-input v-model={this.data.ip} />
+                    </el-form-item>
+                </Row>
+                <el-form-item label={this.$t("create.image_addr")} prop="image_addr">
+                    <ImageSelector images={this.images} v-model={this.data.image_addr} />
+                </el-form-item>
+                <Row>
+                    <el-form-item label={this.$t("create.width")} prop="width">
+                        <el-input v-model={this.data.width} max={1920} type="number" />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.height")} prop="height">
+                        <el-input v-model={this.data.height} max={1080} type="number" />
+                    </el-form-item>
+                </Row>
+                <Row>
+                    <el-form-item label={this.$t("create.dpi")} prop="dpi">
+                        <el-input v-model={this.data.dpi} type="number" />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.fps")} prop="fps">
+                        <el-input v-model={this.data.fps} type="number" />
+                    </el-form-item>
+                </Row>
+                <el-form-item label={this.$t("create.model_id")} prop="model_id"  >
+                    <ModelEditor v-model={this.data.model_id} />
+                </el-form-item>
+                <el-form-item label={this.$t("create.s5_domain_mode")} prop="s5_domain_mode">
+                    <el-switch v-model={this.data.s5_domain_mode} active-value={1} active-text={this.$t("create.s5_domain_mode1")} inactive-value={2} inactive-text={this.$t("create.s5_domain_mode2")} />
+                </el-form-item>
+                <Row>
+                    <el-form-item label={this.$t("create.s5_ip")} prop="s5_ip">
+                        <el-input v-model={this.data.s5_ip} />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.s5_port")} prop="s5_port">
+                        <el-input v-model={this.data.s5_port} type="number" min={1} max={65535} />
+                    </el-form-item>
+                </Row>
+                <Row>
+                    <el-form-item label={this.$t("create.s5_user")} prop="s5_user">
+                        <el-input v-model={this.data.s5_user} />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.s5_pwd")} prop="s5_pwd">
+                        <el-input v-model={this.data.s5_pwd} />
+                    </el-form-item>
+                </Row>
+                <el-form-item label={this.$t("create.dns_urls")} prop="dns_urls">
+                    <el-input v-model={this.data.dns_urls} />
+                </el-form-item>
+            </div>
+        );
+    }
+}
+
+interface ISlots {
+    default: void;
+}
+interface IPorps {
+    data?: CreateParam;
+    needName?: boolean;
+    images?: ImageInfo[];
+}

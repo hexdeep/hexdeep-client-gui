@@ -1,0 +1,74 @@
+.package {
+    padding: 15px 10px;
+    flex: 1;
+    border-right: 1px solid #eee;
+    text-align: center;
+    height: 80px;
+    position: relative;
+    font-size: 18px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+
+    .price {
+        font-size: 12px;
+        font-weight: normal;
+        color: red;
+    }
+
+    &:hover {
+        opacity: 0.8;
+    }
+
+    &.active {
+        background-color: var(--main-color);
+        color: #fff;
+
+        .price {
+            color: #fff;
+        }
+    }
+
+    &:last-child {
+        border-right: none;
+    }
+}
+
+.PurchaseDialog {
+    :global {
+        .el-checkbox {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .el-checkbox.is-bordered.el-checkbox--small {
+            padding: 5px 10px 5px 10px;
+        }
+
+        .el-checkbox.is-bordered+.el-checkbox.is-bordered {
+            margin-left: 0px;
+        }
+
+        .el-checkbox.is-bordered.is-checked {
+            border-color: var(--main-color);
+        }
+    }
+}
+
+.footer {
+    height: 60px;
+    background: #fafafa;
+    padding: 5px 20px;
+}
+
+.amount {
+    color: red;
+    font-size: 16px;
+}
+
+.calc {
+    color: var(--main-color)
+}

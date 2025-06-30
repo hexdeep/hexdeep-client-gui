@@ -1,0 +1,42 @@
+.DevicePicker {
+    .title {
+        padding: 5px 5px 15px 5px;
+        font-size: 16px;
+        font-weight: 500;
+
+        &::before {
+            content: '';
+            display: inline-block;
+            width: 3px;
+            height: 13px;
+            margin-right: 5px;
+            background-color: var(--main-color);
+        }
+    }
+
+    .tree {
+        background: none;
+    }
+
+    .loading {
+        flex: 1;
+        background: url(/Loader.svg) no-repeat center;
+        filter: brightness(0.4);
+    }
+
+    .no_run {
+        color: #999;
+    }
+
+    :global .el-divider--horizontal {
+        margin: 14px 0;
+    }
+}
+
+.name_label {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    flex: 1;
+    width: 0;
+    overflow: hidden;
+}

@@ -1,0 +1,114 @@
+.header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    // background: linear-gradient(135deg, #9714e9 0%, #972783 100%);
+    background: linear-gradient(135deg, #6a11a1 0%, #612b57 100%);
+    // background: #f1f1f1;
+    color: #fff;
+
+    .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 60px;
+        max-width: var(--max-width);
+        width: 100%;
+        margin: 0 auto;
+        padding: 0 20px;
+
+        .title {
+            line-height: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: "Microsoft YaHei";
+
+
+            // background-image: url("/img/logo.png");
+            // background-size: contain;
+            // background-repeat: no-repeat;
+            // background-position: left center;
+            // padding-left: 70px;
+        }
+    }
+
+    .menuBox {
+        flex: 1;
+        padding: 0 20px;
+        position: relative;
+
+        .animationBg {
+            position: absolute;
+            height: 40px;
+            top: 0;
+            background-color: #ffffff52;
+            border-radius: 20px;
+            pointer-events: none;
+        }
+
+        .menu {
+            font-size: 16px;
+            padding: 0 20px;
+            line-height: 40px;
+            display: inline-block;
+            position: relative;
+
+            >i {
+                margin-right: 10px;
+                font-size: 18px;
+            }
+
+            &:global(.router-link-active) {
+                // background-color: #fff;
+                // color: #9714e9;
+                // background: linear-gradient(135deg, #9b9b9b 0%, #525252 100%);
+                // background: #fff;
+                // background-color: #ffffff38;
+                color: #fff;
+
+                position: relative;
+                font-weight: bold;
+                border-radius: 20px;
+                // &::after {
+                //     content: "";
+                //     display: block;
+                //     width: 100%;
+                //     height: 2px;
+                //     bottom: 0;
+                //     left: 0;
+                //     position: absolute;
+                //     background: #fff;
+                // }
+            }
+        }
+    }
+
+    .tools {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 0 20px;
+        color: #fff;
+        height: 60px;
+        user-select: none;
+
+        &:hover {
+            background-color: rgba(235, 235, 235, 0.3);
+        }
+    }
+
+    .avatar {
+        background-image: url('/img/avatar.webp');
+        background-size: 100%;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        margin-right: 10px;
+        font-size: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f5f5f5;
+    }
+}

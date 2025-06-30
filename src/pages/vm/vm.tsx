@@ -1,0 +1,195 @@
+import { Column, Row } from "@/lib/container";
+import Vue from "vue";
+import { Component, ProvideReactive, Ref, Watch } from "vue-property-decorator";
+import { DevicePicker } from "./dev_picker";
+import { MyButton } from "@/lib/my_button";
+import { DeviceList } from "./dev_list";
+import { deviceApi } from "@/api/device_api";
+import { ErrorProxy } from "@/lib/error_handle";
+import { i18n } from "@/i18n/i18n";
+import { DeviceInfo, HostInfo } from "@/api/device_define";
+import { ChangeImageDialog } from "./dialog/change_image";
+import { Screenshot } from "./screenshot";
+import { WebCastPlugin } from "@/lib/webcast/webcast";
+
+@Component
+export default class VMPage extends Vue {
+    @ProvideReactive() private selectedDevices: DeviceInfo[] = [];
+    @ProvideReactive() private selectedRows: DeviceInfo[] = [];
+    @ProvideReactive() private selectedHosts: HostInfo[] = [];
+    @ProvideReactive() private rightChecked: string[] = [];
+    @ProvideReactive() private leftChecked: string[] = [];
+    @ProvideReactive() private hosts: HostInfo[] = [];
+    @ProvideReactive() private view: string = localStorage.getItem("view") || "list";
+    @Ref() private list!: DeviceList;
+
+    private imgRefreshTimer: any;
+
+
+    protected batchOperateName: string = "";
+    protected refreshDuration: number = 5;
+
+    protected async created() {
+        this.hosts = await deviceApi.getAllDevices();
+        this.refreshDuration = parseInt(localStorage.getItem("refreshDuration") || "5");
+    }
+
+    protected destroyed() {
+        if (this.imgRefreshTimer) clearInterval(this.imgRefreshTimer);
+    }
+
+    protected async refresh() {
+        var group = this.selectedItems.groupBy(e => e.hostIp);
+        for (var key in group) {
+            this.list.refresh(key);
+        }
+    }
+
+    private updateImg() {
+        Screenshot.refresh();
+    }
+
+    @Watch("selectedDevices")
+    protected selectedDevicesChange() {
+        if (this.view !== "list") this.updateImg();
+    }
+
+    @Watch("view")
+    protected viewChange() {
+        if (this.view == "list") {
+            if (this.imgRefreshTimer) clearInterval(this.imgRefreshTimer);
+            this.imgRefreshTimer = null;
+        } else {
+            if (!this.imgRefreshTimer) this.imgRefreshTimer = setInterval(() => this.updateImg(), this.refreshDuration * 1000);
+            this.updateImg();
+        }
+        localStorage.setItem("view", this.view);
+    }
+    @Watch("refreshDuration")
+    protected refreshDurationChange() {
+        if (this.imgRefreshTimer) clearInterval(this.imgRefreshTimer);
+        if (this.view != "list") this.imgRefreshTimer = setInterval(() => this.updateImg(), this.refreshDuration * 1000);
+        localStorage.setItem("refreshDuration", this.refreshDuration.toString());
+    }
+
+    private get selectedItems(): DeviceInfo[] {
+        var arr: DeviceInfo[] = [];
+        this.hosts.forEach(x => {
+            x.devices.forEach(y => {
+                if (this.rightChecked.find(a => a == y.key) != null) arr.push(y);
+            });
+        });
+        return arr;
+    }
+
+    private selectAll() {
+        this.list.selectAll();
+    }
+
+    protected async batchOperate(callback: (data: DeviceInfo) => Promise<void>, operate: string) {
+        this.batchOperateName = i18n.t(`batch.${operate}`).toString();
+        var arr = this.selectedItems;
+        switch (operate) {
+            case "start":
+                arr = arr.filter(x => x.state != "running").groupByToMap(t => `${t.hostIp}_${t.index}`).entries().map(([k, v]) => v[0]).toArray();
+                break;
+            case "reboot":
+            case "shutdown":
+                arr = arr.filter(x => x.state == "running");
+                break;
+            case "delete":
+            case "reset":
+                //arr = this.selectedDevices;
+                break;
+        }
+        console.log(arr);
+        await this.batchOperateIng(arr, callback);
+    }
+
+    @ErrorProxy({ confirm: (self) => self.batchOperateName, success: i18n.t("batch.success"), loading: i18n.t("loading") })
+
+    protected async batchOperateIng(arr: DeviceInfo[], callback: (data: DeviceInfo) => Promise<void>) {
+        var tasks: Promise<void>[] = [];
+
+        arr.forEach(e => {
+            tasks.push(callback(e));
+        });
+        await Promise.all(tasks);
+        await this.refresh();
+    }
+
+    // private async batchSetS5Proxy() {
+    //     var re = await this.$dialog(S5setDialog).show(this.selectedItems);
+    //     if (re) await this.refresh();
+    // }
+
+    private async batchChangeImage() {
+        var re = await this.$dialog(ChangeImageDialog).show(this.selectedItems);
+        if (re) await this.refresh();
+    }
+
+    // private async batchCreate() {
+    //     await this.$dialog(BatchCreateDialog).show({
+    //         num: 12,
+    //         pre_name: "hexdeep",
+    //         hostIp: this.selectedItems.groupByToMap(x => x.hostIp).keys().toArray(),
+    //         obj: { name: "" }
+    //     });
+    //     await this.refresh();
+    // }
+
+    protected render() {
+        return (
+            <Row crossAlign="stretch" flex gap={15}>
+                <DevicePicker />
+                <Column flex gap={13}>
+                    <Row class={"contentBox"}>
+                        <Row flex gap={8}>
+                            <MyButton type="primary" text={this.$t("selectAll")} onClick={() => this.selectAll()} />
+                            <el-dropdown  >
+                                <MyButton plain text={this.$t("batchOperations")} />
+                                <el-dropdown-menu slot="dropdown">
+                                    {/* <el-dropdown-item disabled={this.selectedItems.isEmpty} nativeOnClick={this.batchCreate}>{this.$t("createVm")}</el-dropdown-item> */}
+                                    <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(row => deviceApi.start(row.hostIp, row.name), "start")}>{this.$t("menu.start")}</el-dropdown-item>
+                                    <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(row => deviceApi.reboot(row.hostIp, row.name), "reboot")}>{this.$t("menu.reboot")}</el-dropdown-item>
+                                    <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(row => deviceApi.reset(row.hostIp, row.name), "reset")}>{this.$t("menu.reset")}</el-dropdown-item>
+                                    <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(row => deviceApi.shutdown(row.hostIp, row.name), "shutdown")}>{this.$t("menu.shutdown")}</el-dropdown-item>
+                                    <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(row => deviceApi.delete(row.hostIp, row.name), "delete")}>{this.$t("menu.delete")}</el-dropdown-item>
+                                    <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={this.batchChangeImage}>{this.$t("menu.changeImage")}</el-dropdown-item>
+                                    {/* <el-dropdown-item disabled={this.selectedRows.isEmpty} nativeOnClick={this.batchSetS5Proxy}>{this.$t("menu.setS5Proxy")}</el-dropdown-item> */}
+                                </el-dropdown-menu>
+                            </el-dropdown>
+                            <el-radio-group v-model={this.view}>
+                                <el-radio-button label="list">{this.$t("list")}</el-radio-button>
+                                <el-radio-button label="vertical" >{this.$t("vertical")}</el-radio-button>
+                                <el-radio-button label="horizontal" >{this.$t("horizontal")}</el-radio-button>
+                            </el-radio-group>
+
+                            {this.view != "list" && <el-dropdown>
+                                <el-button type="primary">
+                                    {`${i18n.t("refreshDuration", { 0: this.refreshDuration })}`}<i class="el-icon-arrow-down el-icon--right"></i>
+                                </el-button>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item nativeOnClick={() => this.refreshDuration = 1}>1 {i18n.t("second")}</el-dropdown-item>
+                                    <el-dropdown-item nativeOnClick={() => this.refreshDuration = 3}>3 {i18n.t("second")}</el-dropdown-item>
+                                    <el-dropdown-item nativeOnClick={() => this.refreshDuration = 5}>5 {i18n.t("second")}</el-dropdown-item>
+                                    <el-dropdown-item nativeOnClick={() => this.refreshDuration = 10}>10 {i18n.t("second")}</el-dropdown-item>
+                                </el-dropdown-menu>
+                            </el-dropdown>}
+                        </Row>
+                        <Row gap={8} crossAlign="center">
+                            <MyButton type="primary" text={this.$t("remoteControl")} onClick={this.remoteControl} />
+                        </Row>
+                    </Row>
+                    <DeviceList ref="list" />
+                    {/* onSelectChange={this.currSelectedDevicesChange}  */}
+                </Column >
+            </Row >
+        );
+    }
+
+    private async remoteControl() {
+        WebCastPlugin.startCast(this);
+    }
+
+}

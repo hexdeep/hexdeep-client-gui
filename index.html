@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/iconfont/iconfont.css">
+  <script>
+    window.global = window
+  </script>
+  <title>-</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    .browser-version-error {
+      display: none;
+    }
+
+    .browser-version-error a {
+      color: blue;
+    }
+
+    [v-cloak] {
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #b7b7b7;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app" v-cloak></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

@@ -1,0 +1,75 @@
+.deviceList {
+    flex: 1;
+    position: relative;
+
+    .table {
+        position: absolute;
+        top: 13px;
+        left: 13px;
+        right: 13px;
+        bottom: 13px;
+    }
+
+    .vertical,
+    .horizontal {
+        position: absolute;
+        top: 13px;
+        left: 13px;
+        right: 0;
+        bottom: 13px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        overflow-y: auto;
+        align-content: flex-start;
+
+    }
+
+    .v_img {
+        width: 176px;
+        height: 312.8888px;
+        background: #eee;
+        background-image: url('/img/android2.jpg');
+        background-size: 100%;
+    }
+
+    .h_img {
+        width: 301px;
+        height: 169.3125px;
+        background: #eee;
+        background-image: url('/img/android1.jpg');
+    }
+
+    .img_box {
+        // background-color: var(--second-color);
+        // box-shadow: #6a11a138 0 0 0px 1px;
+        margin: 1px;
+        position: relative;
+
+        >div {
+            padding: 5px 10px;
+        }
+
+        .status {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+
+        &.no_run {
+            background-color: #f56c6c26;
+            box-shadow: #f56c6c42 0 0 0px 1px;
+        }
+
+        &.running {
+            background-color: #67c23a26;
+            box-shadow: #67c23a42 0 0 0px 1px;
+        }
+    }
+
+
+}
