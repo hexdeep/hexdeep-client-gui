@@ -130,10 +130,18 @@ export function formatTimeByKey(key: string, format = 'yyyy-MM-DD HH:mm:ss') {
     };
 }
 
+export function getSuffixName(e: string) {
+    return /.*?[-_]\d*?[-_](?<name>.*)/.exec(e)?.groups?.name || "";
+}
+
+export function getPrefixName(e: string) {
+    return /(?<name>.*?[-_]\d*?[-_])/.exec(e)?.groups?.name || "";
+}
+
 export function makeHostApiUrl(...url: string[]) {
     return new URL(urlJoin(url), "http://" + Config.host + ":82");
 }
 
 export function makeVmApiUrl(...url: string[]) {
-    return new URL(urlJoin(url), "http://" + Config.host + ":83");
+    return new URL(urlJoin(url), "http://" + Config.host);
 }

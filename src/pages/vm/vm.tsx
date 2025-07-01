@@ -29,8 +29,15 @@ export default class VMPage extends Vue {
     protected batchOperateName: string = "";
     protected refreshDuration: number = 5;
 
+
     protected async created() {
-        this.hosts = await deviceApi.getAllDevices();
+        try {
+            this.hosts = await deviceApi.getAllDevices();
+        } catch (error) {
+            this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
+            this.hosts = [];
+        }
+
         this.refreshDuration = parseInt(localStorage.getItem("refreshDuration") || "5");
     }
 

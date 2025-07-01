@@ -28,12 +28,11 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
             var imgs = await deviceApi.getImages(ip);
             var image = imgs.find(x => x.address == this.obj.image_addr);
             if (image && !image.download) {
-                await deviceApi.pullImages(ip, image.address);
+                await deviceApi.pullImages(ip, this.obj.image_addr.toLocaleLowerCase());
             }
         }
 
-        await this.confirming();
-        this.close(true);
+        this.confirming();
     }
 
     @ErrorProxy({ success: i18n.t("changeImage.success"), loading: i18n.t("loading") })

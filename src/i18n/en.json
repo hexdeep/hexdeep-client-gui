@@ -31,7 +31,7 @@
     "createVm": "Create VM",
     "more": "More",
     "notNull": "Not Null",
-    "noMinus": "Only allow input of English letters and numbers",
+    "noMinus": "Only allow input of English letters, numbers, and underscores",
     "success": "Success",
     "default": "Default",
     "list": "List",
@@ -67,7 +67,7 @@
         "s5_user": "S5 Proxy User",
         "s5_pwd": "S5 Proxy Password",
         "dns_urls": "DNS Address",
-        "nameRule": "The length is 1-50 characters",
+        "nameRule": "The length is 1-20 characters",
         "success": "Create successful",
         "start": "Created successfully, do you want to start now?",
         "maxCreate": "The current host has no available instance location",
@@ -111,7 +111,7 @@
     },
     "rename": {
         "success": "Name modification successful",
-        "length": "The length is 4-50 characters",
+        "length": "The length is 1-20 characters",
         "title": "Modify device name",
         "deviceName": "Device name"
     },

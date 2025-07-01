@@ -16,6 +16,7 @@ export interface HostInfo {
     address: string;
     device_id: string;
     devices: DeviceInfo[];
+    has_error?: boolean;
 }
 
 export interface CreateParam extends S5setParam {

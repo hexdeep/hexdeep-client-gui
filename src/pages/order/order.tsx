@@ -10,19 +10,25 @@ import { OrderInfo } from "@/api/order_define";
 import { i18n } from "@/i18n/i18n";
 import { OrderDetailDialog } from "./dialog/order_detail";
 import { Tools } from "@/common/common";
+import { ErrorProxy } from "@/lib/error_handle";
 
 @Component
 export default class OrderPage extends Vue {
     private hosts: HostInfo[] = [];
     private data: OrderInfo[] = [];
     private loading: boolean = false;
+
+
     protected async created() {
         this.loading = true;
-        this.hosts = await deviceApi.getHosts();
-        console.log(this.hosts);
-        if (this.hosts && this.hosts.length > 0) {
-            this.data = await orderApi.queryOrder(this.hosts.map(x => x.device_id).join(","));
-            console.log(this.data);
+        try {
+            this.hosts = await deviceApi.getHosts();
+            if (this.hosts && this.hosts.length > 0) {
+                this.data = await orderApi.queryOrder(this.hosts.map(x => x.device_id).join(","));
+                console.log(this.data);
+            }
+        } catch (error) {
+            this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
         }
         this.loading = false;
     }

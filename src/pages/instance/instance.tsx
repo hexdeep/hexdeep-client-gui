@@ -19,12 +19,17 @@ export default class InstancePage extends Vue {
     private record: RentalRecord[] = [];
     protected async created() {
         await this.refresh();
-        this.loading = false;
     }
 
     protected async refresh() {
-        this.data = await deviceApi.getHosts();
-        this.record = await orderApi.getRental(this.data.map(x => x.device_id).join(",")) || [];
+        this.loading = true;
+        try {
+            this.data = await deviceApi.getHosts();
+            this.record = await orderApi.getRental(this.data.map(x => x.device_id).join(",")) || [];
+        } catch (error) {
+            this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
+        }
+        this.loading = false;
     }
 
     protected purchase() {

@@ -4,6 +4,7 @@ import { i18n } from "@/i18n/i18n";
 import { CommonDialog, Dialog, DrawerDialog } from "@/lib/dialog/dialog";
 import { VNode } from "vue";
 import { DeviceInfo } from "@/api/device_define";
+import { getSuffixName } from "@/common/common";
 
 @Dialog
 export class VmDetailDialog extends CommonDialog<DeviceInfo, void> {
@@ -23,7 +24,7 @@ export class VmDetailDialog extends CommonDialog<DeviceInfo, void> {
             <el-descriptions size="medium" column={1} border labelStyle={{ "width": "120px" }} style={{ padding: "20px" }}>
 
                 <el-descriptions-item label={i18n.t("vmDetail.name")}>
-                    {this.data.name.last()}
+                    {getSuffixName(this.data.name)}
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.index")}>
                     {this.data.index}

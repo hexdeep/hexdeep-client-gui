@@ -10,6 +10,7 @@ import { CreateDialog } from './dialog/create';
 import { i18n } from '@/i18n/i18n';
 import { ErrorProxy } from '@/lib/error_handle';
 import { orderApi } from '@/api/order_api';
+import { getPrefixName, getSuffixName } from '@/common/common';
 
 @Component
 export class DevicePicker extends tsx.Component<IProps> {
@@ -108,17 +109,23 @@ export class DevicePicker extends tsx.Component<IProps> {
     }
 
     private async updateVM(v: DeviceInfo) {
-        var re = this.$dialog(CreateDialog).show({
+        var re = await this.$dialog(CreateDialog).show({
             isUpdate: true,
             info: v,
-            obj: { name: v.name.last() }
+            obj: { name: getSuffixName(v.name) }
         });
-        var host = this.hosts.find(x => x.address == v.hostIp);
-        if (host) {
-            var arr = await deviceApi.getDeviceList(host.address);
-            arr.forEach(x => x.hostIp = host!.address);
-            host.devices.clear();
-            host.devices.push(...arr);
+        if (re) {
+            if (re.name != getSuffixName(v.name)) {
+                this.leftChecked.remove(v.key!);
+                this.leftChecked.push(`${v.hostIp}-${v.index}-${getPrefixName(v.name)}${re.name}`);
+            }
+
+            var host = this.hosts.find(x => x.address == v.hostIp);
+            if (host) {
+                var arr = await deviceApi.getDeviceList(host.address);
+                host.devices.clear();
+                host.devices.push(...arr);
+            }
         }
     }
 
@@ -142,7 +149,7 @@ export class DevicePicker extends tsx.Component<IProps> {
                 {scope.data.children && <Row crossAlign='center' mainAlign='space-between' style={{ "flex": 1 }}>
                     <Row gap={5} crossAlign='center'>
                         <span>{scope.data.label}</span>
-                        <el-tag> {scope.data.children.length} </el-tag>
+                        <el-tag type={scope.data.value.has_error ? "danger" : ""}> {scope.data.value.has_error ? <i class="el-icon-warning"></i> : scope.data.children.length} </el-tag>
                     </Row>
                     <div class="autohide" onClick={(e) => {
                         this.createVms(scope.data.value);
@@ -152,7 +159,7 @@ export class DevicePicker extends tsx.Component<IProps> {
                 {!scope.data.children && <Row gap={10} style={{ "flex": 1 }} mainAlign='space-between' crossAlign='center' class={scope.data.value.state !== "running" ? s.no_run : ""}>
                     <Row gap={3} style={{ "flex": 1 }}>
                         <span>{scope.data.label}</span>
-                        <span style="font-size:13px" class={s.name_label}>{scope.data.value.name.last()}</span>
+                        <span style="font-size:13px" class={s.name_label}>{getSuffixName(scope.data.value.name)}</span>
                     </Row>
                     <Row>
                         <div class="autohide" onClick={(e) => {

@@ -10,13 +10,24 @@ class DeviceApi extends ApiBase {
         var result = await deviceApi.getHosts();
         var tasks: Promise<DeviceInfo[]>[] = [];
         result.forEach(element => {
-            tasks.push(this.getDeviceList(element.address).then(e => element.devices = (e ?? []).map(e => {
+            var t = this.getDeviceList(element.address);
+
+            t.then(e => element.devices = (e ?? []).map(e => {
                 e.hostIp = element.address;
                 e.key = `${element.address}-${e.index}-${e.name}`;
                 return e;
-            })));
+            })).catch(error => {
+                console.log(error);
+                element.has_error = true;
+                element.devices = [];
+            });
+            tasks.push(t);
         });
-        await Promise.all(tasks);
+        console.log("await all");
+        await Promise.all(tasks).catch(e => {
+            console.log(e);
+        });
+        console.log("all done");
         return result;
     }
 

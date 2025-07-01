@@ -24,7 +24,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 {this.$scopedSlots.default ? this.$scopedSlots.default() : ""}
                 {this.$props.needName && (
                     <el-form-item label={this.$t("create.name")} prop="name">
-                        <el-input v-model={this.data.name} maxlength={50} />
+                        <el-input v-model={this.data.name} maxlength={20} />
                     </el-form-item>
                 )}
                 <Row>

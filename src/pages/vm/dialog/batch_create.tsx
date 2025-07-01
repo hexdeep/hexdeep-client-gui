@@ -30,7 +30,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
             for (var ip of this.data.hostIp) {
                 var imgs = await deviceApi.getImages(ip);
                 var image = imgs.find(x => x.address == this.data.obj.image_addr);
-                if (!image || (image && !image.download)) {
+                if (image && !image.download) {
                     await deviceApi.pullImages(ip, this.data.obj.image_addr.toLocaleLowerCase());
                 }
             }
@@ -54,8 +54,8 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         return {
             name: [
                 { required: true, message: i18n.t("notNull"), trigger: 'blur' },
-                { min: 1, max: 50, message: i18n.t("create.nameRule"), trigger: 'blur' },
-                { pattern: /^[a-zA-Z0-9]*$/, message: i18n.t("noMinus"), trigger: 'blur' },
+                { min: 1, max: 20, message: i18n.t("create.nameRule"), trigger: 'blur' },
+                { pattern: /^[a-zA-Z0-9_]*$/, message: i18n.t("noMinus"), trigger: 'blur' },
             ],
             num: [
                 {
@@ -67,8 +67,9 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
             ],
             suffix_name: [
                 { required: true, message: i18n.t("notNull"), trigger: 'blur' },
-                { min: 1, max: 50, message: i18n.t("create.nameRule"), trigger: 'blur' },
-                { pattern: /^[a-zA-Z0-9]*$/, message: i18n.t("noMinus"), trigger: 'blur' },
+                { min: 1, max: 20, message: i18n.t("create.nameRule"), trigger: 'blur' },
+                { pattern: /^[a-zA-Z0-9_]*$/, message: i18n.t("noMinus"), trigger: 'blur' },
+
             ],
         };
     }

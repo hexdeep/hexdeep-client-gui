@@ -5,11 +5,11 @@ import { CommonDialog, Dialog, DrawerDialog } from "@/lib/dialog/dialog";
 import { ErrorProxy } from "@/lib/error_handle";
 import { VNode } from "vue";
 import { deviceApi } from '@/api/device_api';
-import { DockerEditParam, ImageInfo } from "@/api/device_define";
+import { CreateParam, DockerEditParam, ImageInfo } from "@/api/device_define";
 import { CreateForm } from "../../../lib/component/create_form";
 
 @Dialog
-export class CreateDialog extends CommonDialog<DockerEditParam, boolean> {
+export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     public override width: string = "650px";
     protected images: ImageInfo[] = [];
     public override show(data: DockerEditParam) {
@@ -25,7 +25,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, boolean> {
     protected override async onConfirm() {
         if (this.data.obj.image_addr) {
             var image = this.images.find(x => x.address == this.data.obj.image_addr);
-            if (!image || (image && !image.download)) {
+            if (image && !image.download) {
                 await deviceApi.pullImages(this.data.info.hostIp, this.data.obj.image_addr.toLocaleLowerCase());
             }
         }
@@ -50,15 +50,16 @@ export class CreateDialog extends CommonDialog<DockerEditParam, boolean> {
                 console.log("canel" + ex);
             }
         }
-        this.close(true);
+        this.close(this.data.obj);
     }
 
     protected get formRules() {
         return {
             name: [
                 { required: true, message: i18n.t("notNull"), trigger: 'blur' },
-                { min: 1, max: 50, message: i18n.t("create.nameRule"), trigger: 'blur' },
-                { pattern: /^[a-zA-Z0-9]*$/, message: i18n.t("noMinus"), trigger: 'blur' },
+                { min: 1, max: 20, message: i18n.t("create.nameRule"), trigger: 'blur' },
+                { pattern: /^[a-zA-Z0-9_]*$/, message: i18n.t("noMinus"), trigger: 'blur' },
+
             ],
         };
     }

@@ -16,6 +16,7 @@ import { DeviceInfo, HostInfo } from '@/api/device_define';
 import { SelectFileUploadDialog } from './dialog/select_file_upload';
 import { VmDetailDialog } from './dialog/vm_detail';
 import { Screenshot } from './screenshot';
+import { getSuffixName } from '@/common/common';
 
 @Component
 export class DeviceList extends tsx.Component<IProps, IEvents> {
@@ -84,7 +85,6 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
 
     private handleSelectionChange(selectedRows: any[], e: any) {
-        console.log("handleSelectionChange");
         if (this.data.length > 0) {
             this.rightChecked.clear();
             this.rightChecked.push(...selectedRows.map(e => e.key));
@@ -93,6 +93,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
     }
 
+    @ErrorProxy()
     public async refresh(hostIp: string) {
         var re = await deviceApi.getDeviceList(hostIp);
         re.sort((a, b) => a.index - b.index);
@@ -134,7 +135,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         ref="tb" on-selection-change={(e, e2) => this.handleSelectionChange(e, e2)} empty-text={this.$t("table.emptyText")}>
                         <el-table-column type="selection" width="45" reserve-selection={true} />
                         <el-table-column prop="index" label={this.$t("table.index")} width="80" align="center" />
-                        <el-table-column prop="name" label={this.$t("name")} formatter={r => r.name.last()} />
+                        <el-table-column prop="name" label={this.$t("name")} formatter={r => getSuffixName(r.name)} show-overflow-tooltip />
                         <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} />
                         {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
                         <el-table-column prop="adb" label="ADB" />
@@ -151,14 +152,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                                     return <Column key={`parent_${e.key}`} class={[s.img_box, e.state == "running" ? s.running : s.no_run]}>
                                         <Screenshot data-key={e.key} key={e.key} device={e} />
                                         <Row mainAlign='space-between' crossAlign='center'>
-                                            <el-checkbox label={e.key} onChange={(c, event) => this.checkboxChanged(c, e)} >
-                                                <Row gap={5} crossAlign='center'>
+                                            <el-checkbox class={s.checkbox} label={e.key} onChange={(c, event) => this.checkboxChanged(c, e)} >
+                                                <Row gap={5} flex crossAlign='center'>
                                                     <span>{`${e.index}`}</span>
-                                                    {`${e.name.last() ?? ''}`}
-
+                                                    <span class={["ellipsis", s.checkbox_label]}>{`${getSuffixName(e.name)}`}</span>
                                                 </Row>
                                             </el-checkbox>
-
                                             {this.renderAction(e, false)}
                                         </Row>
                                     </Column>;
@@ -187,14 +186,14 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         var re = await this.$dialog(CreateDialog).show({
             isUpdate: true,
             info: data,
-            obj: { name: data.name.last() },
+            obj: { name: getSuffixName(data.name) },
         });
         if (re) await this.refresh(data.hostIp);
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.rebootTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     public async reboot(data: DeviceInfo) {
-        console.log("reboot");
+        await deviceApi.reboot(data.hostIp, data.name);
         await this.refresh(data.hostIp);
     }
 
@@ -240,10 +239,10 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         await this.$dialog(FilelistDialog).show(data);
     }
     private apiDoc(data: DeviceInfo) {
-        window.open(`http://${data.hostIp}:83/`);
+        window.open(`http://${data.hostIp}/api`);
     }
     private async changeModel(data: DeviceInfo) {
-        var re = await this.$dialog(ChangeModelDialog).show({ info: data, obj: { name: data.name.last() } });
+        var re = await this.$dialog(ChangeModelDialog).show({ info: data, obj: { name: getSuffixName(data.name) } });
         if (re) await this.refresh(data.hostIp);
     }
     private async setS5Proxy(data: DeviceInfo) {

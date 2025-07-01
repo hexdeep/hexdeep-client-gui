@@ -34,7 +34,7 @@ export default class Nav extends Vue {
         },
         {
             label: 'nav.apiDoc',
-            path: `http://${Config.host}:83/`,
+            path: `http://${Config.host}/api`,
             blank: true,
             icon: 'icon-shiyongwendang'
         },

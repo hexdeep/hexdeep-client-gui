@@ -38,7 +38,7 @@
     "createVm": "创建",
     "more": "更多",
     "notNull": "不能为空",
-    "noMinus": "只允许输入英文字母和数字",
+    "noMinus": "名称只能包含英文字母、数字、下划线",
     "success": "成功",
     "default": "默认",
     "random": "随机",
@@ -69,7 +69,7 @@
         "s5_user": "S5代理用户",
         "s5_pwd": "S5代理密码",
         "dns_urls": "DNS地址",
-        "nameRule": "长度为1 - 50个字符",
+        "nameRule": "长度为1 - 20个字符",
         "start": "创建成功，是否立即启动？",
         "maxCreate": "当前主机无可用实例位",
         "numRule": "创建数量范围为1-{0}的整数",
@@ -111,7 +111,7 @@
     },
     "rename": {
         "success": "名称修改成功",
-        "length": "长度为4 - 50个字符",
+        "length": "长度为1 - 20个字符",
         "title": "修改设备名称",
         "deviceName": "设备名称"
     },
