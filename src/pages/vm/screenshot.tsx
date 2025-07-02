@@ -47,7 +47,7 @@ export class Screenshot extends tsx.Component<IProps> {
         if (!img) return;
         var c = this.canvasRef;
         if (c) {
-            if (this.view == "vertical") {
+            if ((this.view == "vertical" && img.width < img.height) || (this.view == "horizontal" && img.width > img.height)) {
                 if (c.width != img.width) {
                     var scale = img.width / img.height;
                     c.width = img.width;
@@ -63,9 +63,9 @@ export class Screenshot extends tsx.Component<IProps> {
 
             var ctx = c.getContext("2d")!;
             if (ctx) {
-                if (this.view == "horizontal") {
+                if ((this.view == "horizontal" && img.width < img.height) || (this.view == "vertical" && img.width > img.height)) {
                     ctx.translate(c.width / 2, c.height / 2);
-                    ctx.rotate((270 * Math.PI) / 180);
+                    ctx.rotate(((img.width < img.height ? 270 : 90) * Math.PI) / 180);
                     ctx.translate(-c.height / 2, -c.width / 2);
                 }
                 ctx.drawImage(img, 0, 0, img.width, img.height);
