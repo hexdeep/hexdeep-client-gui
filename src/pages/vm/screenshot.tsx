@@ -17,8 +17,13 @@ export class Screenshot extends tsx.Component<IProps> {
     private busy = false;
 
     protected async created() {
-        if (this.device.state != "running") return;
         this.refresh = async () => {
+            if (this.device.state != "running") {
+                var c = this.canvasRef;
+                var ctx = c.getContext("2d")!;
+                ctx.clearRect(0, 0, c.width, c.height);
+                return;
+            }
             if (this.busy) return;
             try {
                 this.busy = true;

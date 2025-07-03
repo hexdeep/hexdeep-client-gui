@@ -1,11 +1,18 @@
 
 import { Config } from "@/common/Config";
 import qs from 'qs';
-import { CreateParam, DeviceInfo, DockerEditParam, FilelistInfo, HostInfo, ImageInfo, S5setParam } from "./device_define";
+import { CreateParam, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImageInfo, SDKImagesRes } from "./device_define";
 import { ApiBase } from "./api_base";
 import { makeVmApiUrl } from "@/common/common";
+import { HostDetail } from "./order_define";
 
 class DeviceApi extends ApiBase {
+
+    public async rebootSDK(ip: string) {
+        const result = await fetch(makeVmApiUrl("super_sdk_api/restart", ip));
+        return await this.handleError(result);
+    }
+
     public async getAllDevices() {
         var result = await deviceApi.getHosts();
         var tasks: Promise<DeviceInfo[]>[] = [];
@@ -85,6 +92,16 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    public async getSDKImages(ip: string): Promise<SDKImagesRes> {
+        const result = await fetch(makeVmApiUrl("super_sdk_api/get", ip));
+        return await this.handleError(result);
+    }
+
+    public async switchSDKImages(ip: string, addr: string): Promise<ImageInfo[]> {
+        const result = await fetch(makeVmApiUrl("super_sdk_api/switch_version", ip) + `?address=${addr}`);
+        return await this.handleError(result);
+    }
+
     public async pullImages(ip: string, addr: string) {
         const result = await fetch(makeVmApiUrl("image_api/pull", ip) + `?address=${addr}`);
         return await this.handleError(result);
@@ -97,6 +114,12 @@ class DeviceApi extends ApiBase {
 
     public async getHosts(): Promise<HostInfo[]> {
         const result = await fetch(makeVmApiUrl("host/device/get", Config.host));
+        return await this.handleError(result);
+    }
+
+    public async getHostDetail(ip: string): Promise<HostDetailInfo> {
+
+        const result = await fetch(makeVmApiUrl("host/device/system_info", ip));
         return await this.handleError(result);
     }
 
@@ -159,20 +182,6 @@ class DeviceApi extends ApiBase {
         const result = await fetch(makeVmApiUrl("and_api/s5_set", ip, name) + `?${formData}`);
         return await this.handleError(result);
     }
-
-    // private async handleError(res: Response) {
-    //     const text = await res.text();
-    //     var json: any;
-    //     try {
-    //         json = JSON.parse(text);
-    //         if (json.code !== 200) {
-    //             throw new Error(json.msg ?? text ?? "unknown error");
-    //         }
-    //         return json.msg;
-    //     } catch (e: any) {
-    //         throw new Error(e.message ?? text ?? "unknown error");
-    //     }
-    // }
 }
 
 export const deviceApi = new DeviceApi();

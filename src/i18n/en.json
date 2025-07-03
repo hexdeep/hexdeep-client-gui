@@ -155,7 +155,16 @@
         "data": "Data",
         "imageAddr": "Image Address",
         "adb": "ADB",
-        "state": "Status"
+        "state": "Status",
+        "rebootSDKSuccess": "Reboot SDK Successful",
+        "temperature": "Temperature",
+        "swap": "Swap",
+        "harddisk": "Harddisk",
+        "mem": "Memory",
+        "cpu": "CPU",
+        "id": "ID",
+        "sdkVersion": "SDK Version",
+        "rebootSDK": "Reboot SDK"
     },
     "changeImage": {
         "title": "Change Image",
@@ -176,7 +185,8 @@
         "purchase": "Purchase",
         "select": "Quick Select",
         "action": "Action",
-        "detail": "Detail",
+        "detail": "Instances Detail",
+        "hostDetail": "Host Detail",
         "priceUnit": "RMB",
         "selectPackage": "Choose a Plan",
         "purchaseTitle": "Instance Purchase",
@@ -189,7 +199,10 @@
         "purchaseQrcodeTitle": "Instance Purchase QR Code",
         "qrcodeExpired": "The QR code has expired, please purchase again",
         "purchaseSuccess": "Purchase Successful",
-        "needSelect": "Please select at least one instance"
+        "needSelect": "Please select at least one instance",
+        "switchSDK": "Switch SDK",
+        "switchSDKTitle": "Switch SDK",
+        "switchSDKSuccess": "Switch SDK Successful"
     },
     "nav": {
         "vms": "VMs",

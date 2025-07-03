@@ -38,6 +38,7 @@ Vue.use(Descriptions);
 Vue.use(DescriptionsItem);
 Vue.use(Card);
 Vue.use(Divider);
+Vue.use(Progress);
 
 Vue.prototype.$alert = MessageBox.alert;
 Vue.prototype.$message = Message;

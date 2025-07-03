@@ -109,7 +109,7 @@ export default class VMPage extends Vue {
                 //arr = this.selectedDevices;
                 break;
         }
-        console.log(arr);
+
         await this.batchOperateIng(arr, callback);
     }
 

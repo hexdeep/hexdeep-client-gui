@@ -155,7 +155,16 @@
         "data": "数据位置",
         "imageAddr": "镜像地址",
         "adb": "ADB",
-        "state": "状态"
+        "state": "状态",
+        "rebootSDKSuccess": "重启SDK成功",
+        "temperature": "温度",
+        "swap": "交换空间",
+        "harddisk": "硬盘",
+        "mem": "内存",
+        "cpu": "CPU",
+        "id": "ID",
+        "sdkVersion": "SDK版本",
+        "rebootSDK": "重启SDK"
     },
     "changeImage": {
         "title": "更换镜像",
@@ -176,7 +185,8 @@
         "purchase": "购买",
         "select": "快速选择",
         "operations": "操作",
-        "detail": "详情",
+        "detail": "实例详情",
+        "hostDetail": "主机详情",
         "priceUnit": "元",
         "selectPackage": "选择套餐",
         "purchaseTitle": "实例购买",
@@ -190,7 +200,10 @@
         "qrcodeExpired": "二维码已过期，请重新购买",
         "purchaseSuccess": "购买成功",
         "action": "操作",
-        "needSelect": "请选择实例"
+        "needSelect": "请选择实例",
+        "switchSDK": "切换SDK",
+        "switchSDKTitle": "切换SDK",
+        "switchSDKSuccess": "切换SDK成功"
     },
     "nav": {
         "vms": "云手机",

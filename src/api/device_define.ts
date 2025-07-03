@@ -50,6 +50,21 @@ export interface ImageInfo {
     updated_at: string;
 }
 
+export interface SDKImageInfo {
+    version: string;
+    address: string;
+    id: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface SDKImagesRes {
+    current_version: string;
+    images: SDKImageInfo[];
+
+}
+
+
 export interface S5setParam {
     s5_domain_mode?: number;//	1,本地域名解析;2,服务端域名解析（默认）
     s5_ip?: string; //	s5代理ip
@@ -87,6 +102,17 @@ export interface SelectedDevice {
     obj?: DeviceInfo;
     children?: DeviceInfo[] | null;
     hasChildren?: boolean;
+}
+
+export interface HostDetailInfo {
+    cpu: string,
+    disk_percent: string,
+    disk_total: number,
+    mem_percent: string,
+    mem_total: number,
+    swap_percent: string,
+    swap_total: number,
+    temperature: string;
 }
 
 // export interface TableData extends DeviceInfo  {

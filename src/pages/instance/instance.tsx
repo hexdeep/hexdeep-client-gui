@@ -9,8 +9,11 @@ import { deviceApi } from "@/api/device_api";
 import { orderApi } from "@/api/order_api";
 import { PurchaseInfo, RentalInfo, RentalRecord } from "@/api/order_define";
 import { i18n } from "@/i18n/i18n";
-import { HostDetailDialog } from "./dialog/host_detail";
+import { InstancesDetailDialog as InstancesDetailDialog } from "./dialog/instances_detail";
 import { PurchaseDialog } from "./dialog/purchase";
+import { SwitchSDKDialog } from "./dialog/switch_sdk";
+import { HostDetailDialog } from "./dialog/host_detail ";
+
 @Component
 export default class InstancePage extends Vue {
     private loading = true;
@@ -113,7 +116,7 @@ export default class InstancePage extends Vue {
                             <el-table-column type="selection" width="45" />
                             <el-table-column prop="address" label={this.$t("instance.host").toString()} width="110" />
                             <el-table-column label={this.$t("instance.indexs").toString()} formatter={this.renderVm} />
-                            <el-table-column label={this.$t("instance.action").toString()} width="90" formatter={this.renderAction} align="center" />
+                            <el-table-column label={this.$t("instance.action").toString()} width={i18n.locale == "zh" ? 300 : 390} formatter={this.renderAction} align="center" />
                         </el-table>
                     </Column>
                 </Column>
@@ -151,14 +154,26 @@ export default class InstancePage extends Vue {
         }
     }
 
+
+    protected async changeSDK(row: HostInfo) {
+        await this.$dialog(SwitchSDKDialog).show(row.address);
+    }
+
     protected showDetail(r: HostInfo) {
-        this.$dialog(HostDetailDialog).show({ host: r, rentals: this.record.find(x => x.device_id == r.device_id)?.device_indexes || [] });
+        this.$dialog(InstancesDetailDialog).show({ host: r, rentals: this.record.find(x => x.device_id == r.device_id)?.device_indexes || [] });
+    }
+
+    protected showHostDetail(r: HostInfo) {
+        this.$dialog(HostDetailDialog).show(r);
     }
 
     private renderAction(row: HostInfo) {
         return (
             <Row gap={8}>
+                <MyButton size="mini" type="primary" text={this.$t("instance.hostDetail").toString()} onClick={() => this.showHostDetail(row)} />
                 <MyButton size="mini" type="primary" text={this.$t("instance.detail").toString()} onClick={() => this.showDetail(row)} />
+                <MyButton size="mini" type="primary" text={this.$t("instance.switchSDK").toString()} onClick={() => this.changeSDK(row)} />
+
             </Row>
         );
     }
