@@ -7,6 +7,7 @@ import { deviceApi } from '@/api/device_api';
 import { DeviceInfo, ImageInfo } from "@/api/device_define";
 import { i18n } from "@/i18n/i18n";
 import { ImageSelector } from "@/lib/component/image_selector";
+import { sleep } from "@/common/common";
 
 @Dialog
 export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
@@ -32,10 +33,10 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
             }
         }
 
-        this.confirming();
+        await this.confirming();
     }
 
-    @ErrorProxy({ success: i18n.t("changeImage.success"), loading: i18n.t("loading") })
+    @ErrorProxy({ success: i18n.t("changeImage.success") })
     protected async confirming() {
         var tasks: Promise<void>[] = [];
         this.data.forEach(x => {
@@ -48,7 +49,7 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
     private get formRules() {
         return {
             image_addr: [
-                { required: true, message: i18n.t("notNull"), trigger: 'blur' },
+                { required: true, message: i18n.t("notNull"), trigger: 'change' },
             ],
         };
     }
