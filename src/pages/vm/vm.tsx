@@ -24,25 +24,30 @@ export default class VMPage extends Vue {
     @Ref() private list!: DeviceList;
 
     private imgRefreshTimer: any;
-
+    private refreshTimer: any;
 
     protected batchOperateName: string = "";
     protected refreshDuration: number = 5;
 
 
     protected async created() {
+        this.refreshHost()
+        this.refreshTimer = setInterval(() => this.refreshHost(), 5000);
+        this.refreshDuration = parseInt(localStorage.getItem("refreshDuration") || "5");
+    }
+
+    protected async refreshHost() {
         try {
             this.hosts = await deviceApi.getAllDevices();
         } catch (error) {
             this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
             this.hosts = [];
         }
-
-        this.refreshDuration = parseInt(localStorage.getItem("refreshDuration") || "5");
     }
 
     protected destroyed() {
         if (this.imgRefreshTimer) clearInterval(this.imgRefreshTimer);
+        if (this.refreshTimer) clearInterval(this.refreshTimer);
     }
 
     protected async refresh() {

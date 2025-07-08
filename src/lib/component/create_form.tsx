@@ -23,12 +23,12 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
         return (
             <div>
                 {this.$scopedSlots.default ? this.$scopedSlots.default() : ""}
-                {this.$props.needName && (
+                {this.needName && (
                     <el-form-item label={this.$t("create.name")} prop="name">
                         <el-input v-model={this.data.name} maxlength={20} />
                     </el-form-item>
                 )}
-                {!this.$props.isUpdate && (
+                {!this.isUpdate && (
                     <Row>
                         <el-form-item label={this.$t("create.sandbox")} prop="sandbox">
                             <el-switch v-model={this.data.sandbox} active-value={1} inactive-value={0} />
@@ -48,7 +48,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                     </el-form-item>
 
                     <el-form-item label={this.$t("create.ip")} prop="ip" >
-                        <el-input v-model={this.data.ip} disabled={this.data.mac_vlan!=1} />
+                        <el-input v-model={this.data.ip} disabled={this.data.mac_vlan != 1} />
                     </el-form-item>
                 </Row>
 
@@ -71,18 +71,21 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                         <el-input v-model={this.data.fps} type="number" />
                     </el-form-item>
                 </Row>
-                <el-form-item label={this.$t("create.model_id")} prop="model_id"  >
-                    <ModelEditor v-model={this.data.model_id} />
-                </el-form-item>
+                {!this.isUpdate && (
+                    <el-form-item label={this.$t("create.model_id")} prop="model_id"  >
+                        <ModelEditor v-model={this.data.model_id} />
+                    </el-form-item>
+                )}
+
                 <el-form-item label={this.$t("create.dns_urls")} prop="dns_urls">
                     <el-input v-model={this.data.dns_urls} />
                 </el-form-item>
-                {!this.$props.isUpdate && (
+                {!this.isUpdate && (
                     <el-form-item label={this.$t("create.s5_domain_mode")} prop="s5_domain_mode">
-                        <el-switch  v-model={this.data.s5_domain_mode} active-value={1} active-text={this.$t("create.s5_domain_mode1")} inactive-value={2} inactive-text={this.$t("create.s5_domain_mode2")} />
+                        <el-switch v-model={this.data.s5_domain_mode} active-value={1} active-text={this.$t("create.s5_domain_mode1")} inactive-value={2} inactive-text={this.$t("create.s5_domain_mode2")} />
                     </el-form-item>
                 )}
-                {!this.$props.isUpdate && (
+                {!this.isUpdate && (
                     <Row>
                         <el-form-item label={this.$t("create.s5_ip")} prop="s5_ip">
                             <el-input v-model={this.data.s5_ip} />
@@ -92,7 +95,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                         </el-form-item>
                     </Row>
                 )}
-                {!this.$props.isUpdate && (
+                {!this.isUpdate && (
                     <Row>
                         <el-form-item label={this.$t("create.s5_user")} prop="s5_user">
                             <el-input v-model={this.data.s5_user} />
