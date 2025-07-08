@@ -20,6 +20,8 @@ export interface HostInfo {
 }
 
 export interface CreateParam extends S5setParam {
+    suffix_name?: string;
+    num?: number;
     index?: number;
     name: string;
     sandbox?: number;   //	沙盒模式:0,禁用;1,启用
@@ -32,12 +34,13 @@ export interface CreateParam extends S5setParam {
     dpi?: number;   //	解析度
     fps?: number;   //	分辨率
     model_id?: number;  //	机型id:值为0时，随机机型；大于0时，固定机型
+    dns_urls?: string;  //	dns服务器地址,例如:223.5.5.5,8.8.8.8
     // s5_domain_mode?: number;//	1,本地域名解析;2,服务端域名解析（默认）
     // s5_ip?: string; //	s5代理ip
     // s5_port?: number;   //	s5代理端口
     // s5_user?: string;   //	s5代理用户名
     // s5_pwd?: string;//	s5代理密码
-    // dns_urls?: string;  //	dns服务器地址,例如:223.5.5.5,8.8.8.8
+    // 
 }
 
 export interface ImageInfo {
@@ -81,9 +84,7 @@ export interface DockerEditParam {
 }
 
 export interface DockerBatchCreateParam {
-    num: number;
     maxNum: number;
-    suffix_name: string;
     hostIp: string[];
     obj: CreateParam;
 }

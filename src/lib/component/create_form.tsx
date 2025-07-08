@@ -36,7 +36,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
 
                         <el-form-item label={this.$t("create.sandbox_size")} prop="sandbox_size" required={this.data.sandbox == 1}>
                             {/* <el-input v-model={this.data.sandbox_size} max={16} type="number" /> */}
-                            <el-switch v-model={this.data.sandbox_size} active-value={32} active-text="32GB" inactive-value={16} inactive-text="16GB" />
+                            <el-switch disabled={this.data.sandbox != 1} v-model={this.data.sandbox_size} active-value={32} active-text="32GB" inactive-value={16} inactive-text="16GB" />
                         </el-form-item>
                     </Row>
                 )
@@ -47,10 +47,11 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                         <el-switch v-model={this.data.mac_vlan} active-value={1} inactive-value={0} />
                     </el-form-item>
 
-                    <el-form-item label={this.$t("create.ip")} prop="ip" required={this.data.mac_vlan == 1}>
-                        <el-input v-model={this.data.ip} />
+                    <el-form-item label={this.$t("create.ip")} prop="ip" >
+                        <el-input v-model={this.data.ip} disabled={this.data.mac_vlan!=1} />
                     </el-form-item>
                 </Row>
+
                 <el-form-item label={this.$t("create.image_addr")} prop="image_addr">
                     <ImageSelector images={this.images} v-model={this.data.image_addr} />
                 </el-form-item>
@@ -78,7 +79,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 </el-form-item>
                 {!this.$props.isUpdate && (
                     <el-form-item label={this.$t("create.s5_domain_mode")} prop="s5_domain_mode">
-                        <el-switch v-model={this.data.s5_domain_mode} active-value={1} active-text={this.$t("create.s5_domain_mode1")} inactive-value={2} inactive-text={this.$t("create.s5_domain_mode2")} />
+                        <el-switch  v-model={this.data.s5_domain_mode} active-value={1} active-text={this.$t("create.s5_domain_mode1")} inactive-value={2} inactive-text={this.$t("create.s5_domain_mode2")} />
                     </el-form-item>
                 )}
                 {!this.$props.isUpdate && (

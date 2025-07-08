@@ -177,7 +177,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     public async create(data: DeviceInfo) {
         var re = await this.$dialog(CreateDialog).show({
             info: data,
-            obj: { name: "", sandbox_size: 16 },
+            obj: { name: getSuffixName(data.name)+"2", sandbox_size: 16 },
         });
         if (re) await this.refresh(data.hostIp);
     }
@@ -281,6 +281,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
                     <TextButton text={this.$t("more")} />
                     <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item nativeOnClick={() => this.start(row)}>{this.$t("start")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.create(row)}>{this.$t("createVm")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.reboot(row)}>{this.$t("menu.reboot")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.reset(row)}>{this.$t("menu.reset")}</el-dropdown-item>

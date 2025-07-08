@@ -36,7 +36,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
             }
         }
 
-        localStorage.setItem("suffix_name", this.data.suffix_name);
+        localStorage.setItem("suffix_name", this.data.obj.suffix_name || "");
         this.confirming();
     }
 
@@ -44,7 +44,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     protected async confirming() {
         var tasks: Promise<void>[] = [];
         this.data.hostIp.forEach(ip => {
-            tasks.push(deviceApi.batchCreate(ip, this.data.num, this.data.suffix_name, this.data.obj));
+            tasks.push(deviceApi.batchCreate(ip, this.data.obj.num!, this.data.obj.suffix_name!, this.data.obj));
         });
         await Promise.all(tasks);
         this.close(true);
@@ -71,20 +71,24 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
                 { pattern: /^[a-zA-Z0-9_]*$/, message: i18n.t("noMinus"), trigger: 'blur' },
 
             ],
+            ip: [
+                { required: this.data.obj.mac_vlan == 1, message: i18n.t("notNull"), trigger: 'blur' },
+                { pattern: /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/, message: i18n.t("invalidIp"), trigger: 'blur' },
+            ]
         };
     }
 
     protected renderDialog(): VNode {
         return (
-            <el-form ref="formRef" props={{ model: this.data }} rules={this.formRules} label-width="140px" class={s.form}>
+            <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="140px" class={s.form}>
                 <div class={s.tip}>{this.$t("create.tip", { 0: this.data.maxNum })}</div>
                 <CreateForm data={this.data.obj} needName={false} images={this.images}>
                     <Row>
                         <el-form-item label={this.$t("batchCreate.num")} prop="num" style={{ "width": "100%" }}>
-                            <el-input v-model={this.data.num} min={1} max={this.data.maxNum} type="number" />
+                            <el-input v-model={this.data.obj.num} min={1} max={this.data.maxNum} type="number" />
                         </el-form-item>
                         <el-form-item label={this.$t("batchCreate.suffixName")} prop="suffix_name" style={{ "width": "100%" }}>
-                            <el-input v-model={this.data.suffix_name} maxlength={20} />
+                            <el-input v-model={this.data.obj.suffix_name} maxlength={20} />
                         </el-form-item>
                     </Row>
                 </CreateForm>

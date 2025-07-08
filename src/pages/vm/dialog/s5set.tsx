@@ -9,6 +9,7 @@ import { DeviceInfo, S5setParam } from "@/api/device_define";
 
 @Dialog
 export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
+    private isOpen = true
     private item: S5setParam = {};
     public override show(data: DeviceInfo[]) {
         this.data = data;
@@ -19,10 +20,11 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
 
     @ErrorProxy({ success: i18n.t("s5set.success"), loading: i18n.t("loading"), validatForm: "formRef" })
     protected override async onConfirm() {
+        let tasks: Promise<void>[] = [];
         this.data.forEach(async e => {
-            if (e.state) await deviceApi.s5set(e.hostIp, e.name, this.item);
+            if (e.state) tasks.push(deviceApi.s5set(e.hostIp, e.name, this.item));
         });
-
+        await Promise.all(tasks)
         this.close(true);
     }
 
@@ -39,6 +41,9 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
     protected renderDialog(): VNode {
         return (
             <el-form ref="formRef" props={{ model: this.item }} rules={this.formRules} label-position="top">
+                <el-form-item label={this.$t("create.open_s5")}  >
+                    <el-switch v-model={this.item.s5_domain_mode} active-value={1} active-text={this.$t("create.s5_domain_mode1")} inactive-value={2} inactive-text={this.$t("create.s5_domain_mode2")} />
+                </el-form-item>
                 <el-form-item label={this.$t("create.s5_domain_mode")} prop="s5_domain_mode">
                     <el-switch v-model={this.item.s5_domain_mode} active-value={1} active-text={this.$t("create.s5_domain_mode1")} inactive-value={2} inactive-text={this.$t("create.s5_domain_mode2")} />
                 </el-form-item>
@@ -54,9 +59,9 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
                 <el-form-item label={this.$t("create.s5_pwd")} prop="s5_pwd">
                     <el-input v-model={this.item.s5_pwd} />
                 </el-form-item>
-                <el-form-item label={this.$t("create.dns_urls")} prop="dns_urls">
+                {/* <el-form-item label={this.$t("create.dns_urls")} prop="dns_urls">
                     <el-input v-model={this.item.dns_urls} />
-                </el-form-item>
+                </el-form-item> */}
             </el-form >
         );
     }

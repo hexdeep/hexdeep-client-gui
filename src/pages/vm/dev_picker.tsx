@@ -83,6 +83,7 @@ export class DevicePicker extends tsx.Component<IProps> {
         }
     }
 
+    @ErrorProxy({ loading: i18n.t("loading") })
     private async createVms(h: HostInfo) {
         var std = await orderApi.getRental(h.device_id);
         if (std.length < 1) {
@@ -95,17 +96,15 @@ export class DevicePicker extends tsx.Component<IProps> {
             this.$alert(this.$t("create.maxCreate").toString(), this.$t("error").toString(), { type: "error" });
             return;
         }
-        var re = await this.$dialog(BatchCreateDialog).show({
-            num: 1,
+        this.$dialog(BatchCreateDialog).show({
             maxNum: maxCanCreate,
-            suffix_name: localStorage.getItem("suffix_name") || "deep",
             hostIp: [h.address],
-            obj: { name: "" }
-        });
-        console.log(re);
-        var list = await deviceApi.getAllDevices();
-        this.hosts.clear();
-        this.hosts.push(...list);
+            obj: { name: "", num: 1, suffix_name: localStorage.getItem("suffix_name") || "deep", }
+        }).then(async re => {
+            var list = await deviceApi.getAllDevices();
+            this.hosts.clear();
+            this.hosts.push(...list);
+        })
     }
 
     private async updateVM(v: DeviceInfo) {
