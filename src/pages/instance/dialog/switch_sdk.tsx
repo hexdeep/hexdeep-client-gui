@@ -5,7 +5,7 @@ import { ErrorProxy } from "@/lib/error_handle";
 import { VNode } from "vue";
 import { deviceApi } from '@/api/device_api';
 import { i18n } from "@/i18n/i18n";
-import { SDKImageSelector } from "@/lib/component/skd+image_selector";
+import { SDKImageSelector } from "@/lib/component/sdk_image_selector";
 import { sleep } from "@/common/common";
 
 @Dialog

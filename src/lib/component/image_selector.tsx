@@ -27,10 +27,12 @@ export class ImageSelector extends tsx.Component<IPorps, {}, {}> {
         this.$emit("input", e);
     }
 
-    protected querySearch(queryString: string, cb: (res: any[]) => void) {
+    protected querySearch(queryString: string, cb: (res: any) => void) {
         queryString = queryString.replace(/\[\d*?\]/g, "").trim();
         var results = queryString ? this.images.filter((e) => e.name.includes(queryString)) : this.images;
-        cb(results.map(e => ({ value: e.address, label: "[" + e.android_version + "] " + e.name })));
+
+        cb(results.map(e => ({ obj: e, value: e.address })));
+
     }
 
     handleSelect(item) {
@@ -42,7 +44,21 @@ export class ImageSelector extends tsx.Component<IPorps, {}, {}> {
 
     render() {
         return (
-            <el-autocomplete value={this.currValue} value-key="label" fetch-suggestions={this.querySearch} onInput={this.onInput} placeholder="请输入内容" onSelect={this.handleSelect} >
+            <el-autocomplete value={this.currValue}
+                scopedSlots={{
+                    default: ({ item } ) => {
+                        return <div>
+                            <el-tag title={item.obj.download ? this.$t("create.downloaded") : this.$t("create.unDownloaded")} type={item.obj.download ? "success" : "danger"}><i class="el-icon-circle-check"></i>
+                            </el-tag>
+                            [{item.obj.android_version}] {item.obj.name}
+                        </div>
+                    }
+                }}
+                value-key="label"
+                fetch-suggestions={this.querySearch}
+                onInput={this.onInput}
+                // placeholder={this.$t("create.placeholder")} 
+                onSelect={this.handleSelect} >
             </el-autocomplete>
         );
     }

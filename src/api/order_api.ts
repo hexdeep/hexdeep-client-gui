@@ -16,7 +16,7 @@ class OrderApi extends ApiBase {
         re.forEach(item => {
             item.device_indexes.forEach(x => {
                 var d = timeDiff(x.rental_end_time, x.current_time, "day");
-                if (d <= 0) {
+                if (d < 0) {
                     x.state = "expired";
                 } else if (d < 7) {
                     x.state = "expiring";

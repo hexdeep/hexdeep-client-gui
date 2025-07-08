@@ -73,7 +73,9 @@
         "maxCreate": "The current host has no available instance location",
         "numRule": "The number of VMs to create must be between 1 and {0} and an integer",
         "tip": "One host can create up to 12 VMs, with a total of {0} VMs available",
-        "downloadingImage": "Downloading image, please wait..."
+        "downloadingImage": "Downloading image, please wait...",
+        "downloaded": "Downloaded",
+        "unDownloaded": "Not downloaded"
     },
     "menu": {
         "start": "Start",
