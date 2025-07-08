@@ -96,8 +96,21 @@ export namespace Tools {
         }
     }
 
-    export function copyText(text: string) {
-        return navigator.clipboard.writeText(text);
+    export async function copyText(text: string) {
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch (error) {
+            copyTextFallback(text);
+        }
+    }
+
+    function copyTextFallback(text: string) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
     }
 
 }

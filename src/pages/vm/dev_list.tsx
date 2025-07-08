@@ -242,7 +242,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         window.open(`http://${data.hostIp}/api`);
     }
     private async changeModel(data: DeviceInfo) {
-        var re = await this.$dialog(ChangeModelDialog).show({ info: data, obj: { name: getSuffixName(data.name) } });
+        var re = await this.$dialog(ChangeModelDialog).show(data);
         if (re) await this.refresh(data.hostIp);
     }
     private async setS5Proxy(data: DeviceInfo) {

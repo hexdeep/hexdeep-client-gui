@@ -12,6 +12,7 @@ import { Tools } from "@/common/common";
 import { MyButton } from "@/lib/my_button";
 import { Row } from "@/lib/container";
 import { ErrorProxy } from "@/lib/error_handle";
+import { SwitchSDKDialog } from "./switch_sdk";
 
 @Dialog
 export class HostDetailDialog extends CommonDialog<HostInfo, void> {
@@ -44,7 +45,10 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                 <el-descriptions-item label={i18n.t("vmDetail.sdkVersion")}>
                     <Row crossAlign="center">
                         <div style={{ "flex": 1 }}>{this.sdk?.current_version}</div>
-                        <MyButton type="primary" size="small" onClick={this.rebootSDK}>{this.$t("vmDetail.rebootSDK")}</MyButton>
+                        <Row gap={10}>
+                            <MyButton type="primary" size="small" onClick={this.rebootSDK}>{this.$t("vmDetail.rebootSDK")}</MyButton>
+                            <MyButton type="primary" size="small" onClick={this.switchSDK}>{this.$t("instance.switchSDK")}</MyButton>
+                        </Row>
                     </Row>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.id")}>
@@ -63,7 +67,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         <el-progress text-inside={true} percentage={this.getPercent(this.detail?.mem_percent)}
                             stroke-width={26} status={this.getStatus(this.detail?.mem_percent)}></el-progress>
                         <div style={{ "text-align": "right" }}>
-                            {Tools.getFileSize((this.detail?.mem_total || 0) * this.getPercent(this.detail?.mem_percent) / 100)} / {Tools.getFileSize(this.detail?.mem_total || 0)} GB
+                            {Tools.getFileSize((this.detail?.mem_total || 0) * this.getPercent(this.detail?.mem_percent) / 100)} / {Tools.getFileSize(this.detail?.mem_total || 0)}
                         </div>
                     </div>
                 </el-descriptions-item>
@@ -73,7 +77,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         <el-progress text-inside={true} percentage={this.getPercent(this.detail?.disk_percent)}
                             stroke-width={26} status={this.getStatus(this.detail?.disk_percent)}></el-progress>
                         <div style={{ "text-align": "right" }}>
-                            {Tools.getFileSize((this.detail?.disk_total || 0) * this.getPercent(this.detail?.disk_percent) / 100)} / {Tools.getFileSize(this.detail?.disk_total || 0)} GB
+                            {Tools.getFileSize((this.detail?.disk_total || 0) * this.getPercent(this.detail?.disk_percent) / 100)} / {Tools.getFileSize(this.detail?.disk_total || 0)}
                         </div>
                     </div>
                 </el-descriptions-item>
@@ -82,13 +86,13 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                     <div alignContent="flex-end" mainAlign="flex-end" crossAlign="end">
                         <el-progress text-inside={true} percentage={this.getPercent(this.detail?.swap_percent)} stroke-width={26} status={this.getStatus(this.detail?.swap_percent)}></el-progress>
                         <div style={{ "text-align": "right" }}>
-                            {Tools.getFileSize((this.detail?.swap_total || 0) * this.getPercent(this.detail?.swap_percent) / 100)} / {Tools.getFileSize(this.detail?.swap_total || 0)} GB
+                            {Tools.getFileSize((this.detail?.swap_total || 0) * this.getPercent(this.detail?.swap_percent) / 100)} / {Tools.getFileSize(this.detail?.swap_total || 0)}
                         </div>
                     </div>
                 </el-descriptions-item>
 
                 <el-descriptions-item label={i18n.t("vmDetail.temperature")}>
-                    {this.detail?.temperature}℃
+                    {this.detail?.temperature} ℃
                 </el-descriptions-item>
 
             </el-descriptions>
@@ -98,6 +102,10 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     @ErrorProxy({ success: i18n.t("vmDetail.rebootSDKSuccess"), loading: i18n.t("loading") })
     private async rebootSDK() {
         await deviceApi.rebootSDK(this.data.address);
+    }
+
+    private async switchSDK() {
+        await this.$dialog(SwitchSDKDialog).show(this.data.address);
     }
 
     private getStatus(percent: string | undefined): string | undefined {

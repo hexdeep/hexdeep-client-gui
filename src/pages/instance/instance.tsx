@@ -9,10 +9,10 @@ import { deviceApi } from "@/api/device_api";
 import { orderApi } from "@/api/order_api";
 import { PurchaseInfo, RentalInfo, RentalRecord } from "@/api/order_define";
 import { i18n } from "@/i18n/i18n";
-import { InstancesDetailDialog as InstancesDetailDialog } from "./dialog/instances_detail";
+import { InstancesDetailDialog } from "./dialog/instances_detail";
 import { PurchaseDialog } from "./dialog/purchase";
 import { SwitchSDKDialog } from "./dialog/switch_sdk";
-import { HostDetailDialog } from "./dialog/host_detail ";
+import { HostDetailDialog } from "./dialog/host_detail_new";
 
 @Component
 export default class InstancePage extends Vue {
@@ -116,7 +116,7 @@ export default class InstancePage extends Vue {
                             <el-table-column type="selection" width="45" />
                             <el-table-column prop="address" label={this.$t("instance.host").toString()} width="110" />
                             <el-table-column label={this.$t("instance.indexs").toString()} formatter={this.renderVm} />
-                            <el-table-column label={this.$t("instance.action").toString()} width={i18n.locale == "zh" ? 300 : 390} formatter={this.renderAction} align="center" />
+                            <el-table-column label={this.$t("instance.action").toString()} width={i18n.locale == "zh" ? 200 : 270} formatter={this.renderAction} align="center" />
                         </el-table>
                     </Column>
                 </Column>
@@ -124,14 +124,14 @@ export default class InstancePage extends Vue {
         );
     }
 
-    protected onSelectionChange(e: HostInfo[]) {
+    protected onSelectionChange(e: HostInfo[]) {     
         this.checkList.clear();
         e.forEach(x => {
             for (let i = 1; i <= 12; i++) {
                 var str = `${x.address}-${i}`;
-                if (!this.checkList.includes(str)) this.checkList.push();
+                if (!this.checkList.includes(str)) this.checkList.push(str);
             }
-        });
+        });       
     }
 
     private renderVm(row: HostInfo) {
@@ -172,7 +172,7 @@ export default class InstancePage extends Vue {
             <Row gap={8}>
                 <MyButton size="mini" type="primary" text={this.$t("instance.hostDetail").toString()} onClick={() => this.showHostDetail(row)} />
                 <MyButton size="mini" type="primary" text={this.$t("instance.detail").toString()} onClick={() => this.showDetail(row)} />
-                <MyButton size="mini" type="primary" text={this.$t("instance.switchSDK").toString()} onClick={() => this.changeSDK(row)} />
+                {/* <MyButton size="mini" type="primary" text={this.$t("instance.switchSDK").toString()} onClick={() => this.changeSDK(row)} /> */}
 
             </Row>
         );

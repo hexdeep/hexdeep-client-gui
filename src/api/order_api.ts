@@ -14,7 +14,7 @@ class OrderApi extends ApiBase {
         const result = await fetch(makeVmApiUrl("server/device/get", Config.host) + `?device_ids=${device_ids}`);
         var re: RentalRecord[] = await this.handleError(result) ?? [];
         re.forEach(item => {
-            item.device_indexes.forEach(x => {
+            item.device_indexes.forEach(x => {             
                 var d = timeDiff(x.rental_end_time, x.current_time, "day");
                 if (d < 0) {
                     x.state = "expired";
