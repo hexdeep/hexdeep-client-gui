@@ -71,9 +71,8 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
 
     @ErrorProxy({ success: i18n.t("success") })
     private async download(row: FilelistInfo) {
-        await deviceApi.download(this.data.hostIp, this.data.name, row.file, "/");
-
-
+        let b = await deviceApi.download(this.data.hostIp, this.data.name, row.file, "/");
+        Tools.exportRaw(row.file, await b.arrayBuffer());
     }
     private renderBreadcrumb() {
         const breadcrumb = this.currentDir.substring(1).split("/").filter(item => item);

@@ -74,7 +74,7 @@ class DeviceApi extends ApiBase {
 
     public async download(ip: string, name: string, path: string, localPath: string) {
         const result = await fetch(makeVmApiUrl("and_api/down_file", ip, name) + `?path=${path}&local=${localPath}`);
-        return await this.handleError(result);
+        return result.blob();
     }
 
     public async getDeviceList(ip: string): Promise<DeviceInfo[]> {
