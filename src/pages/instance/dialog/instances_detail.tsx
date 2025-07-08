@@ -32,7 +32,7 @@ export class InstancesDetailDialog extends CommonDialog<HostDetail, void> {
         return (
             <div style={{ padding: "20px" }}>
                 <el-table data={this.list} width="100%" height="100%" border>
-                    <el-table-column label={this.$t("instance.index").toString()} formatter={(row, col, value, index) => `${this.$t("instance.instance")}-${index + 1}`} />
+                    <el-table-column label={this.$t("instance.index").toString()} formatter={(row, col, value, index) => `${this.$t("instance.instance")}${index + 1}`} />
                     <el-table-column label={this.$t("instance.expire").toString()} formatter={this.renderExpire} />
                 </el-table>
             </div>

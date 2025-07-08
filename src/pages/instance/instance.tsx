@@ -138,7 +138,7 @@ export default class InstancePage extends Vue {
         return (
             <Row gap={8} class={[s.selects, s.mini]} style={{ "flex-wrap": "wrap" }}>
                 {Array.from({ length: 12 }, (_, index) => (
-                    <el-checkbox v-model={this.checkList} class={this.getColor(row, index)} label={`${row.address}-${index + 1}`}>{this.$t("instance.instance").toString()}-{index + 1}</el-checkbox>
+                    <el-checkbox v-model={this.checkList} class={this.getColor(row, index)} label={`${row.address}-${index + 1}`}>{this.$t("instance.instance").toString()}{index + 1}</el-checkbox>
                 ))}
             </Row>
         );
