@@ -1,7 +1,7 @@
 import Vue from "vue";
 import { CastCheckDialog } from "./check.dialog";
 
-const hostBase = "http://localhost:20001";
+const hostBase = "http://localhost:28186";
 
 export class WebCastPlugin {
     public static async startCast(vue: Vue) {

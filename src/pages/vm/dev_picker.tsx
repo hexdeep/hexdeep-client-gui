@@ -41,13 +41,13 @@ export class DevicePicker extends tsx.Component<IProps> {
                 label: item.address,
                 value: item,
                 key: item.address,
-                children: item.devices.filter(t => t.state == this.filterState || this.filterState == "all").map(v => {
+                children: item.devices?.filter(t => t.state == this.filterState || this.filterState == "all").map(v => {
                     return {
                         label: `${(v.index).toString().padStart(2, "0")}`,
                         key: v.key,
                         value: v
                     };
-                }).sort((a, b) => a.value.index - b.value.index)
+                }).sort((a, b) => a.value.index - b.value.index) ?? []
             };
         });
         this.loading = false;
@@ -104,7 +104,7 @@ export class DevicePicker extends tsx.Component<IProps> {
             var list = await deviceApi.getAllDevices();
             this.hosts.clear();
             this.hosts.push(...list);
-        })
+        });
     }
 
     private async updateVM(v: DeviceInfo) {
