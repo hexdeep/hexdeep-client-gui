@@ -10,6 +10,7 @@ export interface DeviceInfo {
     ip: string;
     adb: string;
     hostIp: string;
+    create_req: DeviceDetail;
 }
 
 export interface HostInfo {
@@ -19,7 +20,16 @@ export interface HostInfo {
     has_error?: boolean;
 }
 
-export interface CreateParam extends S5setParam {
+export interface DeviceDetail {
+    image_addr?: string;//	镜像地址
+    width?: number; //	屏幕宽度
+    height?: number;//	屏幕高度
+    dpi?: number;   //	解析度
+    fps?: number;   //	分辨率
+    dns_urls?: string;  //	dns服务器地址,例如:223.5.5.5,8.8.8.8
+}
+
+export interface CreateParam extends S5setParam, DeviceDetail {
     suffix_name?: string;
     num?: number;
     index?: number;
@@ -28,13 +38,8 @@ export interface CreateParam extends S5setParam {
     sandbox_size?: number;  //	沙盒大小 单位GB 默认16GB
     mac_vlan?: number;  //	独立ip模式:0,禁用；1，启用
     ip?: string;    //	ip:mac_vlan模式为1时，必须指定
-    image_addr?: string;//	镜像地址
-    width?: number; //	屏幕宽度
-    height?: number;//	屏幕高度
-    dpi?: number;   //	解析度
-    fps?: number;   //	分辨率
     model_id?: number;  //	机型id:值为0时，随机机型；大于0时，固定机型
-    dns_urls?: string;  //	dns服务器地址,例如:223.5.5.5,8.8.8.8
+
     // s5_domain_mode?: number;//	1,本地域名解析;2,服务端域名解析（默认）
     // s5_ip?: string; //	s5代理ip
     // s5_port?: number;   //	s5代理端口
@@ -74,7 +79,7 @@ export interface S5setParam {
     s5_port?: number;   //	s5代理端口
     s5_user?: string;   //	s5代理用户名
     s5_pwd?: string;//	s5代理密码
-    dns_urls?: string;  //	dns服务器地址,例如:223.5.5.5,8.8.8.8
+    //dns_urls?: string;  //	dns服务器地址,例如:223.5.5.5,8.8.8.8
 }
 
 export interface DockerEditParam {

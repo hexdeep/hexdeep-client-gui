@@ -40,7 +40,8 @@ export default class VMPage extends Vue {
         try {
             this.hosts = await deviceApi.getAllDevices();
         } catch (error) {
-            this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
+            this.$message.error(`${error}`);
+            //this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
             this.hosts = [];
         }
     }

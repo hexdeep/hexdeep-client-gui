@@ -1,7 +1,7 @@
 
 import { Config } from "@/common/Config";
 import qs from 'qs';
-import { CreateParam, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImageInfo, SDKImagesRes } from "./device_define";
+import { CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImageInfo, SDKImagesRes } from "./device_define";
 import { ApiBase } from "./api_base";
 import { makeVmApiUrl } from "@/common/common";
 import { HostDetail } from "./order_define";
@@ -30,11 +30,11 @@ class DeviceApi extends ApiBase {
             });
             tasks.push(t);
         });
-        console.log("await all");
+        //console.log("await all");
         await Promise.all(tasks).catch(e => {
             console.log(e);
         });
-        console.log("all done");
+       // console.log("all done");
         return result;
     }
 
@@ -83,7 +83,13 @@ class DeviceApi extends ApiBase {
         (re ?? []).forEach(t => {
             t.hostIp = ip;
             t.key = `${ip}-${t.index}-${t.name}`;
+            try {
+                t.create_req = JSON.parse(t.create_req) as DeviceDetail;
+            } catch (ex) {
+                console.log(ex)
+            }
         });
+        //console.log(re)
         return re;
     }
 
