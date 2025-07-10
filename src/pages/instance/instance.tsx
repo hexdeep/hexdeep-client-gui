@@ -156,7 +156,7 @@ export default class InstancePage extends Vue {
 
 
     protected async changeSDK(row: HostInfo) {
-        await this.$dialog(SwitchSDKDialog).show(row.address);
+        await this.$dialog(SwitchSDKDialog).show(row);
     }
 
     protected showDetail(r: HostInfo) {

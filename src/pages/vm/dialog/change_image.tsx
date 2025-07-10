@@ -40,7 +40,7 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
     protected async confirming() {
         var tasks: Promise<void>[] = [];
         this.data.forEach(x => {
-            tasks.push(deviceApi.update({ info: x, obj: { name: "", image_addr: this.obj.image_addr } }));
+            tasks.push(deviceApi.update({ info: x, hostId: x.hostId, obj: { name: "", image_addr: this.obj.image_addr } }));
         });
         await Promise.all(tasks);
         this.close(true);

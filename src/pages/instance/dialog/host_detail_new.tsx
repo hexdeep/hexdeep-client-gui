@@ -105,7 +105,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     }
 
     private async switchSDK() {
-        await this.$dialog(SwitchSDKDialog).show(this.data.address);
+        await this.$dialog(SwitchSDKDialog).show(this.data);
     }
 
     private getStatus(percent: string | undefined): string | undefined {

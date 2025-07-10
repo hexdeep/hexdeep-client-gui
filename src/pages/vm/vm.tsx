@@ -54,7 +54,7 @@ export default class VMPage extends Vue {
     protected async refresh() {
         var group = this.selectedItems.groupBy(e => e.hostIp);
         for (var key in group) {
-            this.list.refresh(key);
+            this.list.refresh(key,group[key][0].hostId);
         }
     }
 

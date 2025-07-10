@@ -39,16 +39,14 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             await deviceApi.update(this.data);
         } else {
             await deviceApi.create(this.data);
-            try {
-                await this.$confirm(this.$t("create.start").toString(), this.$t("confirm.title").toString(), {
-                    confirmButtonText: this.$t("confirm.ok").toString(),
-                    cancelButtonText: this.$t("confirm.cancel").toString(),
-                    type: "warning",
-                });
-                await deviceApi.start(this.data.info.hostIp, `hexdeep-${this.data.info.index}-${this.data.obj.name}`);
-            } catch (ex) {
-                console.log("canel" + ex);
-            }
+            let re: any = ""
+
+            re = await this.$confirm(this.$t("create.start").toString(), this.$t("confirm.title").toString(), {
+                confirmButtonText: this.$t("confirm.ok").toString(),
+                cancelButtonText: this.$t("confirm.cancel").toString(),
+                type: "warning",
+            }).catch(e => "cancel");
+            if (re == "confirm") await deviceApi.start(this.data.info.hostIp, `${this.data.hostId}_${this.data.info.index}_${this.data.obj.name}`);
         }
         this.close(this.data.obj);
     }
@@ -61,7 +59,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                 { pattern: /^[a-zA-Z0-9_]*$/, message: i18n.t("noMinus"), trigger: 'blur' },
 
             ],
-             ip: [
+            ip: [
                 { required: this.data.obj.mac_vlan == 1, message: i18n.t("notNull"), trigger: 'blur' },
                 { pattern: /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/, message: i18n.t("invalidIp"), trigger: 'blur' },
             ]

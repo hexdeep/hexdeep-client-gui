@@ -94,8 +94,9 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
 
     @ErrorProxy()
-    public async refresh(hostIp: string) {
-        var re = await deviceApi.getDeviceList(hostIp);
+    public async refresh(hostIp: string, hostId: string) {
+
+        var re = await deviceApi.getDeviceListByIp(hostIp, hostId);
         re.sort((a, b) => a.index - b.index);
         this.hosts.find(t => t.address == hostIp)!.devices = [...re];
         this.selectedDevices.removeWhere(x => re.find(t => t.key == x.key) == null);
@@ -175,50 +176,63 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
 
     public async create(data: DeviceInfo) {
-        var re = await this.$dialog(CreateDialog).show({
+        let name = getSuffixName(data.name)
+        let index = name.match(/\d+$/);
+        console.log(index)
+        if (index) {
+            name = name.replace(index[0], (parseInt(index[0]) + 1) + "");
+        } else {
+            name += "2"
+        }
+        let re = await this.$dialog(CreateDialog).show({
+            hostId: data.hostId,
             info: data,
-            obj: { name: getSuffixName(data.name)+"2", sandbox_size: 16 },
+            obj: { name: name, sandbox_size: 16 },
         });
-        if (re) await this.refresh(data.hostIp);
+        if (re) await this.refresh(data.hostIp, data.hostId);
     }
 
     private async updateVm(data: DeviceInfo) {
         var re = await this.$dialog(CreateDialog).show({
             isUpdate: true,
             info: data,
+            hostId: data.hostId,
             obj: { name: getSuffixName(data.name) },
         });
-        if (re) await this.refresh(data.hostIp);
+        if (re) await this.refresh(data.hostIp, data.hostId);
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.rebootTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     public async reboot(data: DeviceInfo) {
         await deviceApi.reboot(data.hostIp, data.name);
-        await this.refresh(data.hostIp);
+        await this.refresh(data.hostIp, data.hostId);
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.resetTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async reset(data: DeviceInfo) {
         await deviceApi.reset(data.hostIp, data.name);
-        await this.refresh(data.hostIp);
+        await this.refresh(data.hostIp, data.hostId);
+
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.shutdownTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async shutdown(data: DeviceInfo) {
         await deviceApi.shutdown(data.hostIp, data.name);
-        await this.refresh(data.hostIp);
+        await this.refresh(data.hostIp, data.hostId);
+
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.startTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async start(data: DeviceInfo) {
         await deviceApi.start(data.hostIp, data.name);
-        await this.refresh(data.hostIp);
+        await this.refresh(data.hostIp, data.hostId);
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.deleteTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async delete(data: DeviceInfo) {
         await deviceApi.delete(data.hostIp, data.name);
-        await this.refresh(data.hostIp);
+        await this.refresh(data.hostIp, data.hostId);
+
     }
 
     private async rename(data: DeviceInfo) {
@@ -231,7 +245,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             }
             this.leftChecked.removeWhere(x => x == data.key);
             this.leftChecked.push(`${data.hostIp}-${data.index}-${re}`);
-            await this.refresh(data.hostIp);
+            await this.refresh(data.hostIp, data.hostId);
+
         }
     }
 
@@ -243,11 +258,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
     private async changeModel(data: DeviceInfo) {
         var re = await this.$dialog(ChangeModelDialog).show(data);
-        if (re) await this.refresh(data.hostIp);
+        if (re) await this.refresh(data.hostIp, data.hostId);
     }
     private async setS5Proxy(data: DeviceInfo) {
         var re = await this.$dialog(S5setDialog).show([data]);
-        await this.refresh(data.hostIp);
+        await this.refresh(data.hostIp, data.hostId);
+
     }
     private async hostDetails(data: DeviceInfo) {
         await this.$dialog(VmDetailDialog).show(data);

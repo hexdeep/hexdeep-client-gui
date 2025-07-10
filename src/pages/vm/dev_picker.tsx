@@ -111,6 +111,7 @@ export class DevicePicker extends tsx.Component<IProps> {
         var re = await this.$dialog(CreateDialog).show({
             isUpdate: true,
             info: v,
+            hostId: v.hostId,
             obj: { name: getSuffixName(v.name) }
         });
         if (re) {
@@ -121,7 +122,7 @@ export class DevicePicker extends tsx.Component<IProps> {
 
             var host = this.hosts.find(x => x.address == v.hostIp);
             if (host) {
-                var arr = await deviceApi.getDeviceList(host.address);
+                var arr = await deviceApi.getDeviceListByHost(host);
                 host.devices.clear();
                 host.devices.push(...arr);
             }
@@ -135,7 +136,7 @@ export class DevicePicker extends tsx.Component<IProps> {
         this.selectedDevices.removeWhere(x => x.key == v.key);
         var host = this.hosts.find(x => x.address == v.hostIp);
         if (host) {
-            var arr = await deviceApi.getDeviceList(host.address);
+            var arr = await deviceApi.getDeviceListByHost(host);
             arr.forEach(x => x.hostIp = host!.address);
             host.devices.clear();
             host.devices.push(...arr);

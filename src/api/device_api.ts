@@ -17,10 +17,12 @@ class DeviceApi extends ApiBase {
         var result = await deviceApi.getHosts();
         var tasks: Promise<DeviceInfo[]>[] = [];
         result.forEach(element => {
-            var t = this.getDeviceList(element.address);
+            var t = this.getDeviceListByHost(element);
+
 
             t.then(e => element.devices = (e ?? []).map(e => {
                 e.hostIp = element.address;
+                e.hostId = element.device_id;
                 e.key = `${element.address}-${e.index}-${e.name}`;
                 return e;
             })).catch(error => {
@@ -34,7 +36,7 @@ class DeviceApi extends ApiBase {
         await Promise.all(tasks).catch(e => {
             console.log(e);
         });
-       // console.log("all done");
+        // console.log("all done");
         return result;
     }
 
@@ -77,12 +79,17 @@ class DeviceApi extends ApiBase {
         return result.blob();
     }
 
-    public async getDeviceList(ip: string): Promise<DeviceInfo[]> {
-        const result = await fetch(makeVmApiUrl("dc_api/get", ip));
+    public async getDeviceListByHost(hi: HostInfo): Promise<DeviceInfo[]> {
+        return this.getDeviceListByIp(hi.address, hi.device_id);
+    }
+
+    public async getDeviceListByIp(hostIp: string, hostId: string): Promise<DeviceInfo[]> {
+        const result = await fetch(makeVmApiUrl("dc_api/get", hostIp));
         var re = await this.handleError(result);
         (re ?? []).forEach(t => {
-            t.hostIp = ip;
-            t.key = `${ip}-${t.index}-${t.name}`;
+            t.hostIp = hostIp;
+            t.hostId = hostId;
+            t.key = `${hostIp}-${t.index}-${t.name}`;
             try {
                 t.create_req = JSON.parse(t.create_req) as DeviceDetail;
             } catch (ex) {

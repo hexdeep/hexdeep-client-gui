@@ -10,6 +10,7 @@ export interface DeviceInfo {
     ip: string;
     adb: string;
     hostIp: string;
+    hostId: string;
     create_req: DeviceDetail;
 }
 
@@ -85,6 +86,7 @@ export interface S5setParam {
 export interface DockerEditParam {
     isUpdate?: boolean;
     info: DeviceInfo;
+    hostId: string;
     obj: CreateParam;
 }
 
