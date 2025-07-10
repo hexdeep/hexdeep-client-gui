@@ -9,7 +9,7 @@ import { DeviceInfo, S5setParam } from "@/api/device_define";
 
 @Dialog
 export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
-    private isOpen = true
+    private isOpen = true;
     private item: S5setParam = {};
     public override show(data: DeviceInfo[]) {
         this.data = data;
@@ -22,47 +22,58 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
     protected override async onConfirm() {
         let tasks: Promise<void>[] = [];
         this.data.forEach(async e => {
-            if (e.state) tasks.push(deviceApi.s5set(e.hostIp, e.name, this.item));
+            if (e.state) {
+                if (this.isOpen) {
+                    tasks.push(deviceApi.s5set(e.hostIp, e.name, this.item));
+                } else {
+                    tasks.push(deviceApi.closeS5(e.hostIp, e.name));
+                }
+            }
         });
-        await Promise.all(tasks)
+        await Promise.all(tasks);
         this.close(true);
     }
 
     private get formRules() {
         return {
-            // name: [
-            //     { required: true, message: '必填项', trigger: 'blur' },
-            //     { min: 1, max: 50, message: i18n.t("create.nameRule"), trigger: 'blur' },
-            //     { pattern: /^[a-zA-Z0-9]*$/, message: i18n.t("noMinus"), trigger: 'blur' },
-            // ],
+            s5_ip: [
+                { required: this.isOpen, message: i18n.t("notNull"), trigger: 'blur' },
+                { pattern: /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/, message: i18n.t("invalidIp"), trigger: 'blur' },
+            ],
+            s5_port: [
+                { required: this.isOpen, message: i18n.t("notNull"), trigger: 'blur' },
+                { pattern: /^([0-9]|[1-9]\d{1,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$/, message: i18n.t("invalidPort"), trigger: 'blur' },
+            ]
         };
     }
 
     protected renderDialog(): VNode {
         return (
-            <el-form ref="formRef" props={{ model: this.item }} rules={this.formRules} label-position="top">
-                <el-form-item label={this.$t("create.open_s5")}  >
-                    <el-switch v-model={this.item.s5_domain_mode} active-value={1} active-text={this.$t("create.s5_domain_mode1")} inactive-value={2} inactive-text={this.$t("create.s5_domain_mode2")} />
-                </el-form-item>
-                <el-form-item label={this.$t("create.s5_domain_mode")} prop="s5_domain_mode">
-                    <el-switch v-model={this.item.s5_domain_mode} active-value={1} active-text={this.$t("create.s5_domain_mode1")} inactive-value={2} inactive-text={this.$t("create.s5_domain_mode2")} />
-                </el-form-item>
-                <el-form-item label={this.$t("create.s5_ip")} prop="s5_ip">
-                    <el-input v-model={this.item.s5_ip} />
-                </el-form-item>
-                <el-form-item label={this.$t("create.s5_port")} prop="s5_port">
-                    <el-input v-model={this.item.s5_port} type="number" min={1} max={65535} />
-                </el-form-item>
-                <el-form-item label={this.$t("create.s5_user")} prop="s5_user">
-                    <el-input v-model={this.item.s5_user} />
-                </el-form-item>
-                <el-form-item label={this.$t("create.s5_pwd")} prop="s5_pwd">
-                    <el-input v-model={this.item.s5_pwd} />
-                </el-form-item>
-                {/* <el-form-item label={this.$t("create.dns_urls")} prop="dns_urls">
-                    <el-input v-model={this.item.dns_urls} />
-                </el-form-item> */}
-            </el-form >
+            <div style={{ "padding": "24px" }}>
+
+                <el-form ref="formRef" props={{ model: this.item }} rules={this.formRules} label-position="left" label-width="200px">
+                    <el-form-item label={this.$t("create.enableS5Proxy")}  >
+                        <el-switch v-model={this.isOpen} active-value={true} active-text={this.$t("create.enable")} inactive-value={false} inactive-text={this.$t("create.disable")} />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.s5_domain_mode")} prop="s5_domain_mode">
+                        <el-switch disabled={!this.isOpen} v-model={this.item.s5_domain_mode} active-value={1} active-text={this.$t("create.s5_domain_mode1")} inactive-value={2} inactive-text={this.$t("create.s5_domain_mode2")} />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.s5_ip")} prop="s5_ip">
+                        <el-input disabled={!this.isOpen} v-model={this.item.s5_ip} />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.s5_port")} prop="s5_port">
+                        <el-input disabled={!this.isOpen} v-model={this.item.s5_port} type="number" min={1} max={65535} />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.s5_user")} prop="s5_user">
+                        <el-input disabled={!this.isOpen} v-model={this.item.s5_user} />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.s5_pwd")} prop="s5_pwd">
+                        <el-input disabled={!this.isOpen} v-model={this.item.s5_pwd} />
+                    </el-form-item>
+
+                </el-form >
+            </div>
+
         );
     }
 }

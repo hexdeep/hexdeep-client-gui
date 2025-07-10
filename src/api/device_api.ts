@@ -93,7 +93,7 @@ class DeviceApi extends ApiBase {
             try {
                 t.create_req = JSON.parse(t.create_req) as DeviceDetail;
             } catch (ex) {
-                console.log(ex)
+                console.log(ex);
             }
         });
         //console.log(re)
@@ -197,6 +197,11 @@ class DeviceApi extends ApiBase {
     public async s5set(ip: string, name: string, param: S5setParam): Promise<void> {
         var formData = qs.stringify(param);
         const result = await fetch(makeVmApiUrl("and_api/s5_set", ip, name) + `?${formData}`);
+        return await this.handleError(result);
+    }
+
+    public async closeS5(ip: string, name: string): Promise<void> {
+        const result = await fetch(makeVmApiUrl("and_api/s5_stop", ip, name));
         return await this.handleError(result);
     }
 }

@@ -42,6 +42,7 @@
     "random": "Random",
     "noRun": "Not Running",
     "invalidIp": "Invalid IP Address",
+    "invalidPort": "Invalid Port",
     "table": {
         "index": "Index",
         "create": "Create successfully",
@@ -60,6 +61,9 @@
         "dpi": "DPI",
         "fps": "FPS",
         "model_id": "Model ID",
+        "enableS5Proxy": "Enable S5 Proxy",
+        "enable": "Enable",
+        "disable": "Disable",
         "s5_domain_mode": "S5 Domain Name Resolution Mode",
         "s5_domain_mode1": "Local",
         "s5_domain_mode2": "Server",

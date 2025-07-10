@@ -30,6 +30,7 @@
     "starting": "启动中",
     "noRun": "未运行",
     "invalidIp": "IP地址格式错误",
+    "invalidPort": "端口格式错误",
     "table": {
         "index": "实例位",
         "create": "创建成功",
@@ -62,6 +63,9 @@
         "dpi": "DPI",
         "fps": "FPS",
         "model_id": "型号",
+        "enableS5Proxy": "启用S5代理",
+        "enable": "启用",
+        "disable": "禁用",
         "s5_domain_mode": "S5域名解析模式",
         "s5_domain_mode1": "本地域名解析",
         "s5_domain_mode2": "服务端域名解析",
@@ -94,7 +98,8 @@
         "changeModel": "更改型号",
         "setS5Proxy": "设置S5代理",
         "hostDetails": "云机详情",
-        "changeImage": "更换镜像"
+        "changeImage": "更换镜像",
+        "success": "上传成功"
     },
     "batchCreate": {
         "num": "数量",
