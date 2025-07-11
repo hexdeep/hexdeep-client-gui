@@ -15,30 +15,28 @@ import { ImportVmDialog } from "./dialog/import_vm";
 
 @Component
 export default class VMPage extends Vue {
-    @ProvideReactive() private selectedDevices: DeviceInfo[] = [];
-    @ProvideReactive() private selectedRows: DeviceInfo[] = [];
-    @ProvideReactive() private selectedHosts: HostInfo[] = [];
-    @ProvideReactive() private rightChecked: string[] = [];
-    @ProvideReactive() private leftChecked: string[] = [];
-    @ProvideReactive() private hosts: HostInfo[] = [];
-    @ProvideReactive() private view: string = localStorage.getItem("view") || "list";
+    @ProvideReactive() protected selectedDevices: DeviceInfo[] = [];
+    @ProvideReactive() protected selectedRows: DeviceInfo[] = [];
+    @ProvideReactive() protected selectedHosts: HostInfo[] = [];
+    @ProvideReactive() protected rightChecked: string[] = [];
+    @ProvideReactive() protected leftChecked: string[] = [];
+    @ProvideReactive() protected hosts: HostInfo[] = [];
+    @ProvideReactive() protected view: string = localStorage.getItem("view") || "list";
     @Ref() private list!: DeviceList;
 
     private imgRefreshTimer: any;
-    private refreshTimer: any;
+    // private refreshTimer: any;
 
     protected batchOperateName: string = "";
     protected refreshDuration: number = 5;
-    private dialogShowed: boolean = false;
-
-
+    // private dialogShowed: boolean = false;
 
     protected async created() {
         this.refreshHost();
-        this.refreshTimer = setInterval(() => !this.dialogShowed && this.refreshHost(), 5000);
+        // this.refreshTimer = setInterval(() => !this.dialogShowed && this.refreshHost(), 5000);
         this.refreshDuration = parseInt(localStorage.getItem("refreshDuration") || "5");
-        this.$root.$on("dialogShow", () => this.dialogShowed = true);
-        this.$root.$on("dialogClose", () => this.dialogShowed = false);
+        // this.$root.$on("dialogShow", () => this.dialogShowed = true);
+        // this.$root.$on("dialogClose", () => this.dialogShowed = false);
     }
 
     protected async refreshHost() {
@@ -52,10 +50,10 @@ export default class VMPage extends Vue {
     }
 
     protected destroyed() {
-        this.$root.$off("dialogShow");
-        this.$root.$off("dialogClose");
+        // this.$root.$off("dialogShow");
+        // this.$root.$off("dialogClose");
         if (this.imgRefreshTimer) clearInterval(this.imgRefreshTimer);
-        if (this.refreshTimer) clearInterval(this.refreshTimer);
+        // if (this.refreshTimer) clearInterval(this.refreshTimer);
     }
 
     protected async refresh() {
