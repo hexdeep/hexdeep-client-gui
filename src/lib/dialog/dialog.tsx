@@ -82,6 +82,7 @@ export abstract class DialogBase<TResult = void> extends Vue {
             this.$mount(div);
         }
         document.body.style.overflow = "hidden";
+        this.$root.$emit("dialogShow");
         return this.completer.future;
     }
 
@@ -89,6 +90,7 @@ export abstract class DialogBase<TResult = void> extends Vue {
     protected onInit() { }
 
     public async hide() {
+        this.$root.$emit("dialogClose");
         await this.onClosing();
         this.$el.remove();
         document.body.style.overflow = "";

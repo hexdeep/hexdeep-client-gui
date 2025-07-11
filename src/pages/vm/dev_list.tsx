@@ -16,7 +16,8 @@ import { DeviceInfo, HostInfo } from '@/api/device_define';
 import { SelectFileUploadDialog } from './dialog/select_file_upload';
 import { VmDetailDialog } from './dialog/vm_detail';
 import { Screenshot } from './screenshot';
-import { getSuffixName } from '@/common/common';
+import { getSuffixName, makeVmApiUrl } from '@/common/common';
+import { CloneVmDialog } from './dialog/clone_vm';
 
 @Component
 export class DeviceList extends tsx.Component<IProps, IEvents> {
@@ -176,13 +177,13 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
 
     public async create(data: DeviceInfo) {
-        let name = getSuffixName(data.name)
+        let name = getSuffixName(data.name);
         let index = name.match(/\d+$/);
-        console.log(index)
+        console.log(index);
         if (index) {
             name = name.replace(index[0], (parseInt(index[0]) + 1) + "");
         } else {
-            name += "2"
+            name += "2";
         }
         let re = await this.$dialog(CreateDialog).show({
             hostId: data.hostId,
@@ -197,7 +198,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             isUpdate: true,
             info: data,
             hostId: data.hostId,
-            obj: { name: getSuffixName(data.name) },
+            obj: Object.assign({ name: getSuffixName(data.name) }, data.create_req),
         });
         if (re) await this.refresh(data.hostIp, data.hostId);
     }
@@ -269,12 +270,24 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         await this.$dialog(VmDetailDialog).show(data);
     }
 
+    @ErrorProxy({ confirm: i18n.t("confirm.backupTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
+    private async backupVm(data: DeviceInfo) {
+        let url = await deviceApi.exportDocker(data.hostIp, data.name);
+        let link = makeVmApiUrl("host/download", data.hostIp) + `?path=${url}`;
+        console.log(link);
+        window.open(link);
+    }
+
+    private async cloneVm(data: DeviceInfo) {
+        await this.$dialog(CloneVmDialog).show(data);
+    }
+
     private async selectFile(data: DeviceInfo) {
         await this.$dialog(SelectFileUploadDialog).show(data);
     }
 
     @ErrorProxy({ success: i18n.t("upload.success") })
-    private async upload(data: DeviceInfo, file: File) {
+    protected async upload(data: DeviceInfo, file: File) {
         await deviceApi.upload(data.hostIp, data.name, `/sdcard/${file.name}`, file);
     }
 
@@ -307,10 +320,11 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <el-dropdown-item nativeOnClick={() => this.updateVm(row)}>{this.$t("menu.updateVm")}</el-dropdown-item>
                         <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.fileBrowser(row)}>{this.$t("menu.fileBrowser")}</el-dropdown-item>
                         <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.selectFile(row)}>{this.$t("menu.upload")}</el-dropdown-item>
-                        {/* <el-dropdown-item nativeOnClick={() => this.apiDoc(row)}>{this.$t("menu.apiDoc")}</el-dropdown-item> */}
                         <el-dropdown-item nativeOnClick={() => this.changeModel(row)}>{this.$t("menu.changeModel")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.setS5Proxy(row)}>{this.$t("menu.setS5Proxy")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.hostDetails(row)}>{this.$t("menu.hostDetails")}</el-dropdown-item>
+                        <el-dropdown-item nativeOnClick={() => this.backupVm(row)}>{this.$t("menu.backup")}</el-dropdown-item>
+                        <el-dropdown-item nativeOnClick={() => this.cloneVm(row)}>{this.$t("menu.clone")}</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
                 }

@@ -64,7 +64,6 @@ export class SelectFileUploadDialog extends CommonDialog<DeviceInfo, boolean> {
                             </span>
                         </div>
                     </el-upload >
-
                 </el-form-item >
             </el-form >
         );

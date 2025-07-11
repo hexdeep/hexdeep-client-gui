@@ -98,7 +98,9 @@
         "changeModel": "Change Model",
         "setS5Proxy": "Set S5 Proxy",
         "hostDetails": "Host Details",
-        "changeImage": "Change Image"
+        "changeImage": "Change Image",
+        "backup": "Backup",
+        "clone": "Clone"
     },
     "batchCreate": {
         "num": "Number",
@@ -114,7 +116,8 @@
         "shutdownTitle": "Are you sure you want to shutdown the VM?",
         "deleteTitle": "Are you sure you want to delete the VM?",
         "startTitle": "Are you sure you want to start the VM?",
-        "batch": "Batch"
+        "batch": "Batch",
+        "backupTitle": "Are you sure you want to backup the VM?"
     },
     "rename": {
         "success": "Name modification successful",
@@ -243,5 +246,23 @@
         "check": "Screencast plugin check",
         "tip": "The screen casting feature is provided by a third-party plugin. No casting plugin was detected. Please make sure the plugin is downloaded and running.",
         "downloadHere": "Click here to download the plugin"
+    },
+    "import": {
+        "btn": "Import",
+        "title": "Import VMs",
+        "hostIp": "Host IP",
+        "index": "Index",
+        "name": "Name",
+        "file": "File",
+        "local": "Click to select local file"
+    },
+    "clone": {
+        "hostIp": "Host IP",
+        "title": "Clone VMs",
+        "index": "Index",
+        "name": "Source Name",
+        "dstName": "Target Name",
+        "dstIndex": "Target Index",
+        "remove": "Remove Source VM"
     }
 }

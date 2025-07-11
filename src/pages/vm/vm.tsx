@@ -11,6 +11,7 @@ import { DeviceInfo, HostInfo } from "@/api/device_define";
 import { ChangeImageDialog } from "./dialog/change_image";
 import { Screenshot } from "./screenshot";
 import { WebCastPlugin } from "@/lib/webcast/webcast";
+import { ImportVmDialog } from "./dialog/import_vm";
 
 @Component
 export default class VMPage extends Vue {
@@ -28,12 +29,16 @@ export default class VMPage extends Vue {
 
     protected batchOperateName: string = "";
     protected refreshDuration: number = 5;
+    private dialogShowed: boolean = false;
+
 
 
     protected async created() {
-        this.refreshHost()
-        this.refreshTimer = setInterval(() => this.refreshHost(), 5000);
+        this.refreshHost();
+        this.refreshTimer = setInterval(() => !this.dialogShowed && this.refreshHost(), 5000);
         this.refreshDuration = parseInt(localStorage.getItem("refreshDuration") || "5");
+        this.$root.$on("dialogShow", () => this.dialogShowed = true);
+        this.$root.$on("dialogClose", () => this.dialogShowed = false);
     }
 
     protected async refreshHost() {
@@ -47,6 +52,8 @@ export default class VMPage extends Vue {
     }
 
     protected destroyed() {
+        this.$root.$off("dialogShow");
+        this.$root.$off("dialogClose");
         if (this.imgRefreshTimer) clearInterval(this.imgRefreshTimer);
         if (this.refreshTimer) clearInterval(this.refreshTimer);
     }
@@ -54,7 +61,7 @@ export default class VMPage extends Vue {
     protected async refresh() {
         var group = this.selectedItems.groupBy(e => e.hostIp);
         for (var key in group) {
-            this.list.refresh(key,group[key][0].hostId);
+            this.list.refresh(key, group[key][0].hostId);
         }
     }
 
@@ -151,6 +158,11 @@ export default class VMPage extends Vue {
     //     await this.refresh();
     // }
 
+    private async importVm() {
+        var re = await this.$dialog(ImportVmDialog).show(this.hosts);
+        if (re) await this.refreshHost();
+    }
+
     protected render() {
         return (
             <Row crossAlign="stretch" flex gap={15}>
@@ -189,6 +201,7 @@ export default class VMPage extends Vue {
                                     <el-dropdown-item nativeOnClick={() => this.refreshDuration = 10}>10 {i18n.t("second")}</el-dropdown-item>
                                 </el-dropdown-menu>
                             </el-dropdown>}
+                            <MyButton text={this.$t("import.btn")} onClick={this.importVm} />
                         </Row>
                         <Row gap={8} crossAlign="center">
                             <MyButton type="primary" text={this.$t("remoteControl")} onClick={this.remoteControl} />

@@ -144,7 +144,9 @@ export function formatTimeByKey(key: string, format = 'yyyy-MM-DD HH:mm:ss') {
 }
 
 export function getSuffixName(e: string) {
-    return /.*?[-_]\d*?[-_](?<name>.*)/.exec(e)?.groups?.name || "";
+    var reg = /.*?[-_]\d*?[-_](?<name>.*)/.exec(e);
+    //console.log(reg, reg?.groups?.name);
+    return reg?.groups?.name || "";
 }
 
 export function getPrefixName(e: string) {

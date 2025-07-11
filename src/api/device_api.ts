@@ -1,12 +1,35 @@
 
 import { Config } from "@/common/Config";
 import qs from 'qs';
-import { CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImageInfo, SDKImagesRes } from "./device_define";
+import { CloneVmParam, CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImageInfo, SDKImagesRes } from "./device_define";
 import { ApiBase } from "./api_base";
 import { makeVmApiUrl } from "@/common/common";
-import { HostDetail } from "./order_define";
 
 class DeviceApi extends ApiBase {
+    public async cloneVm(hostIp: string, name: string, item: CloneVmParam) {
+        const result = await fetch(makeVmApiUrl("dc_api/copy", hostIp, name, item.index.toString(), item.dst_name, item.remove.toString()));
+        return await this.handleError(result);
+    }
+    public async uploadToHost(hostIp: string, file: any) {
+        console.log(file);
+        var formData = new FormData();
+        formData.append('index', "0");
+        formData.append("total", "1");
+        formData.append("chunk", (file instanceof File) ? file : file.raw);
+        const result = await fetch(makeVmApiUrl("host/upload", hostIp), {
+            method: "POST",
+            body: formData,
+        });
+        return await this.handleError(result);
+    }
+    public async importDocker(hostIp: string, index: number, name: string, path: string) {
+        const result = await fetch(makeVmApiUrl("dc_api/import", hostIp, index.toString(), name) + `?local=${encodeURIComponent(path)}`);
+        return await this.handleError(result);
+    }
+    public async exportDocker(hostIp: string, name: string) {
+        const result = await fetch(makeVmApiUrl("dc_api/export", hostIp, name));
+        return await this.handleError(result);
+    }
 
     public async rebootSDK(ip: string) {
         const result = await fetch(makeVmApiUrl("super_sdk_api/restart", ip));
@@ -53,7 +76,6 @@ class DeviceApi extends ApiBase {
             method: "POST",
             body: formData,
         });
-        console.log(result);
         return await this.handleError(result);
     }
 

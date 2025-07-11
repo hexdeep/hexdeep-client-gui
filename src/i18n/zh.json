@@ -99,7 +99,9 @@
         "setS5Proxy": "设置S5代理",
         "hostDetails": "云机详情",
         "changeImage": "更换镜像",
-        "success": "上传成功"
+        "success": "上传成功",
+        "backup": "备份",
+        "clone": "克隆"
     },
     "batchCreate": {
         "num": "数量",
@@ -115,7 +117,8 @@
         "shutdownTitle": "您确定要关闭云手机吗？",
         "deleteTitle": "您确定要删除云手机吗？",
         "startTitle": "您确定要启动云手机吗？",
-        "batch": "批量"
+        "batch": "批量",
+        "backupTitle": "您确定要备份云手机吗？"
     },
     "rename": {
         "success": "名称修改成功",
@@ -245,5 +248,23 @@
         "check": "投屏插件检测",
         "tip": "未检测到投屏插件，投屏功能由第三方插件提供，请确保已下载该插件并启动。若杀毒软件报毒为“误报”，请放心使用。",
         "downloadHere": "点击这里下载插件"
+    },
+    "import": {
+        "btn": "导入",
+        "title": "导入云手机",
+        "hostIp": "主机IP",
+        "index": "实例位",
+        "name": "名称",
+        "file": "文件",
+        "local": "点击选择本地文件"
+    },
+    "clone": {
+        "hostIp": "主机IP",
+        "title": "克隆云手机",
+        "index": "实例位",
+        "name": "源名称",
+        "dstName": "目标名称",
+        "dstIndex": "目标实例位",
+        "remove": "删除源云手机"
     }
 }

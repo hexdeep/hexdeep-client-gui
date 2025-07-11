@@ -123,6 +123,19 @@ export interface HostDetailInfo {
     temperature: string;
 }
 
+export interface ImportVmParam {
+    host: HostInfo;
+    index: number;
+    name: string;
+    local: string;
+}
+
+export interface CloneVmParam {
+    index: number;
+    dst_name: string;
+    remove: boolean;
+}
+
 // export interface TableData extends DeviceInfo  {
 //     instances: number;
 //     index: number;
