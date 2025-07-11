@@ -201,9 +201,9 @@ export default class VMPage extends Vue {
                                     <el-dropdown-item nativeOnClick={() => this.refreshDuration = 10}>10 {i18n.t("second")}</el-dropdown-item>
                                 </el-dropdown-menu>
                             </el-dropdown>}
-                            <MyButton text={this.$t("import.btn")} onClick={this.importVm} />
                         </Row>
                         <Row gap={8} crossAlign="center">
+                            <MyButton type="primary" text={this.$t("import.btn")} onClick={this.importVm} />
                             <MyButton type="primary" text={this.$t("remoteControl")} onClick={this.remoteControl} />
                         </Row>
                     </Row>
