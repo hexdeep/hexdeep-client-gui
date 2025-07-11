@@ -14,6 +14,7 @@ import { RentalRecord } from "@/api/order_define";
 @Dialog
 export class ImportVmDialog extends CommonDialog<HostInfo[], boolean> {
     private fileList: any[] = [];
+    private selectedHost: string = "";
     private record: RentalRecord[] = [];
     private validInstance: number[] = [];
     private item: ImportVmParam = {
@@ -28,8 +29,17 @@ export class ImportVmDialog extends CommonDialog<HostInfo[], boolean> {
         this.title = this.$t("import.title").toString();
         if (this.data.isNotEmpty) {
             this.item.host = this.data.first;
+            this.selectedHost = this.data.first.address;
         }
         return super.show(data);
+    }
+
+    private async selectedHostInput(v: string) {
+        const e = this.data.find(x => x.address == v);
+        if (e) {
+            this.item.host = e;
+            this.selectedHost = e.address;
+        }
     }
 
     @Watch("item.host")
@@ -88,8 +98,8 @@ export class ImportVmDialog extends CommonDialog<HostInfo[], boolean> {
         return (
             <el-form ref="formRef" props={{ model: this.item }} rules={this.formRules} label-position="left" label-width="100px" class={s.body}>
                 <el-form-item label={this.$t("import.hostIp")} prop="host">
-                    <el-select v-model={this.item.host} placeholder={this.$t("import.hostIp")}>
-                        {this.data.map(x => <el-option label={x.address} value={x} />)}
+                    <el-select value={this.selectedHost} onInput={this.selectedHostInput} placeholder={this.$t("import.hostIp")}>
+                        {this.data.map(x => <el-option label={x.address} value={x.address} />)}
                     </el-select>
                 </el-form-item>
                 <el-form-item label={this.$t("import.index")} prop="index">
