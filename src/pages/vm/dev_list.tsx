@@ -213,14 +213,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     private async reset(data: DeviceInfo) {
         await deviceApi.reset(data.hostIp, data.name);
         await this.refresh(data.hostIp, data.hostId);
-
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.shutdownTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async shutdown(data: DeviceInfo) {
         await deviceApi.shutdown(data.hostIp, data.name);
         await this.refresh(data.hostIp, data.hostId);
-
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.startTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
@@ -233,7 +231,6 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     private async delete(data: DeviceInfo) {
         await deviceApi.delete(data.hostIp, data.name);
         await this.refresh(data.hostIp, data.hostId);
-
     }
 
     private async rename(data: DeviceInfo) {
@@ -280,6 +277,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
     private async cloneVm(data: DeviceInfo) {
         await this.$dialog(CloneVmDialog).show(data);
+        this.refresh(data.hostIp, data.hostId);
     }
 
     private async selectFile(data: DeviceInfo) {

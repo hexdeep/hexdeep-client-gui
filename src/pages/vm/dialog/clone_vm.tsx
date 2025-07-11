@@ -40,7 +40,7 @@ export class CloneVmDialog extends CommonDialog<DeviceInfo, boolean> {
 
     }
 
-    @ErrorProxy({ success: i18n.t("clone.success"), loading: i18n.t("loading"), validatForm: "formRef" })
+    @ErrorProxy({ success: i18n.t("success"), loading: i18n.t("loading"), validatForm: "formRef" })
     protected override async onConfirm() {
         await deviceApi.cloneVm(this.data.hostIp, this.data.name, this.item);
         this.close(true);

@@ -45,7 +45,7 @@ export class ImportVmDialog extends CommonDialog<HostInfo[], boolean> {
         }
     }
 
-    @ErrorProxy({ success: i18n.t("import.success"), loading: i18n.t("loading"), validatForm: "formRef" })
+    @ErrorProxy({ success: i18n.t("success"), loading: i18n.t("loading"), validatForm: "formRef" })
     protected override async onConfirm() {
         var path = await deviceApi.uploadToHost(this.item.host.address, this.fileList.first);
         await deviceApi.importDocker(this.item.host.address, this.item.index, this.item.name, path);
