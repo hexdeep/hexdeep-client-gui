@@ -1,23 +1,23 @@
 import { deviceApi } from '@/api/device_api';
+import { DeviceInfo, HostInfo } from '@/api/device_define';
+import { getSuffixName, makeVmApiUrl } from '@/common/common';
 import { i18n } from '@/i18n/i18n';
 import { Column, Row } from '@/lib/container';
 import { ErrorProxy } from '@/lib/error_handle';
 import { TextButton } from '@/lib/my_button';
+import { ElTable } from 'element-ui/types/table';
 import { Component, InjectReactive, Ref, Watch } from 'vue-property-decorator';
 import * as tsx from 'vue-tsx-support';
 import s from './dev_list.module.less';
-import { RenameDialog } from './dialog/rename';
-import { CreateDialog } from './dialog/create';
-import { S5setDialog } from './dialog/s5set';
 import { ChangeModelDialog } from './dialog/change_model';
+import { CloneVmDialog } from './dialog/clone_vm';
+import { CreateDialog } from './dialog/create';
 import { FilelistDialog } from './dialog/filelist';
-import { ElTable } from 'element-ui/types/table';
-import { DeviceInfo, HostInfo } from '@/api/device_define';
+import { RenameDialog } from './dialog/rename';
+import { S5setDialog } from './dialog/s5set';
 import { SelectFileUploadDialog } from './dialog/select_file_upload';
 import { VmDetailDialog } from './dialog/vm_detail';
 import { Screenshot } from './screenshot';
-import { getSuffixName, makeVmApiUrl } from '@/common/common';
-import { CloneVmDialog } from './dialog/clone_vm';
 
 @Component
 export class DeviceList extends tsx.Component<IProps, IEvents> {
@@ -271,7 +271,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     private async backupVm(data: DeviceInfo) {
         let url = await deviceApi.exportDocker(data.hostIp, data.name);
         let link = makeVmApiUrl("host/download", data.hostIp) + `?path=${url}`;
-        window.open(link, "_blank");
+        location.href = link;
     }
 
     private async cloneVm(data: DeviceInfo) {
