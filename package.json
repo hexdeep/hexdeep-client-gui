@@ -1,6 +1,6 @@
 {
   "name": "hexdeep-web-admin",
-  "version": "1.1.9",
+  "version": "1.2.0",
   "private": true,
   "engines": {
     "node": ">=18.0.0"
