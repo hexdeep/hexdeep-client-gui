@@ -14,6 +14,9 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
     public override show(data: DeviceInfo[]) {
         this.data = data;
         this.title = this.$t("s5set.title").toString();
+        deviceApi.queryS5(data.first.hostIp, data.first.name).then(obj => {
+            this.item = obj;
+        });
 
         return super.show(data);
     }

@@ -73,14 +73,12 @@ export interface SDKImagesRes {
 
 }
 
-
 export interface S5setParam {
     s5_domain_mode?: number;//	1,本地域名解析;2,服务端域名解析（默认）
     s5_ip?: string; //	s5代理ip
-    s5_port?: number;   //	s5代理端口
+    s5_port?: string;   //	s5代理端口
     s5_user?: string;   //	s5代理用户名
-    s5_pwd?: string;//	s5代理密码
-    //dns_urls?: string;  //	dns服务器地址,例如:223.5.5.5,8.8.8.8
+    s5_pwd?: string;//	s5代理密码   
 }
 
 export interface DockerEditParam {

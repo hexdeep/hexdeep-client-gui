@@ -8,6 +8,7 @@ import { getSuffixName } from "@/common/common";
 
 @Dialog
 export class VmDetailDialog extends CommonDialog<DeviceInfo, void> {
+    public override width: string = "600px";
     public override show(data: DeviceInfo) {
         this.data = data;
         this.title = this.$t("vmDetail.title").toString();
@@ -24,7 +25,7 @@ export class VmDetailDialog extends CommonDialog<DeviceInfo, void> {
             <el-descriptions size="medium" column={1} border labelStyle={{ "width": "120px" }} style={{ padding: "20px" }}>
 
                 <el-descriptions-item label={i18n.t("vmDetail.name")}>
-                    {getSuffixName(this.data.name)}
+                    {this.data.name}
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.index")}>
                     {this.data.index}

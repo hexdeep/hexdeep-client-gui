@@ -6,6 +6,19 @@ import { ApiBase } from "./api_base";
 import { makeVmApiUrl } from "@/common/common";
 
 class DeviceApi extends ApiBase {
+    public async queryS5(hostIp: string, name: string) {
+        const result = await fetch(makeVmApiUrl("and_api/s5_query", hostIp, name));
+        let obj = await this.handleError(result);
+        let re: S5setParam = { s5_domain_mode: obj.domain_mode };
+        try {
+            let url = new URL(obj.addr);
+            return { s5_domain_mode: obj.domain_mode, s5_ip: url.hostname, s5_port: url.port, s5_user: url.username, s5_pwd: url.password };
+        } catch (e) {
+            console.warn(e);
+        }
+        return re;
+    }
+
     public async cloneVm(hostIp: string, name: string, item: CloneVmParam) {
         const result = await fetch(makeVmApiUrl("dc_api/copy", hostIp, name, item.index.toString(), item.dst_name, item.remove.toString()));
         return await this.handleError(result);
