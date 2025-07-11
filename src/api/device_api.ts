@@ -23,18 +23,59 @@ class DeviceApi extends ApiBase {
         const result = await fetch(makeVmApiUrl("dc_api/copy", hostIp, name, item.index.toString(), item.dst_name, item.remove.toString()));
         return await this.handleError(result);
     }
-    public async uploadToHost(hostIp: string, file: any) {
-        console.log(file);
-        var formData = new FormData();
-        formData.append('index', "0");
-        formData.append("total", "1");
-        formData.append("chunk", (file instanceof File) ? file : file.raw);
-        const result = await fetch(makeVmApiUrl("host/upload", hostIp), {
-            method: "POST",
-            body: formData,
+
+    public uploadToHost(
+        hostIp: string,
+        file: any,
+        progress: (progressEvent: ProgressEvent) => void
+    ): { promise: Promise<any>, cancel: () => void; } {
+        const xhr = new XMLHttpRequest();
+
+        const promise = new Promise((resolve, reject) => {
+            const url = makeVmApiUrl("host/upload", hostIp);
+            xhr.open("POST", url, true);
+
+            // 上传进度回调
+            xhr.upload.onprogress = progress;
+
+            // 成功处理
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const json = JSON.parse(xhr.responseText);
+                        if (json.code == 200) {
+                            resolve(json);
+                        } else {
+                            reject(new Error(json.err));
+                        }
+                    } catch (e) {
+                        reject(new Error("Invalid JSON response"));
+                    }
+                } else {
+                    reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+                }
+            };
+
+            // 错误处理
+            xhr.onerror = () => reject(new Error("Network error during upload"));
+            xhr.onabort = () => reject("aborted");
+
+            const formData = new FormData();
+            formData.append("index", "0");
+            formData.append("total", "1");
+            formData.append("chunk", file instanceof File ? file : file.raw);
+
+            xhr.send(formData);
         });
-        return await this.handleError(result);
+
+        // 提供取消方法
+        const cancel = () => {
+            xhr.abort();
+        };
+
+        return { promise, cancel };
     }
+
     public async importDocker(hostIp: string, index: number, name: string, path: string) {
         const result = await fetch(makeVmApiUrl("dc_api/import", hostIp, index.toString(), name) + `?local=${encodeURIComponent(path)}`);
         return await this.handleError(result);

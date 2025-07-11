@@ -254,7 +254,8 @@
         "index": "Index",
         "name": "Name",
         "file": "File",
-        "local": "Click to select local file"
+        "local": "Click to select local file",
+        "speed": "Speed"
     },
     "clone": {
         "hostIp": "Host IP",

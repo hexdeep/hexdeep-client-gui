@@ -256,7 +256,8 @@
         "index": "实例位",
         "name": "名称",
         "file": "文件",
-        "local": "点击选择本地文件"
+        "local": "点击选择本地文件",
+        "speed": "速度"
     },
     "clone": {
         "hostIp": "主机IP",
