@@ -271,8 +271,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     private async backupVm(data: DeviceInfo) {
         let url = await deviceApi.exportDocker(data.hostIp, data.name);
         let link = makeVmApiUrl("host/download", data.hostIp) + `?path=${url}`;
-        console.log(link);
-        window.open(link);
+        window.open(link, "_blank");
     }
 
     private async cloneVm(data: DeviceInfo) {

@@ -110,6 +110,7 @@ export default class Nav extends Vue {
         this.$i18n.locale = lang;
         this.activeChange();
         localStorage.setItem('lang', lang);
+        location.reload();
     }
 
     protected onClick(e: any, data: NavData) {
