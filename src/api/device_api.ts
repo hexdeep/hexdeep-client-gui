@@ -44,7 +44,7 @@ class DeviceApi extends ApiBase {
                     try {
                         const json = JSON.parse(xhr.responseText);
                         if (json.code == 200) {
-                            resolve(json);
+                            resolve(json.data);
                         } else {
                             reject(new Error(json.err));
                         }
