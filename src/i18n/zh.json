@@ -16,7 +16,7 @@
     "status": "状态",
     "state": "状态",
     "action": "操作",
-    "start": "启动",
+    "start": "开机",
     "stop": "停止",
     "restart": "重启",
     "delete": "删除",
@@ -85,7 +85,7 @@
         "unDownloaded": "未下载"
     },
     "menu": {
-        "start": "启动",
+        "start": "开机",
         "stop": "停止",
         "reset": "重置",
         "reboot": "重启",
