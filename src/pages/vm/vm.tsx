@@ -7,11 +7,12 @@ import { DeviceList } from "./dev_list";
 import { deviceApi } from "@/api/device_api";
 import { ErrorProxy } from "@/lib/error_handle";
 import { i18n } from "@/i18n/i18n";
-import { DeviceInfo, HostInfo } from "@/api/device_define";
+import { DeviceInfo, HostInfo, ImageInfo } from "@/api/device_define";
 import { ChangeImageDialog } from "./dialog/change_image";
 import { Screenshot } from "./screenshot";
 import { WebCastPlugin } from "@/lib/webcast/webcast";
 import { ImportVmDialog } from "./dialog/import_vm";
+import { Config } from "@/common/Config";
 
 @Component
 export default class VMPage extends Vue {
@@ -22,6 +23,7 @@ export default class VMPage extends Vue {
     @ProvideReactive() protected leftChecked: string[] = [];
     @ProvideReactive() protected hosts: HostInfo[] = [];
     @ProvideReactive() protected view: string = localStorage.getItem("view") || "list";
+    @ProvideReactive() protected images: ImageInfo[] = [];
     @Ref() private list!: DeviceList;
 
     private imgRefreshTimer: any;
@@ -37,6 +39,15 @@ export default class VMPage extends Vue {
         this.refreshDuration = parseInt(localStorage.getItem("refreshDuration") || "5");
         // this.$root.$on("dialogShow", () => this.dialogShowed = true);
         // this.$root.$on("dialogClose", () => this.dialogShowed = false);
+        this.refreshImages();
+    }
+
+    protected async refreshImages() {
+        try {
+            this.images = await deviceApi.getImages(Config.host);
+        } catch (error) {
+            console.warn(`刷新镜像列表失败: ${error}`);
+        }
     }
 
     protected async refreshHost() {

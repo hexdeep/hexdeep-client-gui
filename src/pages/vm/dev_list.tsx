@@ -1,5 +1,5 @@
 import { deviceApi } from '@/api/device_api';
-import { DeviceInfo, HostInfo } from '@/api/device_define';
+import { DeviceInfo, HostInfo, ImageInfo } from '@/api/device_define';
 import { getSuffixName, makeVmApiUrl } from '@/common/common';
 import { i18n } from '@/i18n/i18n';
 import { Column, Row } from '@/lib/container';
@@ -26,6 +26,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     @InjectReactive() private rightChecked!: string[];
     @InjectReactive() private hosts!: HostInfo[];
     @InjectReactive() private view!: string;
+    @InjectReactive() private images!: ImageInfo[];
     @Ref() private tb!: ElTable;
     private data: DeviceInfo[] = [];
 
@@ -129,6 +130,14 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         return <span class={[s.status, r.state == "running" ? s.running : s.no_run]} title={this.$t(r.state == "running" ? "running" : "noRun").toString()}> </span>;
     }
 
+    private renderVmImage(r: DeviceInfo) {
+        var img = this.images.find(x => x.address == r.image_addr);
+        if (img) {
+            return img.name;
+        }
+        return r.image_addr;
+    }
+
     protected render() {
         return (
             <div class={[s.deviceList, "contentBox"]}>
@@ -141,7 +150,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} />
                         {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
                         <el-table-column prop="adb" label="ADB" />
-                        <el-table-column prop="created_at" label={this.$t("createdAt")} width="150" />
+                        <el-table-column prop="image_addr" label={this.$t("vmImage")} width="150" show-overflow-tooltip formatter={this.renderVmImage} />
                         <el-table-column prop="state" label={this.$t("state")} width="90" formatter={this.renderStatus} align="center" />
                         <el-table-column label={this.$t("action")} width="120" formatter={this.renderAction} />
                     </el-table>

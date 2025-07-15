@@ -43,6 +43,7 @@
     "noRun": "Not Running",
     "invalidIp": "Invalid IP Address",
     "invalidPort": "Invalid Port",
+    "vmImage": "VM Image",
     "table": {
         "index": "Index",
         "create": "Create successfully",
