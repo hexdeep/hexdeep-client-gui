@@ -11,6 +11,7 @@ import { i18n } from '@/i18n/i18n';
 import { ErrorProxy } from '@/lib/error_handle';
 import { orderApi } from '@/api/order_api';
 import { getPrefixName, getSuffixName } from '@/common/common';
+import { RenameDialog } from './dialog/rename';
 
 @Component
 export class DevicePicker extends tsx.Component<IProps> {
@@ -107,6 +108,13 @@ export class DevicePicker extends tsx.Component<IProps> {
         });
     }
 
+    private async rename(v: DeviceInfo) {
+        const re = await this.$dialog(RenameDialog).show(v);
+        if (re) {
+            v.name = re;
+        }
+    }
+
     private async updateVM(v: DeviceInfo) {
         var re = await this.$dialog(CreateDialog).show({
             isUpdate: true,
@@ -163,7 +171,7 @@ export class DevicePicker extends tsx.Component<IProps> {
                     </Row>
                     <Row>
                         <div class="autohide" onClick={(e) => {
-                            this.updateVM(scope.data.value);
+                            this.rename(scope.data.value);
                             e.stopPropagation();
                         }}><i class="el-icon-edit-outline"></i></div>
                         <div class="autohide" onClick={(e) => {
