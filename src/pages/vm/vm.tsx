@@ -184,7 +184,9 @@ export default class VMPage extends Vue {
                                 <MyButton plain text={this.$t("batchOperations")} />
                                 <el-dropdown-menu slot="dropdown">
                                     {/* <el-dropdown-item disabled={this.selectedItems.isEmpty} nativeOnClick={this.batchCreate}>{this.$t("createVm")}</el-dropdown-item> */}
-                                    <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(row => deviceApi.start(row.hostIp, row.name), "start")}>{this.$t("menu.start")}</el-dropdown-item>
+                                    <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(async row => {
+                                        if (row.state != "running") await deviceApi.start(row.hostIp, row.name);
+                                    }, "start")}>{this.$t("menu.start")}</el-dropdown-item>
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(row => deviceApi.shutdown(row.hostIp, row.name), "shutdown")}>{this.$t("menu.shutdown")}</el-dropdown-item>
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(row => deviceApi.reboot(row.hostIp, row.name), "reboot")}>{this.$t("menu.reboot")}</el-dropdown-item>
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(row => deviceApi.reset(row.hostIp, row.name), "reset")}>{this.$t("menu.reset")}</el-dropdown-item>

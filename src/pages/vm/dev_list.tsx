@@ -316,7 +316,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
                     <TextButton text={this.$t("more")} />
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item nativeOnClick={() => this.start(row)}>{this.$t("menu.start")}</el-dropdown-item>
+                        <el-dropdown-item disabled={row.state == 'running'} nativeOnClick={() => this.start(row)}>{this.$t("menu.start")}</el-dropdown-item>
                         <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.shutdown(row)}>{this.$t("menu.shutdown")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.reboot(row)}>{this.$t("menu.reboot")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.create(row)}>{this.$t("createVm")}</el-dropdown-item>
