@@ -180,18 +180,19 @@ export class DevicePicker extends tsx.Component<IProps> {
     protected render() {
         return (
             <Column width={240} class={[s.DevicePicker, "contentBox"]}>
-                <el-tree
-                    ref="treeRef"
-                    v-loading={this.loading}
-                    class={s.tree}
-                    style={{ height: '100%' }}
-                    node-key="key"
-                    data={this.data}
-                    default-expand-all
-                    show-checkbox
-                    render-content={this.renderContent}
-                    on-check-change={this.handleCheckChange} />
-                <el-divider></el-divider>
+                <div class={s.treeBox}>
+                    <el-tree
+                        ref="treeRef"
+                        v-loading={this.loading}
+                        class={s.tree}
+                        node-key="key"
+                        data={this.data}
+                        default-expand-all
+                        show-checkbox
+                        render-content={this.renderContent}
+                        on-check-change={this.handleCheckChange} />
+                </div>
+                <el-divider />
                 <el-radio-group v-model={this.filterState}>
                     <Row mainAlign='space-around'>
                         <el-radio label="running">{this.$t("filter.running")}</el-radio>

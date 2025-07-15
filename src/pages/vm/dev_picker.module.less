@@ -1,4 +1,6 @@
 .DevicePicker {
+    position: relative;
+
     .title {
         padding: 5px 5px 15px 5px;
         font-size: 16px;
@@ -14,8 +16,19 @@
         }
     }
 
+    .treeBox {
+        position: relative;
+        flex: 1;
+    }
+
     .tree {
         background: none;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        overflow-y: auto;
     }
 
     .loading {
