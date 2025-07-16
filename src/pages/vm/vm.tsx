@@ -13,6 +13,7 @@ import { Screenshot } from "./screenshot";
 import { WebCastPlugin } from "@/lib/webcast/webcast";
 import { ImportVmDialog } from "./dialog/import_vm";
 import { Config } from "@/common/Config";
+import { UploadFileDialog } from "./dialog/upload_file";
 
 @Component
 export default class VMPage extends Vue {
@@ -147,10 +148,11 @@ export default class VMPage extends Vue {
         await this.refresh();
     }
 
-    // private async batchSetS5Proxy() {
-    //     var re = await this.$dialog(S5setDialog).show(this.selectedItems);
-    //     if (re) await this.refresh();
-    // }
+    private async batchUpload() {
+        var re = await this.$dialog(UploadFileDialog).show(this.selectedItems);
+        console.log(re);
+        if (re) await this.refresh();
+    }
 
     private async batchChangeImage() {
         var re = await this.$dialog(ChangeImageDialog).show(this.selectedItems);
@@ -192,7 +194,7 @@ export default class VMPage extends Vue {
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(row => deviceApi.reset(row.hostIp, row.name), "reset")}>{this.$t("menu.reset")}</el-dropdown-item>
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(row => deviceApi.delete(row.hostIp, row.name), "delete")}>{this.$t("menu.delete")}</el-dropdown-item>
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={this.batchChangeImage}>{this.$t("menu.changeImage")}</el-dropdown-item>
-                                    {/* <el-dropdown-item disabled={this.selectedRows.isEmpty} nativeOnClick={this.batchSetS5Proxy}>{this.$t("menu.setS5Proxy")}</el-dropdown-item> */}
+                                    <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={this.batchUpload}>{this.$t("menu.upload")}</el-dropdown-item>
                                 </el-dropdown-menu>
                             </el-dropdown>
                             <el-radio-group v-model={this.view}>

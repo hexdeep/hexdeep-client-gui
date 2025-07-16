@@ -15,7 +15,7 @@ import { CreateDialog } from './dialog/create';
 import { FilelistDialog } from './dialog/filelist';
 import { RenameDialog } from './dialog/rename';
 import { S5setDialog } from './dialog/s5set';
-import { SelectFileUploadDialog } from './dialog/select_file_upload';
+import { UploadFileDialog } from './dialog/upload_file';
 import { VmDetailDialog } from './dialog/vm_detail';
 import { Screenshot } from './screenshot';
 
@@ -289,7 +289,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
 
     private async selectFile(data: DeviceInfo) {
-        await this.$dialog(SelectFileUploadDialog).show(data);
+        await this.$dialog(UploadFileDialog).show([data]);
+
     }
 
     @ErrorProxy({ success: i18n.t("upload.success") })

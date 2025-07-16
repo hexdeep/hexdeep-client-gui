@@ -4,6 +4,7 @@ import qs from 'qs';
 import { CloneVmParam, CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImageInfo, SDKImagesRes } from "./device_define";
 import { ApiBase } from "./api_base";
 import { makeVmApiUrl } from "@/common/common";
+import axios, { AxiosProgressEvent } from "axios";
 
 class DeviceApi extends ApiBase {
     public async queryS5(hostIp: string, name: string) {
@@ -131,6 +132,24 @@ class DeviceApi extends ApiBase {
             body: formData,
         });
         return await this.handleError(result);
+    }
+
+    public async uploadToDocker(ip: string, names: string, remotePath: string, file: File, progress: (progressEvent: AxiosProgressEvent) => void) {
+        var formData = new FormData();
+        formData.append('file', file);
+        // formData.append('names', names);
+        // formData.append('remote_path', remotePath);
+        const result = await axios({
+            url: makeVmApiUrl("and_api/upload_file", ip) + `?names=${names}&remote_path=${encodeURIComponent(remotePath)}`.toString(), //+
+            method: "POST",
+            data: formData,
+            onUploadProgress: progressEvent => {
+                progress(progressEvent);
+                // this.progressPercent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            }
+        });
+        console.log(result);
+        return await this.handleAxiosError(result);
     }
 
     public async batchCreate(hostIp: string, num: number, pre_name: string, param: CreateParam) {
