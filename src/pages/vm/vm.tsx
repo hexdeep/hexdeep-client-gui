@@ -14,6 +14,7 @@ import { WebCastPlugin } from "@/lib/webcast/webcast";
 import { ImportVmDialog } from "./dialog/import_vm";
 import { Config } from "@/common/Config";
 import { UploadFileDialog } from "./dialog/upload_file";
+import s from './vm.module.less';
 
 @Component
 export default class VMPage extends Vue {
@@ -176,7 +177,7 @@ export default class VMPage extends Vue {
 
     protected render() {
         return (
-            <Row crossAlign="stretch" flex gap={15}>
+            <Row crossAlign="stretch" flex gap={15} class={s.body}>
                 <DevicePicker />
                 <Column flex gap={13}>
                     <Row class={"contentBox"}>

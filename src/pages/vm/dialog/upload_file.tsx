@@ -19,7 +19,7 @@ export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
     private item: any = { path: "/sdcard" };
 
     public override show(data: DeviceInfo[]) {
-        this.ips = data.groupBy(x => x.hostIp);
+        this.ips = data.filter(x => x.state == "running").groupBy(x => x.hostIp);
         //console.log(this.ips);
         this.title = this.$t("upload.title").toString();
         if (Object.keys(this.ips).length > 1) this.title = `${this.title} (${Object.keys(this.ips).length})`;

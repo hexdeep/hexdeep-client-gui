@@ -51,6 +51,9 @@
     "second": "秒",
     "refreshDuration": "间隔 {0} 秒刷新",
     "error": "出错了",
+    "common": {
+        "empty": "暂无数据"
+    },
     "create": {
         "success": "创建成功",
         "name": "名称",

@@ -50,6 +50,9 @@
         "emptyText": "No Data"
     },
     "loading": "Please wait a moment...",
+    "common": {
+        "empty": "No Data"
+    },
     "create": {
         "name": "Name",
         "sandbox": "Sandbox",

@@ -197,6 +197,7 @@ export class DevicePicker extends tsx.Component<IProps> {
                         data={this.data}
                         default-expand-all
                         show-checkbox
+                        empty-text={this.$t("common.empty")}
                         render-content={this.renderContent}
                         on-check-change={this.handleCheckChange} />
                 </div>
