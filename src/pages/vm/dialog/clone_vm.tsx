@@ -36,8 +36,7 @@ export class CloneVmDialog extends CommonDialog<DeviceInfo, boolean> {
             arr.removeWhere(x => this.record.first.device_indexes.contains(y => y.index == x && y.state == "expired"));
         }
         this.validInstance = arr || [];
-        this.item.index = arr.length > 0 ? arr.first : 0;
-
+        this.item.index = arr.length > 0 ? (arr.includes(this.data.index) ? this.data.index : arr.first) : 0;
     }
 
     @ErrorProxy({ success: i18n.t("success"), loading: i18n.t("loading"), validatForm: "formRef" })
