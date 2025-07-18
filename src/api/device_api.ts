@@ -111,7 +111,7 @@ class DeviceApi extends ApiBase {
             tasks.push(t);
         });
         //console.log("await all");
-        await Promise.all(tasks).catch(e => {
+        await Promise.allSettled(tasks).catch(e => {
             console.log(e);
         });
         // console.log("all done");
