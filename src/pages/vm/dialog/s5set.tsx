@@ -59,7 +59,7 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
                         <el-switch v-model={this.isOpen} active-value={true} active-text={this.$t("create.enable")} inactive-value={false} inactive-text={this.$t("create.disable")} />
                     </el-form-item>
                     <el-form-item label={this.$t("create.s5_domain_mode")} prop="s5_domain_mode">
-                        <el-switch disabled={!this.isOpen} v-model={this.item.s5_domain_mode} active-value={1} active-text={this.$t("create.s5_domain_mode1")} inactive-value={2} inactive-text={this.$t("create.s5_domain_mode2")} />
+                        <el-switch disabled={!this.isOpen} v-model={this.item.s5_domain_mode} active-value={2} active-text={this.$t("create.s5_domain_mode2")} inactive-value={1} inactive-text={this.$t("create.s5_domain_mode1")} />
                     </el-form-item>
                     <el-form-item label={this.$t("create.s5_ip")} prop="s5_ip">
                         <el-input disabled={!this.isOpen} v-model={this.item.s5_ip} />

@@ -127,7 +127,9 @@ class DeviceApi extends ApiBase {
     public async upload(ip: string, name: string, remotePath: string, file: File) {
         var formData = new FormData();
         formData.append('file', file);
-        const result = await fetch(makeVmApiUrl("and_api/upload_file", ip, name) + `?remote_path=${remotePath}`, {
+        formData.append('remote_path', remotePath);
+        formData.append('names', name);
+        const result = await fetch(makeVmApiUrl("and_api/upload_file", ip), {
             method: "POST",
             body: formData,
         });
@@ -138,9 +140,9 @@ class DeviceApi extends ApiBase {
         var formData = new FormData();
         formData.append('file', file);
         formData.append('names', names);
-        // formData.append('remote_path', remotePath);
+        formData.append('remote_path', remotePath);
         const result = await axios({
-            url: makeVmApiUrl("and_api/upload_file", ip) + `?remote_path=${encodeURIComponent(remotePath)}`.toString(), //+
+            url: makeVmApiUrl("and_api/upload_file", ip).toString(), //+
             method: "POST",
             data: formData,
             onUploadProgress: progressEvent => {

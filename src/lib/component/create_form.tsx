@@ -82,7 +82,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 </el-form-item>
                 {!this.isUpdate && (
                     <el-form-item label={this.$t("create.s5_domain_mode")} prop="s5_domain_mode">
-                        <el-switch v-model={this.data.s5_domain_mode} active-value={1} active-text={this.$t("create.s5_domain_mode1")} inactive-value={2} inactive-text={this.$t("create.s5_domain_mode2")} />
+                        <el-switch v-model={this.data.s5_domain_mode} active-value={2} active-text={this.$t("create.s5_domain_mode2")} inactive-value={1} inactive-text={this.$t("create.s5_domain_mode1")} />
                     </el-form-item>
                 )}
                 {!this.isUpdate && (
