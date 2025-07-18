@@ -145,7 +145,9 @@ export default class VMPage extends Vue {
         arr.forEach(e => {
             tasks.push(callback(e));
         });
-        await Promise.all(tasks);
+        await Promise.allSettled(tasks).catch(e => {
+            console.log(e);
+        });
         await this.refresh();
     }
 
