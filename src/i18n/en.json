@@ -168,6 +168,7 @@
         "ip": "IP",
         "data": "Data",
         "imageAddr": "Image Address",
+        "gitCommitId": "Git Commit ID",
         "adb": "ADB",
         "state": "Status",
         "rebootSDKSuccess": "Reboot SDK Successful",

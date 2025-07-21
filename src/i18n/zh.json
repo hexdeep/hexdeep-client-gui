@@ -169,6 +169,7 @@
         "ip": "IP",
         "data": "数据位置",
         "imageAddr": "镜像地址",
+        "gitCommitId": "Git提交ID",
         "adb": "ADB",
         "state": "状态",
         "rebootSDKSuccess": "重启SDK成功",
