@@ -1,6 +1,6 @@
 import { deviceApi } from '@/api/device_api';
 import { DeviceInfo, FilelistInfo, } from '@/api/device_define';
-import { Tools } from '@/common/common';
+import { makeVmApiUrl, Tools } from '@/common/common';
 import { i18n } from '@/i18n/i18n';
 import { Column, Row } from "@/lib/container";
 import { Dialog, DrawerDialog } from "@/lib/dialog/dialog";
@@ -71,9 +71,10 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
 
     @ErrorProxy({ success: i18n.t("success") })
     private async download(row: FilelistInfo) {
-        let b = await deviceApi.download(this.data.hostIp, this.data.name, row.file, "/");
-        Tools.exportRaw(row.file, await b.arrayBuffer());
+        const url = makeVmApiUrl("and_api/down_file", this.data.hostIp, this.data.name) + `?path=${row.file}`;
+        window.open(url);
     }
+
     private renderBreadcrumb() {
         const breadcrumb = this.currentDir.substring(1).split("/").filter(item => item);
         let path = "";
