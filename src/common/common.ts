@@ -153,10 +153,6 @@ export function getPrefixName(e: string) {
     return /(?<name>.*?[-_]\d*?[-_])/.exec(e)?.groups?.name || "";
 }
 
-export function makeHostApiUrl(...url: string[]) {
-    return new URL(urlJoin(url), "http://" + Config.host + ":82");
-}
-
 export function makeVmApiUrl(...url: string[]) {
-    return new URL(urlJoin(url), "http://" + Config.host);
+    return new URL(urlJoin(url), "http://" + url[1]);
 }
