@@ -51,10 +51,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.ip")}>
                     <Row crossAlign="center">
-                        <div style={{ "flex": 1 }}>{this.data.address}</div>
-                        <Row gap={10}>
-                            <MyButton type="primary" size="small" onClick={this.rebootHost}>{this.$t("vmDetail.rebootHost")}</MyButton>
-                        </Row>
+                        {this.data.address}
                     </Row>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.id")}>
@@ -97,7 +94,14 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                 <el-descriptions-item label={i18n.t("vmDetail.temperature")}>
                     {this.detail?.temperature} ℃
                 </el-descriptions-item>
-
+                <el-descriptions-item label={i18n.t("vmDetail.hostOperate")}>
+                    <Row crossAlign="center">
+                        <Row gap={10}>
+                            <MyButton type="primary" size="small" onClick={this.rebootHost}>{this.$t("vmDetail.rebootHost")}</MyButton>
+                            <MyButton type="primary" size="small" onClick={this.pruneImages}>{this.$t("vmDetail.pruneImages")}</MyButton>
+                        </Row>
+                    </Row>
+                </el-descriptions-item>
             </el-descriptions>
         );
     }
@@ -110,6 +114,11 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     @ErrorProxy({ success: i18n.t("vmDetail.rebootHostSuccess"), loading: i18n.t("loading") })
     private async rebootHost() {
         await deviceApi.rebootHost(this.data.address);
+    }
+
+    @ErrorProxy({ success: i18n.t("vmDetail.pruneImagesSuccess"), loading: i18n.t("loading") })
+    private async pruneImages() {
+        await deviceApi.pruneImages(this.data.address);
     }
 
     private async switchSDK() {

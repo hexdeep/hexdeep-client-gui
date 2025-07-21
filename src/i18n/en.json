@@ -180,8 +180,11 @@
         "id": "ID",
         "sdkVersion": "SDK Version",
         "rebootSDK": "Reboot SDK",
+        "hostOperate": "Host Operate",
         "rebootHost": "Reboot Host",
-        "rebootHostSuccess": "Host is restarting..."
+        "rebootHostSuccess": "Host is restarting...",
+        "pruneImages": "Prune Images",
+        "pruneImagesSuccess": "Prune Images Successful"
     },
     "changeImage": {
         "title": "Change Image",

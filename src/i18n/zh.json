@@ -181,8 +181,11 @@
         "id": "ID",
         "sdkVersion": "SDK版本",
         "rebootSDK": "重启SDK",
+        "hostOperate": "主机操作",
         "rebootHost": "重启主机",
-        "rebootHostSuccess": "主机正在重启..."
+        "rebootHostSuccess": "主机正在重启...",
+        "pruneImages": "清理镜像",
+        "pruneImagesSuccess": "清理镜像成功"
     },
     "changeImage": {
         "title": "更换镜像",
