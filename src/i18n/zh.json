@@ -169,7 +169,7 @@
         "ip": "IP",
         "data": "数据位置",
         "imageAddr": "镜像地址",
-        "gitCommitId": "Git提交ID",
+        "containerGitCommitId": "Git提交ID",
         "adb": "ADB",
         "state": "状态",
         "rebootSDKSuccess": "重启SDK成功",
@@ -185,7 +185,8 @@
         "rebootHost": "重启主机",
         "rebootHostSuccess": "主机正在重启...",
         "pruneImages": "清理镜像",
-        "pruneImagesSuccess": "清理镜像成功"
+        "pruneImagesSuccess": "清理镜像成功",
+        "apiGitCommitId": "Git提交ID"
     },
     "changeImage": {
         "title": "更换镜像",

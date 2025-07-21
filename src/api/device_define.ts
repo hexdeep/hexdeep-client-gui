@@ -70,6 +70,7 @@ export interface SDKImageInfo {
 
 export interface SDKImagesRes {
     current_version: string;
+    git_commit_id: string;
     images: SDKImageInfo[];
 
 }
@@ -120,6 +121,7 @@ export interface HostDetailInfo {
     swap_percent: string,
     swap_total: number,
     temperature: string;
+    git_commit_id: string;
 }
 
 export interface ImportVmParam {

@@ -49,6 +49,11 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         </Row>
                     </Row>
                 </el-descriptions-item>
+                <el-descriptions-item label={i18n.t("vmDetail.apiGitCommitId")}>
+                    <Row crossAlign="center">
+                        {this.detail?.git_commit_id}/{this.sdk?.git_commit_id}
+                    </Row>
+                </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.ip")}>
                     <Row crossAlign="center">
                         {this.data.address}

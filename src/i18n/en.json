@@ -168,7 +168,7 @@
         "ip": "IP",
         "data": "Data",
         "imageAddr": "Image Address",
-        "gitCommitId": "Git Commit ID",
+        "containerGitCommitId": "Git Commit ID",
         "adb": "ADB",
         "state": "Status",
         "rebootSDKSuccess": "Reboot SDK Successful",
@@ -184,7 +184,8 @@
         "rebootHost": "Reboot Host",
         "rebootHostSuccess": "Host is restarting...",
         "pruneImages": "Prune Images",
-        "pruneImagesSuccess": "Prune Images Successful"
+        "pruneImagesSuccess": "Prune Images Successful",
+        "apiGitCommitId": "Git Commit ID"
     },
     "changeImage": {
         "title": "Change Image",
