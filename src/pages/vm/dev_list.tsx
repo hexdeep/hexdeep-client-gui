@@ -146,11 +146,11 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         ref="tb" on-selection-change={(e, e2) => this.handleSelectionChange(e, e2)} empty-text={this.$t("table.emptyText")}>
                         <el-table-column type="selection" width="45" reserve-selection={true} />
                         <el-table-column prop="index" label={this.$t("table.index")} width="60" align="center" />
-                        <el-table-column prop="name" label={this.$t("name")} width="180" formatter={r => getSuffixName(r.name)} show-overflow-tooltip />
+                        <el-table-column prop="name" label={this.$t("name")} width="100" formatter={r => getSuffixName(r.name)} show-overflow-tooltip />
                         {/* <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} /> */}
                         {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
                         <el-table-column prop="adb" label="ADB" width="160" show-overflow-tooltip />
-                        <el-table-column prop="git_commit_id" label={this.$t("vmDetail.containerGitCommitId")} width="160" show-overflow-tooltip />
+                        <el-table-column prop="git_commit_id" label={this.$t("vmDetail.containerGitCommitId")} width="100" show-overflow-tooltip />
                         <el-table-column prop="image_addr" label={this.$t("vmImage")} show-overflow-tooltip formatter={this.renderVmImage} />
                         <el-table-column prop="state" label={this.$t("state")} width="90" formatter={this.renderStatus} align="center" />
                         <el-table-column label={this.$t("action")} width="120" formatter={this.renderAction} />
