@@ -27,6 +27,7 @@ export default class VMPage extends Vue {
     @ProvideReactive() protected view: string = localStorage.getItem("view") || "list";
     @ProvideReactive() protected images: ImageInfo[] = [];
     @Ref() private list!: DeviceList;
+    @Ref() private devicePicker!: DevicePicker;
 
     private imgRefreshTimer: any;
     // private refreshTimer: any;
@@ -52,9 +53,42 @@ export default class VMPage extends Vue {
         }
     }
 
+    private getSavedChecked() {
+        var str = localStorage.getItem("leftChecked") || "";
+        if (str) {
+            try {
+                return JSON.parse(str) as string[] ?? [];
+            } catch (error) {
+                return [];
+            }
+        }
+        return [];
+    }
+
     protected async refreshHost() {
         try {
-            this.hosts = await deviceApi.getAllDevices();
+            const hosts = await deviceApi.getHosts();
+            const savedChecked = this.getSavedChecked();
+            hosts.forEach(element => {
+                element.devices = [];
+                var t = deviceApi.getDeviceListByHost(element);
+                t.then(e => {
+                    element.devices = (e ?? []).map(e => {
+                        e.hostIp = element.address;
+                        e.hostId = element.device_id;
+                        e.key = `${element.address}-${e.index}-${e.name}`;
+                        return e;
+                    });
+                    this.$nextTick(() => {
+                        this.devicePicker?.setChecked(savedChecked);
+                    });
+                }).catch(error => {
+                    console.log(error);
+                    element.has_error = true;
+                    element.devices = [];
+                });
+            });
+            this.hosts = hosts;
         } catch (error) {
             this.$message.error(`${error}`);
             //this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
@@ -180,7 +214,7 @@ export default class VMPage extends Vue {
     protected render() {
         return (
             <Row crossAlign="stretch" flex gap={15} class={s.body}>
-                <DevicePicker />
+                <DevicePicker ref="devicePicker" />
                 <Column flex gap={13}>
                     <Row class={"contentBox"}>
                         <Row flex gap={8}>

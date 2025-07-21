@@ -55,8 +55,8 @@ export class DevicePicker extends tsx.Component<IProps> {
         this.setChecked();
     };
 
-    private setChecked() {
-        var tmp = [...this.leftChecked];
+    public setChecked(checked?: string[]) {
+        var tmp = checked ?? this.leftChecked;
         this.$nextTick(() => {
             this.treeRef.setCheckedKeys(tmp);
         });
@@ -80,7 +80,7 @@ export class DevicePicker extends tsx.Component<IProps> {
         var str = localStorage.getItem("leftChecked") || "";
         if (str) {
             this.leftChecked.clear();
-            this.leftChecked.push(...JSON.parse(localStorage.getItem("leftChecked") || "") as string[] || []);
+            this.leftChecked.push(...JSON.parse(str) as string[] || []);
         }
     }
 
