@@ -59,6 +59,9 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
                 { min: 1, max: 20, message: i18n.t("create.nameRule"), trigger: 'blur' },
                 { pattern: /^[a-zA-Z0-9_]*$/, message: i18n.t("noMinus"), trigger: 'blur' },
             ],
+            image_addr: [
+                { required: true, message: i18n.t("notNull"), trigger: 'change' }
+            ],
             num: [
                 {
                     required: true, message: i18n.t("create.numRule", { 0: this.data.maxNum }), min: 1,
