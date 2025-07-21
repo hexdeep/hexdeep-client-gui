@@ -26,7 +26,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         if (this.data.obj.image_addr) {
             var image = this.images.find(x => x.address == this.data.obj.image_addr);
             if (image && !image.download) {
-                await deviceApi.pullImages(this.data.info.hostIp, this.data.obj.image_addr.toLocaleLowerCase());
+                await deviceApi.pullImages(this.data.info.hostIp, this.data.obj.image_addr);
             }
         }
 
@@ -39,7 +39,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             await deviceApi.update(this.data);
         } else {
             await deviceApi.create(this.data);
-            let re: any = ""
+            let re: any = "";
 
             re = await this.$confirm(this.$t("create.start").toString(), this.$t("confirm.title").toString(), {
                 confirmButtonText: this.$t("confirm.ok").toString(),

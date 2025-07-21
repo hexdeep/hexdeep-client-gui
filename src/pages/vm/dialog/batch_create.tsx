@@ -31,7 +31,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
                 var imgs = await deviceApi.getImages(ip);
                 var image = imgs.find(x => x.address == this.data.obj.image_addr);
                 if (image && !image.download) {
-                    await deviceApi.pullImages(ip, this.data.obj.image_addr.toLocaleLowerCase());
+                    await deviceApi.pullImages(ip, this.data.obj.image_addr);
                 }
             }
         }

@@ -29,7 +29,7 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
             var imgs = await deviceApi.getImages(ip);
             var image = imgs.find(x => x.address == this.obj.image_addr);
             if (image && !image.download) {
-                await deviceApi.pullImages(ip, this.obj.image_addr.toLocaleLowerCase());
+                await deviceApi.pullImages(ip, this.obj.image_addr);
             }
         }
 
