@@ -150,6 +150,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         {/* <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} /> */}
                         {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
                         <el-table-column prop="adb" label="ADB" width="160" show-overflow-tooltip />
+                        <el-table-column prop="git_commit_id" label={this.$t("vmDetail.containerGitCommitId")} width="160" show-overflow-tooltip />
                         <el-table-column prop="image_addr" label={this.$t("vmImage")} show-overflow-tooltip formatter={this.renderVmImage} />
                         <el-table-column prop="state" label={this.$t("state")} width="90" formatter={this.renderStatus} align="center" />
                         <el-table-column label={this.$t("action")} width="120" formatter={this.renderAction} />
