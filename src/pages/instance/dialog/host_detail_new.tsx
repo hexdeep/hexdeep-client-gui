@@ -1,17 +1,15 @@
 
 
 
-import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
-import { VNode } from "vue";
-import s from './../instance.module.less';
-import { RentalInfo } from "@/api/order_define";
-import { HostDetailInfo, HostInfo, SDKImagesRes } from "@/api/device_define";
 import { deviceApi } from "@/api/device_api";
-import { i18n } from "@/i18n/i18n";
+import { HostDetailInfo, HostInfo, SDKImagesRes } from "@/api/device_define";
 import { Tools } from "@/common/common";
-import { MyButton } from "@/lib/my_button";
+import { i18n } from "@/i18n/i18n";
 import { Row } from "@/lib/container";
+import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
 import { ErrorProxy } from "@/lib/error_handle";
+import { MyButton } from "@/lib/my_button";
+import { VNode } from "vue";
 import { SwitchSDKDialog } from "./switch_sdk";
 
 @Dialog
@@ -51,16 +49,16 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         </Row>
                     </Row>
                 </el-descriptions-item>
-                <el-descriptions-item label={i18n.t("vmDetail.id")}>
+                <el-descriptions-item label={i18n.t("vmDetail.ip")}>
                     <Row crossAlign="center">
-                        <div style={{ "flex": 1 }}>{this.data.device_id}</div>
+                        <div style={{ "flex": 1 }}>{this.data.address}</div>
                         <Row gap={10}>
                             <MyButton type="primary" size="small" onClick={this.rebootHost}>{this.$t("vmDetail.rebootHost")}</MyButton>
                         </Row>
                     </Row>
                 </el-descriptions-item>
-                <el-descriptions-item label={i18n.t("vmDetail.ip")}>
-                    {this.data.address}
+                <el-descriptions-item label={i18n.t("vmDetail.id")}>
+                    {this.data.device_id}
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.cpu")}>
                     <el-progress text-inside={true} percentage={this.getPercent(this.detail?.cpu)} stroke-width={26}
