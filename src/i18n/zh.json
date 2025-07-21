@@ -179,7 +179,9 @@
         "cpu": "CPU",
         "id": "ID",
         "sdkVersion": "SDK版本",
-        "rebootSDK": "重启SDK"
+        "rebootSDK": "重启SDK",
+        "rebootHost": "重启主机",
+        "rebootHostSuccess": "主机正在重启..."
     },
     "changeImage": {
         "title": "更换镜像",

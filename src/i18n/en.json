@@ -178,7 +178,9 @@
         "cpu": "CPU",
         "id": "ID",
         "sdkVersion": "SDK Version",
-        "rebootSDK": "Reboot SDK"
+        "rebootSDK": "Reboot SDK",
+        "rebootHost": "Reboot Host",
+        "rebootHostSuccess": "Host is restarting..."
     },
     "changeImage": {
         "title": "Change Image",

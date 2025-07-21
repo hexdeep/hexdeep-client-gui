@@ -52,7 +52,12 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                     </Row>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.id")}>
-                    {this.data.device_id}
+                    <Row crossAlign="center">
+                        <div style={{ "flex": 1 }}>{this.data.device_id}</div>
+                        <Row gap={10}>
+                            <MyButton type="primary" size="small" onClick={this.rebootHost}>{this.$t("vmDetail.rebootHost")}</MyButton>
+                        </Row>
+                    </Row>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.ip")}>
                     {this.data.address}
@@ -102,6 +107,11 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     @ErrorProxy({ success: i18n.t("vmDetail.rebootSDKSuccess"), loading: i18n.t("loading") })
     private async rebootSDK() {
         await deviceApi.rebootSDK(this.data.address);
+    }
+
+    @ErrorProxy({ success: i18n.t("vmDetail.rebootHostSuccess"), loading: i18n.t("loading") })
+    private async rebootHost() {
+        await deviceApi.rebootHost(this.data.address);
     }
 
     private async switchSDK() {
