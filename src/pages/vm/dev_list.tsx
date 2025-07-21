@@ -145,12 +145,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                     <el-table default-expand-all data={this.data} width="100%" height="100%" row-key="key"
                         ref="tb" on-selection-change={(e, e2) => this.handleSelectionChange(e, e2)} empty-text={this.$t("table.emptyText")}>
                         <el-table-column type="selection" width="45" reserve-selection={true} />
-                        <el-table-column prop="index" label={this.$t("table.index")} width="80" align="center" />
-                        <el-table-column prop="name" label={this.$t("name")} formatter={r => getSuffixName(r.name)} show-overflow-tooltip />
-                        <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} />
+                        <el-table-column prop="index" label={this.$t("table.index")} width="60" align="center" />
+                        <el-table-column prop="name" label={this.$t("name")} width="180" formatter={r => getSuffixName(r.name)} show-overflow-tooltip />
+                        {/* <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} /> */}
                         {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
-                        <el-table-column prop="adb" label="ADB" />
-                        <el-table-column prop="image_addr" label={this.$t("vmImage")} width="150" show-overflow-tooltip formatter={this.renderVmImage} />
+                        <el-table-column prop="adb" label="ADB" width="160" show-overflow-tooltip />
+                        <el-table-column prop="image_addr" label={this.$t("vmImage")} show-overflow-tooltip formatter={this.renderVmImage} />
                         <el-table-column prop="state" label={this.$t("state")} width="90" formatter={this.renderStatus} align="center" />
                         <el-table-column label={this.$t("action")} width="120" formatter={this.renderAction} />
                     </el-table>
