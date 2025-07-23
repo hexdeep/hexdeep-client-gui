@@ -92,7 +92,7 @@ export class DevicePicker extends tsx.Component<IProps> {
             return;
         }
         const createdCount = (new Set(h.devices.map(e => e.index))).size;
-        var maxCanCreate = Math.max(0, std.first.device_indexes.length - createdCount);
+        var maxCanCreate = Math.max(0, std.first.device_indexes.filter(x => x.state != "expired").length - createdCount);
         if (maxCanCreate < 1) {
             this.$alert(this.$t("create.maxCreate").toString(), this.$t("error").toString(), { type: "error" });
             return;

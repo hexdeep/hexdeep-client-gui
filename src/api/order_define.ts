@@ -25,7 +25,7 @@ export interface RentalInfo {
     rental_start_time: string;
     rental_end_time: string;
     current_time: string;
-    state?: string;
+    state?: "normal" | "expiring" | "expired";
 }
 
 export interface RentalRecord {
