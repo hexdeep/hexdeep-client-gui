@@ -12,7 +12,7 @@ import { ImageSelector } from "./image_selector";
 @Component
 export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
     @Prop({ default: () => { return []; } }) images!: ImageInfo[];
-    @Prop({ default: () => { } }) data!: CreateParam;
+    @Prop({ default: () => { sandbox_size: 16; } }) data!: CreateParam;
     @Prop({ default: true }) needName!: boolean;
     @Prop({ default: false }) isUpdate!: boolean;
 
@@ -35,8 +35,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                         </el-form-item>
 
                         <el-form-item label={this.$t("create.sandbox_size")} prop="sandbox_size" required={this.data.sandbox == 1}>
-                            {/* <el-input v-model={this.data.sandbox_size} max={16} type="number" /> */}
-                            <el-switch disabled={this.data.sandbox != 1} v-model={this.data.sandbox_size} active-value={32} active-text="32GB" inactive-value={16} inactive-text="16GB" />
+                            <el-input v-model={this.data.sandbox_size} type="number" disabled={this.data.sandbox != 1} />
                         </el-form-item>
                     </Row>
                 )
