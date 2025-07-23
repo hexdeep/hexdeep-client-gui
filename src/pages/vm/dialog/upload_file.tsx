@@ -14,8 +14,8 @@ import s from './upload_file.module.less';
 export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
     private ips: Record<string, DeviceInfo[]> = {};
     private fileList: any[] = [];
-    private progress: any = { progress: 0, start: false, starttm: Date.now() };
-    private get readonly() { return this.progress.start && this.progress.progress < 100; }
+    private progress = { progress: 0, start: false, starttm: Date.now(), bytesPerSecond: 0 };
+    private readonly = false;
     private item: any = { path: "/sdcard" };
 
     public override show(data: DeviceInfo[]) {
@@ -36,23 +36,29 @@ export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
 
     @ErrorProxy({ success: i18n.t("upload.success") })
     protected async confirming() {
-        this.progress.start = true;
-        this.progress.progress = 0;
-        this.progress.starttm = Date.now();
-        this.progress.bytesPerSecond = 0;
-
-        for (let ip of Object.keys(this.ips)) {
-            let names = this.ips[ip].map(x => x.name).join(",");
-            let re = await deviceApi.uploadToDocker(ip, names, `${this.item.path || "/sdcard"}/${this.fileList.first.raw.name}`, this.fileList.first.raw, (progressEvent) => {
-                // console.log(progressEvent);
-                this.progress.progress = Math.round((progressEvent.progress || 0) * 100 / Object.keys(this.ips).length);
-                this.progress.bytesPerSecond = progressEvent.loaded / ((Date.now() - this.progress.starttm) / 1000);
-            });
-            console.log(re);
+        try {
+            this.readonly = true;
+            this.progress.start = true;
+            this.progress.progress = 0;
+            this.progress.starttm = Date.now();
+            this.progress.bytesPerSecond = 0;
+            for (let ip of Object.keys(this.ips)) {
+                let names = this.ips[ip].map(x => x.name).join(",");
+                let re = await deviceApi.uploadToDocker(ip, names, `${this.item.path || "/sdcard"}/${this.fileList.first.raw.name}`, this.fileList.first.raw, (progressEvent) => {
+                    // console.log(progressEvent);
+                    this.progress.progress = Math.round((progressEvent.progress || 0) * 100 / Object.keys(this.ips).length);
+                    this.progress.bytesPerSecond = progressEvent.loaded / ((Date.now() - this.progress.starttm) / 1000);
+                });
+                console.log(re);
+            }
+            // await deviceApi.upload(this.data.hostIp, this.data.name, `${this.path || "/sdcard"}/${this.fileList.first.raw.name}`, this.fileList.first.raw);
+            console.log("close");
+            this.close(true);
+        } catch (error) {
+            throw error;
+        } finally {
+            this.readonly = false;
         }
-        // await deviceApi.upload(this.data.hostIp, this.data.name, `${this.path || "/sdcard"}/${this.fileList.first.raw.name}`, this.fileList.first.raw);
-        console.log("close");
-        this.close(true);
     }
 
     protected override renderFooter() {
@@ -104,8 +110,7 @@ export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
                     </el-upload >
                     {this.progress.start && <el-progress percentage={this.progress.progress} />}
                     {this.progress.start && <div class={s.speed}>{this.$t("import.speed")}: {this.formatSpeed()}</div>}
-
-
+                    {this.progress.progress == 100 && <div class={s.speed}>{this.$t("import.copying")}</div>}
                 </el-form-item >
             </el-form >
         );

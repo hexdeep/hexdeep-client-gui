@@ -266,7 +266,8 @@
         "name": "Name",
         "file": "File",
         "local": "Click to select local file",
-        "speed": "Speed"
+        "speed": "Speed",
+        "copying": "File Copying"
     },
     "clone": {
         "hostIp": "Host IP",
