@@ -195,7 +195,6 @@ export class DevicePicker extends tsx.Component<IProps> {
                         class={s.tree}
                         node-key="key"
                         data={this.data}
-                        default-expand-all
                         show-checkbox
                         empty-text={this.$t("common.empty")}
                         render-content={this.renderContent}
