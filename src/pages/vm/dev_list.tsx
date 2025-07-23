@@ -97,11 +97,13 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
     @ErrorProxy()
     public async refresh(hostIp: string, hostId: string) {
-
+        console.log("refresh");
         var re = await deviceApi.getDeviceListByIp(hostIp, hostId);
         re.sort((a, b) => a.index - b.index);
         this.hosts.find(t => t.address == hostIp)!.devices = [...re];
-        this.selectedDevices.removeWhere(x => re.find(t => t.key == x.key) == null);
+        this.selectedDevices.removeWhere(x =>
+            hostIp == x.hostIp && re.find(t => t.key == x.key) == null
+        );
         re.forEach(x => {
             var index = this.selectedDevices.findIndex(t => t.key == x.key);
             if (index > -1) {

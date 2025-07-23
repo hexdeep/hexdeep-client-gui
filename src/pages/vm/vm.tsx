@@ -67,28 +67,7 @@ export default class VMPage extends Vue {
 
     protected async refreshHost() {
         try {
-            const hosts = await deviceApi.getHosts();
-            const savedChecked = this.getSavedChecked();
-            hosts.forEach(element => {
-                element.devices = [];
-                var t = deviceApi.getDeviceListByHost(element);
-                t.then(e => {
-                    element.devices = (e ?? []).map(e => {
-                        e.hostIp = element.address;
-                        e.hostId = element.device_id;
-                        e.key = `${element.address}-${e.index}-${e.name}`;
-                        return e;
-                    });
-                    this.$nextTick(() => {
-                        this.devicePicker?.setChecked(savedChecked);
-                    });
-                }).catch(error => {
-                    console.log(error);
-                    element.has_error = true;
-                    element.devices = [];
-                });
-            });
-            this.hosts = hosts;
+            this.hosts = await deviceApi.getAllDevices();
         } catch (error) {
             this.$message.error(`${error}`);
             //this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });

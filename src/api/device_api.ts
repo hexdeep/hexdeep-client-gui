@@ -1,10 +1,10 @@
 
-import { Config } from "@/common/Config";
-import qs from 'qs';
-import { CloneVmParam, CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImageInfo, SDKImagesRes } from "./device_define";
-import { ApiBase } from "./api_base";
 import { makeVmApiUrl } from "@/common/common";
+import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
+import qs from 'qs';
+import { ApiBase } from "./api_base";
+import { CloneVmParam, CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes } from "./device_define";
 
 class DeviceApi extends ApiBase {
     public async queryS5(hostIp: string, name: string) {
@@ -180,8 +180,9 @@ class DeviceApi extends ApiBase {
     }
 
     public async getDeviceListByIp(hostIp: string, hostId: string): Promise<DeviceInfo[]> {
-        const result = await fetch(makeVmApiUrl("dc_api/get", hostIp));
-        var re = await this.handleError(result);
+        const url = makeVmApiUrl("dc_api/get", hostIp);
+        const result = await axios.get(url.toString(), { timeout: 1000 });
+        var re = await this.handleAxiosError(result);
         (re ?? []).forEach(t => {
             t.hostIp = hostIp;
             t.hostId = hostId;
