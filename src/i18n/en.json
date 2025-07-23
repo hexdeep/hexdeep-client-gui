@@ -276,5 +276,14 @@
         "dstName": "Target Name",
         "dstIndex": "Target Index",
         "remove": "Remove Source VM"
+    },
+    "checkS5": {
+        "check": "Check S5 Connection",
+        "title": "Check S5",
+        "label": "URL",
+        "success": "Check S5 Successful",
+        "fail": "Check S5 Failed",
+        "ipNotNull": "S5 IP cannot be empty",
+        "portNotNull": "S5 Port cannot be empty"
     }
 }

@@ -278,5 +278,14 @@
         "dstName": "目标名称",
         "dstIndex": "目标实例位",
         "remove": "删除源云手机"
+    },
+    "checkS5": {
+        "check": "检查S5连接",
+        "title": "检查S5连接",
+        "label": "URL",
+        "success": "检查S5连接成功",
+        "fail": "检查S5连接失败",
+        "ipNotNull": "S5 IP不能为空",
+        "portNotNull": "S5 端口不能为空"
     }
 }

@@ -1,11 +1,14 @@
 
 
-import { i18n } from "@/i18n/i18n";
-import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
-import { ErrorProxy } from "@/lib/error_handle";
-import { VNode } from "vue";
 import { deviceApi, } from '@/api/device_api';
 import { DeviceInfo, S5setParam } from "@/api/device_define";
+import { i18n } from "@/i18n/i18n";
+import { Row } from "@/lib/container";
+import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
+import { ErrorProxy } from "@/lib/error_handle";
+import { MyButton } from "@/lib/my_button";
+import { VNode } from "vue";
+import { CheckS5Dialog } from "./check_s5";
 
 @Dialog
 export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
@@ -52,10 +55,30 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
         };
     }
 
+    @ErrorProxy({ validatForm: "formRef" })
+    private checkS5() {
+        let checkS5FormData = {
+            hostIp: this.data.first.hostIp,
+            s5Param: this.item,
+        };
+        this.$dialog(CheckS5Dialog).show(checkS5FormData);
+    }
+
+    protected override renderFooter() {
+        return (
+            <Row class={"dialog-footer"} padding={20} mainAlign="space-between">
+                <MyButton text={i18n.t("checkS5.check")} onClick={() => this.checkS5()} plain />
+                <Row gap={10}>
+                    <MyButton text={i18n.t("confirm.ok")} onClick={() => this.onConfirm()} type="primary" />
+                    <MyButton text={i18n.t("confirm.cancel")} onClick={() => this.close()} />
+                </Row>
+            </Row>
+        );
+    }
+
     protected renderDialog(): VNode {
         return (
             <div style={{ "padding": "24px" }}>
-
                 <el-form ref="formRef" props={{ model: this.item }} rules={this.formRules} label-position="left" label-width="200px">
                     <el-form-item label={this.$t("create.enableS5Proxy")}  >
                         <el-switch v-model={this.isOpen} active-value={true} active-text={this.$t("create.enable")} inactive-value={false} inactive-text={this.$t("create.disable")} />
@@ -75,10 +98,8 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
                     <el-form-item label={this.$t("create.s5_pwd")} prop="s5_pwd">
                         <el-input disabled={!this.isOpen} v-model={this.item.s5_pwd} />
                     </el-form-item>
-
                 </el-form >
             </div>
-
         );
     }
 }

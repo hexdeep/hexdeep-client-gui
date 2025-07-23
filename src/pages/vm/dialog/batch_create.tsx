@@ -1,14 +1,16 @@
 
 
-import { i18n } from "@/i18n/i18n";
-import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
-import { ErrorProxy } from "@/lib/error_handle";
-import { VNode } from "vue";
 import { deviceApi } from '@/api/device_api';
 import { DockerBatchCreateParam, ImageInfo } from "@/api/device_define";
-import { CreateForm } from "../../../lib/component/create_form";
+import { i18n } from "@/i18n/i18n";
 import { Row } from "@/lib/container";
+import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
+import { ErrorProxy } from "@/lib/error_handle";
+import { MyButton } from "@/lib/my_button";
+import { VNode } from "vue";
+import { CreateForm } from "../../../lib/component/create_form";
 import s from './batch_create.module.less';
+import { CheckS5Dialog } from "./check_s5";
 
 
 @Dialog
@@ -98,6 +100,29 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
                     </Row>
                 </CreateForm>
             </el-form>
+        );
+    }
+
+    @ErrorProxy()
+    private checkS5() {
+        if (!this.data.obj.s5_ip) throw new Error(i18n.t("checkS5.ipNotNull").toString());
+        if (!this.data.obj.s5_port) throw new Error(i18n.t("checkS5.portNotNull").toString());
+        let checkS5FormData = {
+            hostIp: this.data.hostIp[0],
+            s5Param: this.data.obj,
+        };
+        this.$dialog(CheckS5Dialog).show(checkS5FormData);
+    }
+
+    protected override renderFooter() {
+        return (
+            <Row class={"dialog-footer"} padding={20} mainAlign="space-between">
+                <MyButton text={i18n.t("checkS5.check")} onClick={() => this.checkS5()} plain />
+                <Row gap={10}>
+                    <MyButton text={i18n.t("confirm.ok")} onClick={() => this.onConfirm()} type="primary" />
+                    <MyButton text={i18n.t("confirm.cancel")} onClick={() => this.close()} />
+                </Row>
+            </Row>
         );
     }
 }

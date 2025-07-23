@@ -311,6 +311,12 @@ class DeviceApi extends ApiBase {
         const result = await fetch(makeVmApiUrl("and_api/s5_stop", ip, name));
         return await this.handleError(result);
     }
+
+    public async checkS5(ip: string, s5Param: S5setParam, check_url: string): Promise<string> {
+        const query = Object.assign({}, s5Param, { check_url });
+        const result = await fetch(makeVmApiUrl("and_api/s5_check", ip) + `?${qs.stringify(query)}`);
+        return await this.handleError(result);
+    }
 }
 
 export const deviceApi = new DeviceApi();
