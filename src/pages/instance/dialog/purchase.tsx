@@ -16,7 +16,8 @@ import { PurchaseQrcodeDialog } from "./purchase_qrcode";
 export class PurchaseDialog extends CommonDialog<PurchaseInfo, boolean> {
     protected packages: PackageInfo[] = [];
     protected selected: string[] = [];
-    override width: string = "650px";
+    override width: string = "660px";
+    public override height: string = "750px";
 
     public override async show(data: PurchaseInfo) {
         this.data = data;
@@ -80,13 +81,13 @@ export class PurchaseDialog extends CommonDialog<PurchaseInfo, boolean> {
                     </Row>
 
                 </el-card >
-                <el-card>
+                <el-card class={s.instance}>
                     <div slot="header" class="clearfix">
                         <span>
                             {this.$t("instance.instance")}
                         </span>
                     </div>
-                    <el-checkbox-group v-model={this.selected}>
+                    <el-checkbox-group class={s.checkbox} v-model={this.selected}>
                         {this.data.hosts.entries().toArray().map(([k, v]) => {
                             return <Row wrap={true}>
                                 {v.map(x =>
