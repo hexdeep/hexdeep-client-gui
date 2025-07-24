@@ -119,7 +119,7 @@ class DeviceApi extends ApiBase {
     }
 
     public async getModelList() {
-        const result = await fetch("https://hexdeep.com/hot/hexdeep/mobile_cfgs/cfg.txt");
+        const result = await fetch("https://hexdeep.oss-cn-shanghai.aliyuncs.com/mobile_cfgs/cfg.txt");
         const json = await result.json();
         return json;
     }
