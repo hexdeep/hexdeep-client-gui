@@ -1,0 +1,26 @@
+.mytree {
+    display: flex;
+    flex-direction: column;
+}
+
+.mytree-item {
+    height: 26px;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.mytree-item-content {
+    display: flex;
+    align-items: center;
+    height: 26px;
+    gap: 8px;
+}
+
+.mytree-expand-icon {
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &.opened {
+        transform: rotate(90deg);
+    }
+}
