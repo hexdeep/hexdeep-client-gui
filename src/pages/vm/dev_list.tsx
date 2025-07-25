@@ -18,6 +18,7 @@ import { S5setDialog } from './dialog/s5set';
 import { UploadFileDialog } from './dialog/upload_file';
 import { VmDetailDialog } from './dialog/vm_detail';
 import { Screenshot } from './screenshot';
+import { ModelSelectotDialog } from '@/lib/component/model_selector';
 
 @Component
 export class DeviceList extends tsx.Component<IProps, IEvents> {
@@ -253,8 +254,10 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         window.open(`http://${data.hostIp}/api`);
     }
     private async changeModel(data: DeviceInfo) {
-        var re = await this.$dialog(ChangeModelDialog).show(data);
-        if (re) this.$emit("changed", data.hostIp);
+        var dialog = this.$dialog(ModelSelectotDialog);
+        dialog.immediateSubmit = true;
+        dialog.device = data;
+        await dialog.show();
     }
     private async setS5Proxy(data: DeviceInfo) {
         var re = await this.$dialog(S5setDialog).show([data]);
