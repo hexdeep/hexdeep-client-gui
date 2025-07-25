@@ -97,7 +97,6 @@ class DeviceApi extends ApiBase {
         result.forEach(element => {
             var t = this.getDeviceListByHost(element);
 
-
             t.then(e => element.devices = (e ?? []).map(e => {
                 e.hostIp = element.address;
                 e.hostId = element.device_id;

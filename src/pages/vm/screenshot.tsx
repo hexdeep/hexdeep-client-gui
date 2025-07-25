@@ -3,7 +3,7 @@ import * as tsx from 'vue-tsx-support';
 import { deviceApi } from '@/api/device_api';
 import s from './dev_list.module.less';
 import Vue from 'vue';
-import { DeviceInfo } from '@/api/device_define';
+import { DeviceInfo, MyConfig } from '@/api/device_define';
 
 @Component
 export class Screenshot extends tsx.Component<IProps> {
@@ -11,7 +11,7 @@ export class Screenshot extends tsx.Component<IProps> {
     public static refresh() {
         this.eventBus.$emit("refresh");
     }
-    @InjectReactive() view!: string;
+    @InjectReactive() config!: MyConfig;
     @Prop() private device!: DeviceInfo;
     @Ref() private canvasRef!: HTMLCanvasElement;
     private busy = false;
@@ -20,8 +20,10 @@ export class Screenshot extends tsx.Component<IProps> {
         this.refresh = async () => {
             if (this.device.state != "running") {
                 var c = this.canvasRef;
-                var ctx = c.getContext("2d")!;
-                ctx.clearRect(0, 0, c.width, c.height);
+                if (c) {
+                    var ctx = c.getContext("2d")!;
+                    if (ctx) ctx.clearRect(0, 0, c.width, c.height);
+                }
                 return;
             }
             if (this.busy) return;
@@ -52,7 +54,7 @@ export class Screenshot extends tsx.Component<IProps> {
         if (!img) return;
         var c = this.canvasRef;
         if (c) {
-            if ((this.view == "vertical" && img.width < img.height) || (this.view == "horizontal" && img.width > img.height)) {
+            if ((this.config.view == "vertical" && img.width < img.height) || (this.config.view == "horizontal" && img.width > img.height)) {
                 if (c.width != img.width) {
                     var scale = img.width / img.height;
                     c.width = img.width;
@@ -68,7 +70,7 @@ export class Screenshot extends tsx.Component<IProps> {
 
             var ctx = c.getContext("2d")!;
             if (ctx) {
-                if ((this.view == "horizontal" && img.width < img.height) || (this.view == "vertical" && img.width > img.height)) {
+                if ((this.config.view == "horizontal" && img.width < img.height) || (this.config.view == "vertical" && img.width > img.height)) {
                     ctx.translate(c.width / 2, c.height / 2);
                     ctx.rotate(((img.width < img.height ? 270 : 90) * Math.PI) / 180);
                     ctx.translate(-c.height / 2, -c.width / 2);
@@ -84,7 +86,7 @@ export class Screenshot extends tsx.Component<IProps> {
 
     protected render() {
         return (
-            <canvas ref={"canvasRef"} class={this.view != "vertical" ? s.h_img : s.v_img} />
+            <canvas ref={"canvasRef"} class={this.config.view != "vertical" ? s.h_img : s.v_img} />
         );
     }
 }

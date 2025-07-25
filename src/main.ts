@@ -10,6 +10,7 @@ import { DialogPlugin } from "./lib/dialog/dialog";
 import { router } from "./routes/router";
 import { UIRoot } from "./ui_root";
 
+
 if (process.env.NODE_ENV == "development") {
     console.log("development mode");
     Vue.config.devtools = true;

@@ -1,7 +1,7 @@
 
 
 import { deviceApi } from '@/api/device_api';
-import { DockerBatchCreateParam, ImageInfo } from "@/api/device_define";
+import { DockerBatchCreateParam, ImageInfo, MyConfig } from "@/api/device_define";
 import { i18n } from "@/i18n/i18n";
 import { Row } from "@/lib/container";
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
@@ -11,10 +11,12 @@ import { VNode } from "vue";
 import { CreateForm } from "../../../lib/component/create_form";
 import s from './batch_create.module.less';
 import { CheckS5Dialog } from "./check_s5";
+import { InjectReactive } from 'vue-property-decorator';
 
 
 @Dialog
 export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, boolean> {
+    @InjectReactive() private config!: MyConfig;
     public override width: string = "650px";
     protected images: ImageInfo[] = [];
     public override show(data: DockerBatchCreateParam) {
@@ -38,7 +40,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
             }
         }
 
-        localStorage.setItem("suffix_name", this.data.obj.suffix_name || "");
+        this.config.suffixName = this.data.obj.suffix_name || "";
         this.confirming();
     }
 

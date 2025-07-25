@@ -255,18 +255,19 @@ hr {
         justify-content: center;
         align-items: center;
         border-radius: 4px;
+        cursor: pointer;
     }
 
     .autohide:hover {
         background: var(--second-color);
     }
 
-    .el-tree-node__content .autohide {
+    div .autohide {
         display: none;
         color: var(--main-color)
     }
 
-    .el-tree-node__content:hover .autohide {
+    .mytree-item-content:hover .autohide {
         display: flex;
     }
 
@@ -296,7 +297,7 @@ hr {
         box-shadow: var(--main-color);
     }
 
-
+    .el-select-dropdown__item.selected,
     .el-radio-button__inner:hover,
     .el-dropdown-menu__item:focus,
     .el-switch__label.is-active,

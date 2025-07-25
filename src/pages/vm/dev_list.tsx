@@ -1,6 +1,6 @@
 import { deviceApi } from '@/api/device_api';
-import { DeviceInfo, HostInfo, ImageInfo } from '@/api/device_define';
-import { getSuffixName, makeVmApiUrl } from '@/common/common';
+import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from '@/api/device_define';
+import { getPrefixName, getSuffixName, makeVmApiUrl } from '@/common/common';
 import { i18n } from '@/i18n/i18n';
 import { Column, Row } from '@/lib/container';
 import { ErrorProxy } from '@/lib/error_handle';
@@ -21,44 +21,49 @@ import { Screenshot } from './screenshot';
 
 @Component
 export class DeviceList extends tsx.Component<IProps, IEvents> {
+    @InjectReactive() protected hostTree!: MyTreeNode[];
     @InjectReactive() private selectedDevices!: DeviceInfo[];
-    @InjectReactive() private leftChecked!: string[];
+    @InjectReactive() private treeConfig!: TreeConfig[];
     @InjectReactive() private rightChecked!: string[];
     @InjectReactive() private hosts!: HostInfo[];
-    @InjectReactive() private view!: string;
+    @InjectReactive() private config!: MyConfig;
     @InjectReactive() private images!: ImageInfo[];
     @Ref() private tb!: ElTable;
-    private data: DeviceInfo[] = [];
+
+    private get data2(): DeviceInfo[] {
+        var re = this.hostTree.flatMap(x => x.children?.filter(y => y.selected && (y.value.state == this.config.filterState || this.config.filterState == "all")).map(t => t.value));
+        return re;
+    }
 
     protected async created() {
     }
 
     public selectAll() {
-        if (this.view == "list") {
+        if (this.config.view == "list") {
             this.tb.toggleAllSelection();
         } else {
-            if (this.rightChecked.length == this.data.length) {
+            if (this.rightChecked.length == this.data2.length) {
                 this.rightChecked.clear();
             } else {
                 this.rightChecked.clear();
-                this.rightChecked.push(...this.data.map(e => e.key!));
+                this.rightChecked.push(...this.data2.map(e => e.key!));
             }
         }
         this.$emit("selectChange", this.rightChecked);
     }
 
-    @Watch("view")
+    @Watch("config")
     protected viewChange() {
-        if (this.view == "list") {
+        if (this.config.view == "list") {
             this.toggleRowSelection();
         }
     }
 
     private toggleRowSelection() {
-        var tmp = [...this.rightChecked];// [...this.selectedRows];
+        var tmp = [...this.rightChecked];
         this.$nextTick(() => {
             // console.log(this.data, tmp);
-            this.data.forEach(x => {
+            this.data2.forEach(x => {
                 var t = (tmp.find(y => x.key == y) != null);
                 //console.log("设置选中项", x, t);
                 this.tb?.toggleRowSelection(x, t);
@@ -68,48 +73,16 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
     @Watch("selectedDevices", { deep: true })
     public async selectedDevicesChange() {
-        // console.log("selectedDevices change :" + this.selectedDevices.length);
-        //this.data.removeWhere(x => this.selectedDevices.find(t => t.key == x.key) == null);
-        this.data = this.selectedDevices.map(x => x);
         this.toggleRowSelection();
-        //    .forEach(x => {
-        //         var index = this.data.findIndex(a => a.key == x.key);
-        //         if (index > -1) {
-        //             this.data[index] = x;
-        //         } else {
-        //             this.data.push(x);
-        //         }
-        //     });
-        // this.data = this.selectedDevices.map(item => {
-        //     return { ...item };
-        // });
     }
 
 
     private handleSelectionChange(selectedRows: any[], e: any) {
-        if (this.data.length > 0) {
+        if (this.data2.length > 0) {
             this.rightChecked.clear();
             this.rightChecked.push(...selectedRows.map(e => e.key));
             this.$emit("selectChange", this.rightChecked);
         }
-
-    }
-
-    @ErrorProxy()
-    public async refresh(hostIp: string, hostId: string) {
-        console.log("refresh");
-        var re = await deviceApi.getDeviceListByIp(hostIp, hostId);
-        re.sort((a, b) => a.index - b.index);
-        this.hosts.find(t => t.address == hostIp)!.devices = [...re];
-        this.selectedDevices.removeWhere(x =>
-            hostIp == x.hostIp && re.find(t => t.key == x.key) == null
-        );
-        re.forEach(x => {
-            var index = this.selectedDevices.findIndex(t => t.key == x.key);
-            if (index > -1) {
-                this.selectedDevices.splice(index, 1, x);
-            }
-        });
     }
 
     private checkboxChanged(e: boolean, e2: DeviceInfo) {
@@ -143,8 +116,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     protected render() {
         return (
             <div class={[s.deviceList, "contentBox"]}>
-                {this.view == "list" && <div class={s.table}>
-                    <el-table default-expand-all data={this.data} width="100%" height="100%" row-key="key"
+                {this.config.view == "list" && <div class={s.table}>
+                    <el-table default-expand-all data={this.data2} width="100%" height="100%" row-key="key"
                         ref="tb" on-selection-change={(e, e2) => this.handleSelectionChange(e, e2)} empty-text={this.$t("table.emptyText")}>
                         <el-table-column type="selection" width="45" reserve-selection={true} />
                         <el-table-column prop="index" label={this.$t("table.index")} width="60" align="center" />
@@ -158,11 +131,11 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <el-table-column label={this.$t("action")} width="120" formatter={this.renderAction} />
                     </el-table>
                 </div>}
-                {(this.view == "horizontal" || this.view == "vertical") &&
+                {(this.config.view == "horizontal" || this.config.view == "vertical") &&
                     <el-checkbox-group value={this.rightChecked}>
-                        <div class={s[this.view]}>
+                        <div class={s[this.config.view]}>
                             {
-                                this.data.map(e => {
+                                this.data2.map(e => {
                                     return <Column key={`parent_${e.key}`} class={[s.img_box, e.state == "running" ? s.running : s.no_run]}>
                                         <Screenshot data-key={e.key} key={e.key} device={e} />
                                         <Row mainAlign='space-between' crossAlign='center'>
@@ -202,7 +175,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             info: data,
             obj: { name: name, sandbox_size: 16 },
         });
-        if (re) await this.refresh(data.hostIp, data.hostId);
+        if (re) this.$emit("changed", data.hostIp);
     }
 
     private async updateVm(data: DeviceInfo) {
@@ -212,37 +185,48 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             hostId: data.hostId,
             obj: Object.assign({ name: getSuffixName(data.name) }, data.create_req),
         });
-        if (re) await this.refresh(data.hostIp, data.hostId);
+        if (re) {
+            if (re.name != getSuffixName(data.name)) {
+                var t = this.treeConfig.find(x => x.key == data.key);
+                if (t) {
+                    t.key = `${data.hostIp}-${data.index}-${getPrefixName(data.name)}${re.name}`;
+                    localStorage.setItem("TreeConfig", JSON.stringify(this.treeConfig));
+                }
+            }
+            this.$emit("changed", data.hostIp);
+        }
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.rebootTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     public async reboot(data: DeviceInfo) {
         await deviceApi.reboot(data.hostIp, data.name);
-        await this.refresh(data.hostIp, data.hostId);
+        this.$emit("changed", data.hostIp);
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.resetTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async reset(data: DeviceInfo) {
         await deviceApi.reset(data.hostIp, data.name);
-        await this.refresh(data.hostIp, data.hostId);
+        this.$emit("changed", data.hostIp);
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.shutdownTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async shutdown(data: DeviceInfo) {
         await deviceApi.shutdown(data.hostIp, data.name);
-        await this.refresh(data.hostIp, data.hostId);
+        this.$emit("changed", data.hostIp);
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.startTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async start(data: DeviceInfo) {
         await deviceApi.start(data.hostIp, data.name);
-        await this.refresh(data.hostIp, data.hostId);
+        this.$emit("changed", data.hostIp);
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.deleteTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async delete(data: DeviceInfo) {
         await deviceApi.delete(data.hostIp, data.name);
-        await this.refresh(data.hostIp, data.hostId);
+        this.treeConfig.removeWhere(x => x.key == data.key);
+        localStorage.setItem("TreeConfig", JSON.stringify(this.treeConfig));
+        this.$emit("changed", data.hostIp);
     }
 
     private async rename(data: DeviceInfo) {
@@ -253,10 +237,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                 this.rightChecked.removeWhere(x => x == data.key);
                 this.rightChecked.push(`${data.hostIp}-${data.index}-${re}`);
             }
-            this.leftChecked.removeWhere(x => x == data.key);
-            this.leftChecked.push(`${data.hostIp}-${data.index}-${re}`);
-            await this.refresh(data.hostIp, data.hostId);
-
+            var t = this.treeConfig.find(x => x.key == data.key);
+            if (t) {
+                t.key = `${data.hostIp}-${data.index}-${re}`;
+                localStorage.setItem("TreeConfig", JSON.stringify(this.treeConfig));
+            }
+            this.$emit("changed", data.hostIp);
         }
     }
 
@@ -268,11 +254,11 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
     private async changeModel(data: DeviceInfo) {
         var re = await this.$dialog(ChangeModelDialog).show(data);
-        if (re) await this.refresh(data.hostIp, data.hostId);
+        if (re) this.$emit("changed", data.hostIp);
     }
     private async setS5Proxy(data: DeviceInfo) {
         var re = await this.$dialog(S5setDialog).show([data]);
-        await this.refresh(data.hostIp, data.hostId);
+        if (re) this.$emit("changed", data.hostIp);
 
     }
     private async hostDetails(data: DeviceInfo) {
@@ -287,8 +273,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
 
     private async cloneVm(data: DeviceInfo) {
-        await this.$dialog(CloneVmDialog).show(data);
-        this.refresh(data.hostIp, data.hostId);
+        let re = await this.$dialog(CloneVmDialog).show(data);
+        if (re) this.$emit("changed", data.hostIp);
     }
 
     private async selectFile(data: DeviceInfo) {
