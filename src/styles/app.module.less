@@ -360,4 +360,37 @@ hr {
     .el-progress-bar__inner {
         background-color: var(--main-color);
     }
+
+    .el-message-box {
+        border-radius: 14px;
+        padding-bottom: 20px;
+        border: none;
+
+        .el-message-box__header {
+            background-color: var(--main-color);
+            height: 45px;
+
+            .el-message-box__title,
+            .el-message-box__headerbtn .el-message-box__close {
+                color: #fff;
+            }
+        }
+
+        .el-message-box__content {
+            padding: 20px;
+        }
+
+        .el-message-box__btns {
+            padding: 5px 20px 0;
+
+            .el-button {
+                margin-right: 10px;
+            }
+
+            .el-button:first-child {
+                float: right;
+                margin-right: 0;
+            }
+        }
+    }
 }

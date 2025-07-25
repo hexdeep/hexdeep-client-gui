@@ -278,6 +278,12 @@
         "dstIndex": "Target Index",
         "remove": "Remove Source VM"
     },
+    "modelSelector": {
+        "title": "Select model",
+        "brand": "Brand",
+        "model": "Model",
+        "notSelect": "Please select a model"
+    },
     "checkS5": {
         "check": "Check S5 Connection",
         "title": "Check S5",

@@ -12,6 +12,7 @@ import { ErrorProxy } from '@/lib/error_handle';
 import { orderApi } from '@/api/order_api';
 import { getPrefixName, getSuffixName } from '@/common/common';
 import { RenameDialog } from './dialog/rename';
+import { ITreeData, MyTree } from '@/lib/tree';
 
 @Component
 export class DevicePicker extends tsx.Component<IProps> {
@@ -23,6 +24,7 @@ export class DevicePicker extends tsx.Component<IProps> {
 
     private loading = false;
     private data: any[] = [];
+    private data2: ITreeData[] = [];
     private filterState = localStorage.getItem("filterState") || "all";
 
     @Watch("filterState")
@@ -82,6 +84,42 @@ export class DevicePicker extends tsx.Component<IProps> {
             this.leftChecked.clear();
             this.leftChecked.push(...JSON.parse(str) as string[] || []);
         }
+        this.data2 = [
+            {
+                label: "1",
+                opened: true,
+                selected: false,
+                key: "1",
+                children: [
+                    {
+                        label: "1-1",
+                        opened: true,
+                        selected: true,
+                        key: "1-1",
+                    },
+                    {
+                        label: "1-2",
+                        opened: true,
+                        selected: false,
+                        key: "1-2",
+                    },
+                ]
+            },
+            {
+                label: "2",
+                opened: true,
+                selected: false,
+                key: "2",
+                children: [
+                    {
+                        label: "2-1",
+                        opened: true,
+                        selected: false,
+                        key: "2-1",
+                    },
+                ]
+            },
+        ];
     }
 
     @ErrorProxy({ loading: i18n.t("loading") })
@@ -190,6 +228,7 @@ export class DevicePicker extends tsx.Component<IProps> {
             <Column width={240} class={[s.DevicePicker, "contentBox"]}>
                 <div class={s.treeBox}>
                     <el-tree
+                        style={{ display: "none" }}
                         ref="treeRef"
                         v-loading={this.loading}
                         class={s.tree}
@@ -199,6 +238,9 @@ export class DevicePicker extends tsx.Component<IProps> {
                         empty-text={this.$t("common.empty")}
                         render-content={this.renderContent}
                         on-check-change={this.handleCheckChange} />
+                    <MyTree data={this.data2} showCheckbox scopedSlots={{
+                        renderContent: this.renderContent2
+                    }} />
                 </div>
                 <el-divider />
                 <el-radio-group v-model={this.filterState}>
@@ -209,6 +251,10 @@ export class DevicePicker extends tsx.Component<IProps> {
                 </el-radio-group>
             </Column>
         );
+    }
+
+    private renderContent2(item: ITreeData) {
+        return <div>{item.label}asdf</div>;
     }
 }
 

@@ -280,6 +280,12 @@
         "dstIndex": "目标实例位",
         "remove": "删除源云手机"
     },
+    "modelSelector": {
+        "title": "选择机型",
+        "brand": "品牌",
+        "model": "机型",
+        "notSelect": "请选择机型"
+    },
     "checkS5": {
         "check": "检查S5连接",
         "title": "检查S5连接",

@@ -7,6 +7,7 @@ import { ModelEditor } from './model_editor';
 import { Row } from '../container';
 import "./create_form.less";
 import { ImageSelector } from "./image_selector";
+import { ModelSelector } from "./model_selector";
 
 
 @Component
@@ -72,7 +73,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 </Row>
                 {!this.isUpdate && (
                     <el-form-item label={this.$t("create.model_id")} prop="model_id"  >
-                        <ModelEditor v-model={this.data.model_id} />
+                        <ModelSelector v-model={this.data.model_id} />
                     </el-form-item>
                 )}
 
