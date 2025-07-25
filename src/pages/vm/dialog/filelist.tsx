@@ -69,11 +69,11 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
         this.currentDir = dir;
     }
 
-    @ErrorProxy({ success: i18n.t("success") })
-    private async download(row: FilelistInfo) {
-        const url = makeVmApiUrl("and_api/down_file", this.data.hostIp, this.data.name) + `?path=${row.file}`;
-        window.open(url);
-    }
+    // @ErrorProxy({ success: i18n.t("success") })
+    // private async download(row: FilelistInfo) {
+    //     const url = makeVmApiUrl("and_api/down_file", this.data.hostIp, this.data.name) + `?path=${row.file}`;
+    //     window.open(url);
+    // }
 
     private renderBreadcrumb() {
         const breadcrumb = this.currentDir.substring(1).split("/").filter(item => item);
@@ -90,9 +90,10 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
     }
 
     private renderActionSlot({ row }: { row: FilelistInfo; }) {
+        const url = makeVmApiUrl("and_api/down_file", this.data.hostIp, this.data.name) + `?path=${row.file}`;
         return (
             <Row>
-                {!row.flag && <TextButton text={this.$t("upload.download")} onClick={() => this.download(row)} />}
+                {!row.flag && <a href={url} class={"link"} download={row.name}>{this.$t("upload.download")}</a>}
             </Row>
         );
     }

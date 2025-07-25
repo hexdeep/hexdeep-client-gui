@@ -136,6 +136,7 @@ export default class VMPage extends Vue {
                 }
                 if (ctc) child.selected = ctc.selected;
             });
+            node.children?.sort((a, b) => a.value.index - b.value.index);
         });
     }
 
