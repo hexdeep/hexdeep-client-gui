@@ -155,18 +155,15 @@ export default class VMPage extends Vue {
 
     @Watch("config", { deep: true })
     protected viewChange() {
+        console.log("asdf");
         if (this.config.view == "list") {
             if (this.imgRefreshTimer) clearInterval(this.imgRefreshTimer);
             this.imgRefreshTimer = null;
         } else {
-            if (!this.imgRefreshTimer) this.imgRefreshTimer = setInterval(() => this.updateImg(), this.config.refreshDuration * 1000);
+            if (this.imgRefreshTimer) clearInterval(this.imgRefreshTimer);
+            this.imgRefreshTimer = setInterval(() => this.updateImg(), this.config.refreshDuration * 1000);
             this.updateImg();
         }
-    }
-    @Watch("refreshDuration")
-    protected refreshDurationChange() {
-        if (this.imgRefreshTimer) clearInterval(this.imgRefreshTimer);
-        if (this.config.view != "list") this.imgRefreshTimer = setInterval(() => this.updateImg(), this.config.refreshDuration * 1000);
     }
 
     private get selectedItems(): DeviceInfo[] {
