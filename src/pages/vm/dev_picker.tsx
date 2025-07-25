@@ -1,10 +1,9 @@
 import { deviceApi } from '@/api/device_api';
 import { Column, Row } from '@/lib/container';
-import { ElTree } from 'element-ui/types/tree';
-import { Component, InjectReactive, Ref, Watch } from 'vue-property-decorator';
+import { Component, InjectReactive, Watch } from 'vue-property-decorator';
 import * as tsx from 'vue-tsx-support';
 import s from './dev_picker.module.less';
-import { DeviceInfo, HostInfo, } from '@/api/device_define';
+import { DeviceInfo, HostInfo, MyConfig, MyTreeNode, TreeConfig, } from '@/api/device_define';
 import { BatchCreateDialog } from './dialog/batch_create';
 import { CreateDialog } from './dialog/create';
 import { i18n } from '@/i18n/i18n';
@@ -12,80 +11,41 @@ import { ErrorProxy } from '@/lib/error_handle';
 import { orderApi } from '@/api/order_api';
 import { getPrefixName, getSuffixName } from '@/common/common';
 import { RenameDialog } from './dialog/rename';
+import { MyTree } from "@/lib/tree";
 
 @Component
 export class DevicePicker extends tsx.Component<IProps> {
-    @Ref() private treeRef!: ElTree<any, any>;
-    @InjectReactive() private selectedDevices!: DeviceInfo[];
-    @InjectReactive() private selectedHosts!: HostInfo[];
     @InjectReactive() private hosts!: HostInfo[];
-    @InjectReactive() private leftChecked!: string[];
+    @InjectReactive() private treeConfig!: TreeConfig[];
+    @InjectReactive() protected hostTree!: MyTreeNode[];
+    @InjectReactive() protected config!: MyConfig;
 
-    private loading = false;
-    private data: any[] = [];
-    private filterState = localStorage.getItem("filterState") || "all";
+    private loading = true;
 
-    @Watch("filterState")
+
+    @Watch("config", { deep: true })
     protected filterChange(newValue: string, oldValue: string) {
-        this.hostChange();
-        this.$nextTick(() => {
-            this.handleCheckChange();
-        });
-        localStorage.setItem("filterState", newValue);
+        console.log("config_change");
+        localStorage.setItem("config", JSON.stringify(this.config));
+    }
+
+    private childrenFilter(item: MyTreeNode) {
+        return item.children ? true : item.value.state == this.config.filterState || this.config.filterState == "all";
     }
 
     @Watch("hosts", { deep: true })
     private hostChange() {
         console.log("host change");
-        this.data = this.hosts.map(item => {
-            return {
-                label: item.address,
-                value: item,
-                key: item.address,
-                children: item.devices?.filter(t => t.state == this.filterState || this.filterState == "all").map(v => {
-                    return {
-                        label: `${(v.index).toString().padStart(2, "0")}`,
-                        key: v.key,
-                        value: v
-                    };
-                }).sort((a, b) => a.value.index - b.value.index) ?? []
-            };
-        });
         this.loading = false;
-        this.setChecked();
     };
-
-    public setChecked(checked?: string[]) {
-        var tmp = checked ?? this.leftChecked;
-        this.$nextTick(() => {
-            this.treeRef.setCheckedKeys(tmp);
-        });
-    }
-
-    private handleCheckChange() {
-        var checked = this.treeRef.getCheckedNodes();
-        var nodes = checked.filter((item: any) => !item.children).map(e => e.value);
-        this.leftChecked.clear();
-        this.leftChecked.push(...checked.filter((item: any) => !item.children).map(e => e.key));
-        localStorage.setItem("leftChecked", JSON.stringify(this.leftChecked));
-        this.selectedDevices.clear();
-        this.selectedDevices.push(...nodes);
-        nodes = checked.filter((item: any) => item.children).map(e => e.value);
-        this.selectedHosts.clear();
-        this.selectedHosts.push(...nodes);
-    }
 
     protected async created() {
         this.loading = true;
-        var str = localStorage.getItem("leftChecked") || "";
-        if (str) {
-            this.leftChecked.clear();
-            this.leftChecked.push(...JSON.parse(str) as string[] || []);
-        }
     }
 
     @ErrorProxy({ loading: i18n.t("loading") })
     private async createVms(h: HostInfo) {
+        console.log("asdf");
         var std = await orderApi.getRental(h.device_id);
         if (std.length < 1) {
             this.$alert(this.$t("create.maxCreate").toString(), this.$t("error").toString(), { type: "error" });
@@ -97,14 +57,13 @@ export class DevicePicker extends tsx.Component<IProps> {
             this.$alert(this.$t("create.maxCreate").toString(), this.$t("error").toString(), { type: "error" });
             return;
         }
+        console.log(this.config);
         this.$dialog(BatchCreateDialog).show({
             maxNum: maxCanCreate,
             hostIp: [h.address],
-            obj: { name: "", num: 1, suffix_name: localStorage.getItem("suffix_name") || "deep", }
+            obj: { name: "", num: 1, suffix_name: this.config.suffixName || "deep", }
         }).then(async re => {
-            var list = await deviceApi.getAllDevices();
-            this.hosts.clear();
-            this.hosts.push(...list);
+            this.$emit('changed', h.address);
         });
     }
 
@@ -124,58 +83,45 @@ export class DevicePicker extends tsx.Component<IProps> {
         });
         if (re) {
             if (re.name != getSuffixName(v.name)) {
-                this.leftChecked.remove(v.key!);
-                this.leftChecked.push(`${v.hostIp}-${v.index}-${getPrefixName(v.name)}${re.name}`);
+                var tc = this.treeConfig.find(x => x.key == v.key);
+                if (tc) tc.key = `${v.hostIp}-${v.index}-${getPrefixName(v.name)}${re.name}`;
             }
-
-            var host = this.hosts.find(x => x.address == v.hostIp);
-            if (host) {
-                var arr = await deviceApi.getDeviceListByHost(host);
-                host.devices.clear();
-                host.devices.push(...arr);
-            }
+            this.$emit('changed', v.hostIp);
         }
     }
 
     @ErrorProxy({ confirm: i18n.t("confirm.deleteTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async deleteVM(v: DeviceInfo) {
         await deviceApi.delete(v.hostIp, v.name);
-        this.leftChecked.remove(v.key!);
-        this.selectedDevices.removeWhere(x => x.key == v.key);
-        var host = this.hosts.find(x => x.address == v.hostIp);
-        if (host) {
-            var arr = await deviceApi.getDeviceListByHost(host);
-            arr.forEach(x => x.hostIp = host!.address);
-            host.devices.clear();
-            host.devices.push(...arr);
-        }
+        this.treeConfig.removeWhere(x => x.key == v.key);
+        this.$emit('changed', v.hostIp);
     }
 
-    protected renderContent = (h: any, scope: any) => {
+    protected renderContent(data: MyTreeNode) {
         return (
             <Row gap={10} crossAlign='center' class="row" style={{ "flex": 1 }} mainAlign='center'>
-                {scope.data.children && <Row crossAlign='center' mainAlign='space-between' style={{ "flex": 1 }}>
+                {data.children && <Row crossAlign='center' mainAlign='space-between' style={{ "flex": 1 }}>
                     <Row gap={5} crossAlign='center'>
-                        <span>{scope.data.label}</span>
-                        <el-tag type={scope.data.value.has_error ? "danger" : ""}> {scope.data.value.has_error ? <i class="el-icon-warning"></i> : scope.data.children.length} </el-tag>
+                        <span>{data.label}</span>
+                        <el-tag type={data.value.has_error ? "danger" : ""}> {data.value.has_error ? <i class="el-icon-warning"></i> : data.children.length} </el-tag>
                     </Row>
                     <div class="autohide" onClick={(e) => {
-                        this.createVms(scope.data.value);
+                        this.createVms(data.value);
                         e.stopPropagation();
                     }}><i class="el-icon-circle-plus-outline"></i></div>
                 </Row>}
-                {!scope.data.children && <Row gap={10} style={{ "flex": 1 }} mainAlign='space-between' crossAlign='center' class={scope.data.value.state !== "running" ? s.no_run : ""}>
+                {!data.children && <Row gap={10} style={{ "flex": 1 }} mainAlign='space-between' crossAlign='center' class={data.value.state !== "running" ? s.no_run : ""}>
                     <Row gap={3} style={{ "flex": 1 }}>
-                        <span>{scope.data.label}</span>
-                        <span style="font-size:13px" class={s.name_label}>{getSuffixName(scope.data.value.name)}</span>
+                        <span>{data.label}</span>
+                        <span style="font-size:13px" class={s.name_label}>{getSuffixName(data.value.name)}</span>
                     </Row>
                     <Row>
                         <div class="autohide" onClick={(e) => {
-                            this.rename(scope.data.value);
+                            this.rename(data.value);
                             e.stopPropagation();
                         }}><i class="el-icon-edit-outline"></i></div>
                         <div class="autohide" onClick={(e) => {
-                            this.deleteVM(scope.data.value);
+                            this.deleteVM(data.value);
                             e.stopPropagation();
                         }}><i class="el-icon-delete"></i></div>
                     </Row>
@@ -183,25 +129,34 @@ export class DevicePicker extends tsx.Component<IProps> {
                 }
             </Row>
         );
-    };
+    }
+
+
+    private onTreeChange() {
+        this.treeConfig.clear();
+
+        this.hostTree.forEach(x => {
+            this.treeConfig.push({ key: x.key, selected: x.selected, opened: x.opened });
+            this.treeConfig.push.apply(this.treeConfig, x.children!.map(y => {
+                return ({ key: y.key, selected: y.selected, opened: y.opened });
+            }));
+        });
+        localStorage.setItem("TreeConfig", JSON.stringify(this.treeConfig));
+        //this.treeConfig = re;
+    }
 
     protected render() {
         return (
             <Column width={240} class={[s.DevicePicker, "contentBox"]}>
-                <div class={s.treeBox}>
-                    <el-tree
-                        ref="treeRef"
-                        v-loading={this.loading}
-                        class={s.tree}
-                        node-key="key"
-                        data={this.data}
-                        show-checkbox
-                        empty-text={this.$t("common.empty")}
-                        render-content={this.renderContent}
-                        on-check-change={this.handleCheckChange} />
+                <div class={s.treeBox} v-loading={this.loading}>
+                    <MyTree data={this.hostTree} on-change={this.onTreeChange}
+                        childrenFilter={this.childrenFilter}
+                        showCheckbox scopedSlots={{
+                            renderContent: this.renderContent
+                        }} />
                 </div>
                 <el-divider />
-                <el-radio-group v-model={this.filterState}>
+                <el-radio-group v-model={this.config.filterState}>
                     <Row mainAlign='space-around'>
                         <el-radio label="running">{this.$t("filter.running")}</el-radio>
                         <el-radio label="all">{this.$t("filter.all")}</el-radio>

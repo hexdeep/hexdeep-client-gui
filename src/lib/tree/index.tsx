@@ -11,6 +11,7 @@ import './tree.less';
 export class MyTree extends tsx.Component<IProps, {}, ISlots> {
     @Prop() private data!: ITreeData[];
     @Prop() private showCheckbox?: boolean;
+    @Prop() private childrenFilter?: (item: ITreeData) => boolean;
 
     protected render() {
         return <div class="mytree">
@@ -20,30 +21,33 @@ export class MyTree extends tsx.Component<IProps, {}, ISlots> {
 
     private toggleExpand(item: ITreeData) {
         item.opened = !item.opened;
+        this.$emit("change");
     }
 
     private renderData(data: ITreeData[], level: number = 0) {
-        return data.map(item => {
-            const height = item.opened ? (item.children?.length ?? 0) * 26 + 26 : 26;
-            const allSelected = item.children ? item.children.every(child => child.selected) : item.selected;
-            const indeterminate = item.children ? item.children.some(child => child.selected) && !allSelected : false;
+        return (data || []).map(item => {
+            const children = this.childrenFilter ? item.children?.filter(this.childrenFilter) : item.children;
+            const height = item.opened ? (children?.length ?? 0) * 26 + 26 : 26;
+            const allSelected = children && children.length > 0 ? children.every(child => child.selected) : item.selected;
+            const indeterminate = children ? children.some(child => child.selected) && !allSelected : false;
             const handleInput = (val: boolean) => {
-                console.log("handleInput", item, val);
+                console.log("handleInput", item, val, allSelected);
                 item.selected = val;
-                if (item.children) {
-                    item.children.forEach(child => {
+                if (children) {
+                    children.forEach(child => {
                         child.selected = val;
                     });
                 }
+                this.$emit("change");
             };
-            return <div class="mytree-item" style={{ height: `${height}px`, paddingLeft: `${level * 20}px` }}>
+            return <div class="mytree-item" style={{ height: `${height}px`, paddingLeft: `${level * 42}px` }}>
                 <div class="mytree-item-content">
-                    {item.children && item.children.length > 0 && <i class={["el-icon-caret-right mytree-expand-icon", item.opened && "opened"]} onClick={() => this.toggleExpand(item)} />}
+                    {children && children.length > 0 && <i class={["el-icon-caret-right mytree-expand-icon", item.opened && "opened"]} onClick={() => this.toggleExpand(item)} />}
                     {this.showCheckbox && <el-checkbox value={allSelected} indeterminate={indeterminate} onInput={handleInput} />}
                     {this.renderContent(item)}
                 </div>
-                {item.children && item.children.length > 0 && <div class="mytree-item-children">
-                    {this.renderData(item.children, level + 1)}
+                {children && children.length > 0 && <div class="mytree-item-children">
+                    {this.renderData(children, level + 1)}
                 </div>}
             </div>;
         });
@@ -66,6 +70,7 @@ export class MyTree extends tsx.Component<IProps, {}, ISlots> {
 interface IProps {
     data: ITreeData[];
     showCheckbox?: boolean;
+    childrenFilter?: (item: ITreeData) => boolean;
 }
 
 export interface ITreeData {

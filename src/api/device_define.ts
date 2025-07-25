@@ -22,6 +22,15 @@ export interface HostInfo {
     has_error?: boolean;
 }
 
+export interface MyTreeNode {
+    key: string;
+    label: string;
+    opened: boolean;
+    selected: boolean;
+    children?: MyTreeNode[];
+    value?: any;
+}
+
 export interface DeviceDetail {
     image_addr?: string;//	镜像地址
     width?: number; //	屏幕宽度
@@ -137,14 +146,15 @@ export interface CloneVmParam {
     remove: boolean;
 }
 
-// export interface TableData extends DeviceInfo  {
-//     instances: number;
-//     index: number;
-//     name: string;
-//     ip: string;
-//     deviceIp: string;
-//     imgVer: string;
-//     createdAt: string;
-//     status: string;
-// }
+export interface MyConfig {
+    view: string;
+    refreshDuration: number;
+    filterState: string;
+    suffixName: string;
+}
 
+export interface TreeConfig {
+    key: string;
+    opened: boolean;
+    selected: boolean;
+}

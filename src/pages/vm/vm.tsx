@@ -7,7 +7,7 @@ import { DeviceList } from "./dev_list";
 import { deviceApi } from "@/api/device_api";
 import { ErrorProxy } from "@/lib/error_handle";
 import { i18n } from "@/i18n/i18n";
-import { DeviceInfo, HostInfo, ImageInfo } from "@/api/device_define";
+import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from "@/api/device_define";
 import { ChangeImageDialog } from "./dialog/change_image";
 import { Screenshot } from "./screenshot";
 import { WebCastPlugin } from "@/lib/webcast/webcast";
@@ -16,32 +16,34 @@ import { Config } from "@/common/Config";
 import { UploadFileDialog } from "./dialog/upload_file";
 import s from './vm.module.less';
 
+
 @Component
 export default class VMPage extends Vue {
+    @ProvideReactive() protected hostTree: MyTreeNode[] = [];
     @ProvideReactive() protected selectedDevices: DeviceInfo[] = [];
-    @ProvideReactive() protected selectedRows: DeviceInfo[] = [];
-    @ProvideReactive() protected selectedHosts: HostInfo[] = [];
     @ProvideReactive() protected rightChecked: string[] = [];
-    @ProvideReactive() protected leftChecked: string[] = [];
+    @ProvideReactive() protected treeConfig: TreeConfig[] = [];
     @ProvideReactive() protected hosts: HostInfo[] = [];
-    @ProvideReactive() protected view: string = localStorage.getItem("view") || "list";
+    @ProvideReactive() protected config: MyConfig = {
+        view: "list",
+        refreshDuration: 5,
+        filterState: "all",
+        suffixName: "deep"
+    };
     @ProvideReactive() protected images: ImageInfo[] = [];
     @Ref() private list!: DeviceList;
     @Ref() private devicePicker!: DevicePicker;
 
     private imgRefreshTimer: any;
-    // private refreshTimer: any;
-
     protected batchOperateName: string = "";
-    protected refreshDuration: number = 5;
-    // private dialogShowed: boolean = false;
 
     protected async created() {
+        try {
+            this.config = JSON.parse(localStorage.getItem("config") || "");
+        } catch (ex) {
+            console.log(ex);
+        }
         this.refreshHost();
-        // this.refreshTimer = setInterval(() => !this.dialogShowed && this.refreshHost(), 5000);
-        this.refreshDuration = parseInt(localStorage.getItem("refreshDuration") || "5");
-        // this.$root.$on("dialogShow", () => this.dialogShowed = true);
-        // this.$root.$on("dialogClose", () => this.dialogShowed = false);
         this.refreshImages();
     }
 
@@ -53,11 +55,33 @@ export default class VMPage extends Vue {
         }
     }
 
+    protected async refreshHost(ip?: string) {
+        let curr: HostInfo | undefined;
+        try {
+            if (!ip) {
+                this.hosts = await deviceApi.getAllDevices();
+            } else {
+                curr = this.hosts.find(x => x.address == ip);
+                if (curr) {
+                    curr.devices = await deviceApi.getDeviceListByHost(curr);
+                } else {
+                    this.hosts = await deviceApi.getAllDevices();
+                }
+            }
+
+            this.FillTree(curr);
+
+        } catch (error) {
+            this.$message.error(`${error}`);
+            this.hosts = [];
+        }
+    }
+
     private getSavedChecked() {
-        var str = localStorage.getItem("leftChecked") || "";
+        let str = localStorage.getItem("TreeConfig") || "";
         if (str) {
             try {
-                return JSON.parse(str) as string[] ?? [];
+                return JSON.parse(str) as TreeConfig[] ?? [];
             } catch (error) {
                 return [];
             }
@@ -65,28 +89,58 @@ export default class VMPage extends Vue {
         return [];
     }
 
-    protected async refreshHost() {
-        try {
-            this.hosts = await deviceApi.getAllDevices();
-        } catch (error) {
-            this.$message.error(`${error}`);
-            //this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
-            this.hosts = [];
+    private FillTree(host?: HostInfo) {
+        this.treeConfig = this.getSavedChecked();
+        let arr: HostInfo[] = [];
+        if (!host) {
+            arr = this.hosts;
+            this.hostTree.removeWhere(x => !this.hosts.contains(t => t.address == x.label));
+        } else {
+            arr = [host!];
         }
+        arr.forEach(x => {
+            let node = this.hostTree.find(t => t.label == x.address);
+            let tc = this.treeConfig.find(t => t.key == x.address);
+            if (node) {
+                node.value = x;
+            } else {
+                node = {
+                    label: x.address,
+                    value: x,
+                    key: x.address,
+                    opened: false,
+                    selected: false,
+                    children: []
+                };
+                this.hostTree.push(node);
+            }
+            if (tc) {
+                node.opened = tc.opened;
+                node.selected = tc.selected;
+            }
+            node.children!.removeWhere(a => !x.devices.contains(t => t.key == a.key));
+            x.devices.forEach(y => {
+                let child = node!.children!.find(t => t.key == y.key);
+                let ctc = this.treeConfig.find(t => t.key == y.key);
+                if (child) {
+                    child.value = y;
+                } else {
+                    child = {
+                        label: `${(y.index).toString().padStart(2, "0")}`,
+                        value: y,
+                        key: y.key!,
+                        opened: false,
+                        selected: false,
+                    };
+                    node!.children!.push(child);
+                }
+                if (ctc) child.selected = ctc.selected;
+            });
+        });
     }
 
     protected destroyed() {
-        // this.$root.$off("dialogShow");
-        // this.$root.$off("dialogClose");
         if (this.imgRefreshTimer) clearInterval(this.imgRefreshTimer);
-        // if (this.refreshTimer) clearInterval(this.refreshTimer);
-    }
-
-    protected async refresh() {
-        var group = this.selectedItems.groupBy(e => e.hostIp);
-        for (var key in group) {
-            this.list.refresh(key, group[key][0].hostId);
-        }
     }
 
     private updateImg() {
@@ -95,29 +149,27 @@ export default class VMPage extends Vue {
 
     @Watch("selectedDevices")
     protected selectedDevicesChange() {
-        if (this.view !== "list") this.updateImg();
+        if (this.config.view !== "list") this.updateImg();
     }
 
-    @Watch("view")
+    @Watch("config", { deep: true })
     protected viewChange() {
-        if (this.view == "list") {
+        if (this.config.view == "list") {
             if (this.imgRefreshTimer) clearInterval(this.imgRefreshTimer);
             this.imgRefreshTimer = null;
         } else {
-            if (!this.imgRefreshTimer) this.imgRefreshTimer = setInterval(() => this.updateImg(), this.refreshDuration * 1000);
+            if (!this.imgRefreshTimer) this.imgRefreshTimer = setInterval(() => this.updateImg(), this.config.refreshDuration * 1000);
             this.updateImg();
         }
-        localStorage.setItem("view", this.view);
     }
     @Watch("refreshDuration")
     protected refreshDurationChange() {
         if (this.imgRefreshTimer) clearInterval(this.imgRefreshTimer);
-        if (this.view != "list") this.imgRefreshTimer = setInterval(() => this.updateImg(), this.refreshDuration * 1000);
-        localStorage.setItem("refreshDuration", this.refreshDuration.toString());
+        if (this.config.view != "list") this.imgRefreshTimer = setInterval(() => this.updateImg(), this.config.refreshDuration * 1000);
     }
 
     private get selectedItems(): DeviceInfo[] {
-        var arr: DeviceInfo[] = [];
+        let arr: DeviceInfo[] = [];
         this.hosts.forEach(x => {
             x.devices.forEach(y => {
                 if (this.rightChecked.find(a => a == y.key) != null) arr.push(y);
@@ -132,7 +184,7 @@ export default class VMPage extends Vue {
 
     protected async batchOperate(callback: (data: DeviceInfo) => Promise<void>, operate: string) {
         this.batchOperateName = i18n.t(`batch.${operate}`).toString();
-        var arr = this.selectedItems;
+        let arr = this.selectedItems;
         switch (operate) {
             case "start":
                 arr = arr.filter(x => x.state != "running").groupByToMap(t => `${t.hostIp}_${t.index}`).entries().map(([k, v]) => v[0]).toArray();
@@ -151,9 +203,8 @@ export default class VMPage extends Vue {
     }
 
     @ErrorProxy({ confirm: (self) => self.batchOperateName, success: i18n.t("batch.success"), loading: i18n.t("loading") })
-
     protected async batchOperateIng(arr: DeviceInfo[], callback: (data: DeviceInfo) => Promise<void>) {
-        var tasks: Promise<void>[] = [];
+        let tasks: Promise<void>[] = [];
 
         arr.forEach(e => {
             tasks.push(callback(e));
@@ -161,18 +212,17 @@ export default class VMPage extends Vue {
         await Promise.allSettled(tasks).catch(e => {
             console.log(e);
         });
-        await this.refresh();
+        this.refreshHost();
     }
 
     private async batchUpload() {
-        var re = await this.$dialog(UploadFileDialog).show(this.selectedItems);
-        console.log(re);
-        if (re) await this.refresh();
+        let re = await this.$dialog(UploadFileDialog).show(this.selectedItems);
+        // if (re)  this.refreshHost();
     }
 
     private async batchChangeImage() {
-        var re = await this.$dialog(ChangeImageDialog).show(this.selectedItems);
-        if (re) await this.refresh();
+        let re = await this.$dialog(ChangeImageDialog).show(this.selectedItems);
+        if (re) this.refreshHost();
     }
 
     // private async batchCreate() {
@@ -184,16 +234,18 @@ export default class VMPage extends Vue {
     //     });
     //     await this.refresh();
     // }
-
+    private onHostChanged(ip: string | undefined) {
+        this.refreshHost(ip);
+    }
     private async importVm() {
-        var re = await this.$dialog(ImportVmDialog).show(this.hosts);
+        let re = await this.$dialog(ImportVmDialog).show(this.hosts);
         if (re) await this.refreshHost();
     }
 
     protected render() {
         return (
             <Row crossAlign="stretch" flex gap={15} class={s.body}>
-                <DevicePicker ref="devicePicker" />
+                <DevicePicker ref="devicePicker" on-changed={this.onHostChanged} />
                 <Column flex gap={13}>
                     <Row class={"contentBox"}>
                         <Row flex gap={8}>
@@ -213,21 +265,21 @@ export default class VMPage extends Vue {
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={this.batchUpload}>{this.$t("menu.upload")}</el-dropdown-item>
                                 </el-dropdown-menu>
                             </el-dropdown>
-                            <el-radio-group v-model={this.view}>
+                            <el-radio-group v-model={this.config.view}>
                                 <el-radio-button label="list">{this.$t("list")}</el-radio-button>
                                 <el-radio-button label="vertical" >{this.$t("vertical")}</el-radio-button>
                                 <el-radio-button label="horizontal" >{this.$t("horizontal")}</el-radio-button>
                             </el-radio-group>
 
-                            {this.view != "list" && <el-dropdown>
+                            {this.config.view != "list" && <el-dropdown>
                                 <el-button type="primary">
-                                    {`${i18n.t("refreshDuration", { 0: this.refreshDuration })}`}<i class="el-icon-arrow-down el-icon--right"></i>
+                                    {`${i18n.t("refreshDuration", { 0: this.config.refreshDuration })}`}<i class="el-icon-arrow-down el-icon--right"></i>
                                 </el-button>
                                 <el-dropdown-menu slot="dropdown">
-                                    <el-dropdown-item nativeOnClick={() => this.refreshDuration = 1}>1 {i18n.t("second")}</el-dropdown-item>
-                                    <el-dropdown-item nativeOnClick={() => this.refreshDuration = 3}>3 {i18n.t("second")}</el-dropdown-item>
-                                    <el-dropdown-item nativeOnClick={() => this.refreshDuration = 5}>5 {i18n.t("second")}</el-dropdown-item>
-                                    <el-dropdown-item nativeOnClick={() => this.refreshDuration = 10}>10 {i18n.t("second")}</el-dropdown-item>
+                                    <el-dropdown-item nativeOnClick={() => this.config.refreshDuration = 1}>1 {i18n.t("second")}</el-dropdown-item>
+                                    <el-dropdown-item nativeOnClick={() => this.config.refreshDuration = 3}>3 {i18n.t("second")}</el-dropdown-item>
+                                    <el-dropdown-item nativeOnClick={() => this.config.refreshDuration = 5}>5 {i18n.t("second")}</el-dropdown-item>
+                                    <el-dropdown-item nativeOnClick={() => this.config.refreshDuration = 10}>10 {i18n.t("second")}</el-dropdown-item>
                                 </el-dropdown-menu>
                             </el-dropdown>}
                         </Row>
@@ -236,8 +288,7 @@ export default class VMPage extends Vue {
                             <MyButton type="primary" text={this.$t("remoteControl")} onClick={this.remoteControl} />
                         </Row>
                     </Row>
-                    <DeviceList ref="list" />
-                    {/* onSelectChange={this.currSelectedDevicesChange}  */}
+                    <DeviceList ref="list" on-changed={this.onHostChanged} />
                 </Column >
             </Row >
         );

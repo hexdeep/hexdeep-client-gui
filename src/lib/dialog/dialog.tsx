@@ -22,7 +22,7 @@ declare module 'vue/types/vue' {
 
 export function DialogPlugin(_Vue: typeof Vue) {
     _Vue.prototype.$dialog = function (this: Vue, view: VueConstructor<DialogBase>) {
-        const vm = new view({ parent: this.$root });
+        const vm = new view({ parent: this });
         // @ts-ignore
         vm.init();
         return vm;
