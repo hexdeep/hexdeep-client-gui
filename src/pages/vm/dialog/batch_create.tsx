@@ -50,9 +50,13 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         this.data.hostIp.forEach(ip => {
             tasks.push(deviceApi.batchCreate(ip, this.data.obj.num!, this.data.obj.suffix_name!, this.data.obj));
         });
-        await Promise.allSettled(tasks).catch(e => {
-            console.log(e);
-        });
+        if (tasks.length == 1) {
+            await tasks[0];
+        } else {
+            await Promise.allSettled(tasks).catch(e => {
+                console.log(e);
+            });
+        }
         this.close(true);
     }
 
