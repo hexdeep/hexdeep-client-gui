@@ -15,7 +15,7 @@ import { MyButton } from '@/lib/my_button';
 export class ImportVmDialog extends CommonDialog<HostInfo[], boolean> {
     private fileList: any[] = [];
     private selectedHost: string = "";
-    private record: RentalRecord[] = [];
+    private record: RentalRecord[] = null as any;
     private validInstance: number[] = [];
     private uploadTask: { promise: Promise<any>, cancel: () => void; } | null = null;
     private get readonly() { return this.uploadTask != null; }
@@ -65,10 +65,11 @@ export class ImportVmDialog extends CommonDialog<HostInfo[], boolean> {
     @Watch("item.host")
     protected async hostIpChange() {
         if (this.data && this.data.length > 0) {
-            this.record = await orderApi.getRental(this.data.map(x => x.device_id).join(",")) || [];
+            this.record ??= await orderApi.getRental(this.data.map(x => x.device_id).join(",")) || [];
             let arr = Array.from({ length: 12 }, (_, index) => index + 1);
             if (this.record.length > 0) {
-                arr.removeWhere(x => this.record.first.device_indexes.contains(y => y.index == x && y.state == "expired"));
+                const rental = this.record.find(x => x.device_id == this.item.host.device_id);
+                if (rental) arr.removeWhere(x => rental.device_indexes.contains(y => y.index == x && y.state == "expired"));
             }
             this.validInstance = arr || [];
             this.item.index = arr.length > 0 ? arr.first : 0;
