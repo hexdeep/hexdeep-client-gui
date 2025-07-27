@@ -149,11 +149,13 @@ export class DevicePicker extends tsx.Component<IProps> {
         return (
             <Column width={240} class={[s.DevicePicker, "contentBox"]}>
                 <div class={s.treeBox} v-loading={this.loading}>
-                    <MyTree data={this.hostTree} on-change={this.onTreeChange}
-                        childrenFilter={this.childrenFilter}
-                        showCheckbox scopedSlots={{
-                            renderContent: this.renderContent
-                        }} />
+                    <div class={s.tree}>
+                        <MyTree data={this.hostTree} on-change={this.onTreeChange}
+                            childrenFilter={this.childrenFilter}
+                            showCheckbox scopedSlots={{
+                                renderContent: this.renderContent
+                            }} />
+                    </div>
                 </div>
                 <el-divider />
                 <el-radio-group v-model={this.config.filterState}>
