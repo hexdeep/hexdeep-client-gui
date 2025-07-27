@@ -37,8 +37,25 @@
         filter: brightness(0.4);
     }
 
+    .vmNums {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+        background-color: #67c23a26;
+        color: #67c23a;
+        text-align: center;
+        line-height: 20px;
+        font-size: 12px;
+    }
+
     .no_run {
-        color: #999;
+
+        // color: #999;
+        .vmNums {
+            background-color: #f56c6c26;
+            color: #f56c6c;
+        }
     }
 
     :global .el-divider--horizontal {

@@ -111,8 +111,8 @@ export class DevicePicker extends tsx.Component<IProps> {
                     }}><i class="el-icon-circle-plus-outline"></i></div>
                 </Row>}
                 {!data.children && <Row gap={10} style={{ "flex": 1 }} mainAlign='space-between' crossAlign='center' class={data.value.state !== "running" ? s.no_run : ""}>
-                    <Row gap={3} style={{ "flex": 1 }}>
-                        <span>{data.label}</span>
+                    <Row gap={3} style={{ "flex": 1 }} crossAlign='center'>
+                        <span class={s.vmNums}>{data.label}</span>
                         <span style="font-size:13px" class={s.name_label}>{getSuffixName(data.value.name)}</span>
                     </Row>
                     <Row>

@@ -98,7 +98,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         if (r.state == "running") {
             return <el-tag type="success">{this.$t(r.state).toString()}</el-tag>;
         } else {
-            return <el-tag type="info">{this.$t(r.state).toString()}</el-tag>;
+            return <el-tag type="danger">{this.$t(r.state).toString()}</el-tag>;
         }
     }
 
