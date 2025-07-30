@@ -155,7 +155,6 @@ export default class VMPage extends Vue {
 
     @Watch("config", { deep: true })
     protected viewChange() {
-        console.log("asdf");
         if (this.config.view == "list") {
             if (this.imgRefreshTimer) clearInterval(this.imgRefreshTimer);
             this.imgRefreshTimer = null;

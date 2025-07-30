@@ -25,7 +25,7 @@ export class DevicePicker extends tsx.Component<IProps> {
 
     @Watch("config", { deep: true })
     protected filterChange(newValue: string, oldValue: string) {
-        console.log("config_change");
+        // console.log("config_change");
         localStorage.setItem("config", JSON.stringify(this.config));
     }
 
