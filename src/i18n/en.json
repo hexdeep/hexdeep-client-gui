@@ -29,6 +29,7 @@
     "created": "Created",
     "starting": "Starting",
     "createVm": "Create VM",
+    "batchCreateVm": "Batch create VM",
     "more": "More",
     "notNull": "Not Null",
     "noMinus": "Only letters numbers underscores",

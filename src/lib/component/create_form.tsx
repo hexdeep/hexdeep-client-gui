@@ -20,6 +20,27 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
     protected async created() {
     }
 
+    private inputNumber(key: string, min: number, max: number) {
+        return (v: string) => {
+            let val = Number(v);
+            if (val < min) val = min;
+            if (val > max) val = max;
+            this.$set(this.data, key, val);
+        };
+    }
+
+    private fixNumber(key: string) {
+        return (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            let val = Number(target.value);
+            let min = Number(target.min);
+            let max = Number(target.max);
+            if (val < min) val = min;
+            if (val > max) val = max;
+            this.$set(this.data, key, val);
+        };
+    }
+
     public render() {
         return (
             <div>
@@ -57,18 +78,18 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 </el-form-item>
                 <Row>
                     <el-form-item label={this.$t("create.width")} prop="width">
-                        <el-input v-model={this.data.width} max={1920} type="number" />
+                        <el-input v-model={this.data.width} onBlur={this.fixNumber("width")} min={600} max={2400} type="number" />
                     </el-form-item>
                     <el-form-item label={this.$t("create.height")} prop="height">
-                        <el-input v-model={this.data.height} max={1080} type="number" />
+                        <el-input v-model={this.data.height} onBlur={this.fixNumber("height")} min={600} max={2400} type="number" />
                     </el-form-item>
                 </Row>
                 <Row>
                     <el-form-item label={this.$t("create.dpi")} prop="dpi">
-                        <el-input v-model={this.data.dpi} type="number" />
+                        <el-input v-model={this.data.dpi} onBlur={this.fixNumber("dpi")} min={100} max={400} type="number" />
                     </el-form-item>
                     <el-form-item label={this.$t("create.fps")} prop="fps">
-                        <el-input v-model={this.data.fps} type="number" />
+                        <el-input v-model={this.data.fps} onBlur={this.fixNumber("fps")} min={10} max={60} type="number" />
                     </el-form-item>
                 </Row>
                 {!this.isUpdate && (

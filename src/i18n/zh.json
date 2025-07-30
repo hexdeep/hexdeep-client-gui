@@ -38,7 +38,8 @@
         "emptyText": "请选择左侧主机云手机"
     },
     "loading": "请稍候...",
-    "createVm": "创建",
+    "createVm": "创建云机",
+    "batchCreateVm": "批量创建云机",
     "more": "更多",
     "notNull": "不能为空",
     "noMinus": "只能是英文字母、数字、下划线",

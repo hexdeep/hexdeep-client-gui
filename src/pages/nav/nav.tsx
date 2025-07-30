@@ -32,18 +32,6 @@ export default class Nav extends Vue {
             path: '/order',
             icon: 'icon-dingdan'
         },
-        {
-            label: 'nav.apiDoc',
-            path: `http://${Config.host}/api`,
-            blank: true,
-            icon: 'icon-shiyongwendang'
-        },
-        {
-            label: 'nav.openSource',
-            path: 'https://github.com/hexdeep/hexdeep-client-gui',
-            blank: true,
-            icon: 'icon-github-fill'
-        },
     ];
 
     private onCommand(cmd: string) {
@@ -134,6 +122,14 @@ export default class Nav extends Vue {
                                 <span>{this.$t(menu.label)}</span>
                             </router-link>
                         ))}
+                        <a href={`http://${Config.host}/api`} onMouseenter={this.onMouseenter} target="_blank" onMouseleave={this.onMouseleave} draggable={false} class={s.menu} >
+                            <i class={`iconfont icon-shiyongwendang`} />
+                            <span>{this.$t("nav.apiDoc")}</span>
+                        </a>
+                        <a href={`https://github.com/hexdeep/hexdeep-client-gui`} onMouseenter={this.onMouseenter} target="_blank" onMouseleave={this.onMouseleave} draggable={false} class={s.menu} >
+                            <i class={`iconfont icon-github-fill`} />
+                            <span>{this.$t("nav.openSource")}</span>
+                        </a>
                     </div>
                     <el-dropdown onCommand={this.selectLang}>
                         <div class={s.tools}>

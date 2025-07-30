@@ -11,7 +11,7 @@ import { ErrorProxy } from '@/lib/error_handle';
 import { orderApi } from '@/api/order_api';
 import { getPrefixName, getSuffixName } from '@/common/common';
 import { RenameDialog } from './dialog/rename';
-import { MyTree } from "@/lib/tree";
+import { ITreeSlotProps, MyTree } from "@/lib/tree";
 
 @Component
 export class DevicePicker extends tsx.Component<IProps> {
@@ -61,7 +61,14 @@ export class DevicePicker extends tsx.Component<IProps> {
         this.$dialog(BatchCreateDialog).show({
             maxNum: maxCanCreate,
             hostIp: [h.address],
-            obj: { name: "", num: 1, suffix_name: this.config.suffixName || "deep", }
+            obj: {
+                name: "", num: 1,
+                suffix_name: this.config.suffixName || "deep",
+                width: 720,
+                height: 1280,
+                dpi: 320,
+                fps: 24,
+            }
         }).then(async re => {
             this.$emit('changed', h.address);
         });
@@ -97,20 +104,22 @@ export class DevicePicker extends tsx.Component<IProps> {
         this.$emit('changed', v.hostIp);
     }
 
-    protected renderContent(data: MyTreeNode) {
+    protected renderContent(obj: ITreeSlotProps<MyTreeNode>) {
+        const data = obj.item;
+        const children = obj.children;
         return (
             <Row gap={10} crossAlign='center' class="row" style={{ "flex": 1 }} mainAlign='center'>
-                {data.children && <Row crossAlign='center' mainAlign='space-between' style={{ "flex": 1 }}>
+                {children && <Row crossAlign='center' mainAlign='space-between' style={{ "flex": 1 }}>
                     <Row gap={5} crossAlign='center'>
                         <span>{data.label}</span>
-                        <el-tag type={data.value.has_error ? "danger" : ""}> {data.value.has_error ? <i class="el-icon-warning"></i> : data.children.length} </el-tag>
+                        <el-tag type={data.value.has_error ? "danger" : ""}> {data.value.has_error ? <i class="el-icon-warning"></i> : children.length} </el-tag>
                     </Row>
                     <div class="autohide" onClick={(e) => {
                         this.createVms(data.value);
                         e.stopPropagation();
                     }}><i class="el-icon-circle-plus-outline"></i></div>
                 </Row>}
-                {!data.children && <Row gap={10} style={{ "flex": 1 }} mainAlign='space-between' crossAlign='center' class={data.value.state !== "running" ? s.no_run : ""}>
+                {!children && <Row gap={10} style={{ "flex": 1 }} mainAlign='space-between' crossAlign='center' class={data.value.state !== "running" ? s.no_run : ""}>
                     <Row gap={3} style={{ "flex": 1 }} crossAlign='center'>
                         <span class={s.vmNums}>{data.label}</span>
                         <span style="font-size:13px" class={s.name_label}>{getSuffixName(data.value.name)}</span>

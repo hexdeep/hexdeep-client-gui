@@ -21,7 +21,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     protected images: ImageInfo[] = [];
     public override show(data: DockerBatchCreateParam) {
         this.data = data;
-        this.title = i18n.t("createVm").toString();
+        this.title = i18n.t("batchCreateVm").toString();
         deviceApi.getImages(this.data.hostIp.first).then((images) => {
             this.images = images;
         });

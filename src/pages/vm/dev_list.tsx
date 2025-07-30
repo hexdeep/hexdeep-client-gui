@@ -174,7 +174,14 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         let re = await this.$dialog(CreateDialog).show({
             hostId: data.hostId,
             info: data,
-            obj: { name: name, sandbox_size: 16 },
+            obj: {
+                name: name,
+                sandbox_size: 16,
+                width: 720,
+                height: 1280,
+                dpi: 320,
+                fps: 24,
+            },
         });
         if (re) this.$emit("changed", data.hostIp);
     }

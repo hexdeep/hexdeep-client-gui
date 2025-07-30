@@ -44,7 +44,7 @@ export class MyTree extends tsx.Component<IProps, {}, ISlots> {
                 <div class="mytree-item-content">
                     {children && children.length > 0 && <i class={["el-icon-caret-right mytree-expand-icon", item.opened && "opened"]} onClick={() => this.toggleExpand(item)} />}
                     {this.showCheckbox && <el-checkbox value={allSelected} indeterminate={indeterminate} onInput={handleInput} />}
-                    {this.renderContent(item)}
+                    {this.renderContent({ item, children })}
                 </div>
                 {children && children.length > 0 && <div class="mytree-item-children">
                     {this.renderData(children, level + 1)}
@@ -53,14 +53,14 @@ export class MyTree extends tsx.Component<IProps, {}, ISlots> {
         });
     }
 
-    private renderContent(item: ITreeData) {
+    private renderContent(obj: ITreeSlotProps) {
         const content = this.$scopedSlots.renderContent;
         if (content) {
-            return content(item);
+            return content(obj);
         } else {
             return (
                 <div class="mytree-item-content-label">
-                    {item.label}
+                    {obj.item.label}
                 </div>
             );
         }
@@ -70,7 +70,7 @@ export class MyTree extends tsx.Component<IProps, {}, ISlots> {
 interface IProps {
     data: ITreeData[];
     showCheckbox?: boolean;
-    childrenFilter?: (item: ITreeData) => boolean;
+    childrenFilter?: (item: ITreeData, children: ITreeData[]) => boolean;
 }
 
 export interface ITreeData {
@@ -82,5 +82,10 @@ export interface ITreeData {
 }
 
 interface ISlots {
-    renderContent: ITreeData;
+    renderContent: ITreeSlotProps<ITreeData>;
+}
+
+export interface ITreeSlotProps<T = ITreeData> {
+    item: T;
+    children?: T[];
 }
