@@ -287,6 +287,10 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         if (re) this.$emit("changed", data.hostIp);
     }
 
+    private async androidSdkApi(data: DeviceInfo) {
+        window.open("http://" + data.android_sdk, "_blank");
+    }
+
     private async selectFile(data: DeviceInfo) {
         await this.$dialog(UploadFileDialog).show([data]);
 
@@ -331,6 +335,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <el-dropdown-item nativeOnClick={() => this.hostDetails(row)}>{this.$t("menu.hostDetails")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.backupVm(row)}>{this.$t("menu.backup")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.cloneVm(row)}>{this.$t("menu.clone")}</el-dropdown-item>
+                        <el-dropdown-item nativeOnClick={() => this.androidSdkApi(row)}>{this.$t("menu.androidSdkApi")}</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
                 }

@@ -105,7 +105,8 @@
         "hostDetails": "Host Details",
         "changeImage": "Change Image",
         "backup": "Backup",
-        "clone": "Clone"
+        "clone": "Clone",
+        "androidSdkApi": "Android Sdk Api"
     },
     "batchCreate": {
         "num": "Number",
