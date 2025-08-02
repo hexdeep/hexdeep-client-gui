@@ -45,6 +45,7 @@
     "invalidIp": "Invalid IP Address",
     "invalidPort": "Invalid Port",
     "vmImage": "VM Image",
+    "customImage": "Custom image",
     "table": {
         "index": "Index",
         "create": "Create successfully",

@@ -33,6 +33,7 @@ export interface MyTreeNode {
 }
 
 export interface DeviceDetail {
+    custom_image?: string; // 扩展字段 自定义镜像地址
     image_addr?: string;//	镜像地址
     width?: number; //	屏幕宽度
     height?: number;//	屏幕高度

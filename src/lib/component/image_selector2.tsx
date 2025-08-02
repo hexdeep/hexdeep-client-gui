@@ -11,7 +11,17 @@ export class ImageSelector2 extends tsx.Component<IPorps, {}, {}> {
     @Prop({ default: () => { } }) images!: ImageInfo[];
     @Ref() elSelectRef!: any;
 
-    //protected images: ImageInfo[] = [];
+    private get list() {
+        return [
+            {
+                name: this.$t("customImage"),
+                address: "[customImage]",
+                android_version: null,
+                download: false,
+            }
+            , ...this.images
+        ];
+    }
 
     protected created() {
 
@@ -29,8 +39,34 @@ export class ImageSelector2 extends tsx.Component<IPorps, {}, {}> {
 
     render() {
         return (
-            <el-select ref="elSelectRef" filterable allow-create value={this.value} style={{ width: "100%" }} onInput={this.onInput}>
-                {this.images.map((e) => <el-option key={e.address} label={"[" + e.android_version + "] " + e.name} value={e.address} />)}
+            <el-select ref="elSelectRef"
+                value={this.value}
+                style={{ width: "100%" }}
+                onInput={this.onInput}>
+                {this.list.map((e) => <el-option
+                    key={e.address}
+                    label={(e.android_version ? "[" + e.android_version + "] " : "") + e.name}
+                    value={e.address}                    >
+                    <div>
+                        {e.android_version && <span
+                            style={{
+                                lineHeight: "20px",
+                                padding: "0 3px",
+                                marginRight: "5px",
+                                backgroundColor: e.download ? "#f0f9eb" : "#fef0f0",
+                                borderColor: e.download ? "#e1f3d8" : "#fde2e2",
+                                color: e.download ? "#67c23a" : "#f56c6c",
+                                borderRadius: "3px",
+                            }}
+                            title={e.download ? this.$t("create.downloaded").toString() : this.$t("create.unDownloaded").toString()}
+                            type={e.download ? "success" : "danger"}>
+                            {e.download && <i class="el-icon-check" />}
+                            {!e.download && <i class="el-icon-close" />}
+                        </span>}
+                        {e.android_version && <span>[{e.android_version}] {e.name}</span>}
+                        {!e.android_version && <span>{e.name}</span>}
+                    </div>;
+                </el-option>)}
             </el-select>
         );
     }

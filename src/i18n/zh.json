@@ -32,6 +32,7 @@
     "invalidIp": "IP地址格式错误",
     "invalidPort": "端口格式错误",
     "vmImage": "镜像",
+    "customImage": "自定义镜像",
     "table": {
         "index": "实例位",
         "create": "创建成功",

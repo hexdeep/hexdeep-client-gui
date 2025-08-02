@@ -1,12 +1,11 @@
 
 
 import { CreateParam, ImageInfo } from "@/api/device_define";
-import * as tsx from 'vue-tsx-support';
 import { Component, Prop } from "vue-property-decorator";
-import { ModelEditor } from './model_editor';
+import * as tsx from 'vue-tsx-support';
 import { Row } from '../container';
 import "./create_form.less";
-import { ImageSelector } from "./image_selector";
+import { ImageSelector2 } from "./image_selector2";
 import { ModelSelector } from "./model_selector";
 
 
@@ -74,8 +73,11 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 </Row>
 
                 <el-form-item label={this.$t("create.image_addr")} prop="image_addr">
-                    <ImageSelector images={this.images} v-model={this.data.image_addr} />
+                    <ImageSelector2 images={this.images} v-model={this.data.image_addr} />
                 </el-form-item>
+                {this.data.image_addr == "[customImage]" && <el-form-item label={this.$t("customImage")} prop="custom_image">
+                    <el-input v-model={this.data.custom_image} />
+                </el-form-item>}
                 <Row>
                     <el-form-item label={this.$t("create.width")} prop="width">
                         <el-input v-model={this.data.width} onBlur={this.fixNumber("width")} min={600} max={2400} type="number" />

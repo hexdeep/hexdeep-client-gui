@@ -48,7 +48,14 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     protected async confirming() {
         var tasks: Promise<void>[] = [];
         this.data.hostIp.forEach(ip => {
-            tasks.push(deviceApi.batchCreate(ip, this.data.obj.num!, this.data.obj.suffix_name!, this.data.obj));
+            const obj = Object.assign({}, this.data.obj);
+            if (obj.image_addr === "[customImage]") {
+                obj.image_addr = obj.custom_image;
+                delete obj.custom_image;
+            } else {
+                delete obj.custom_image;
+            }
+            tasks.push(deviceApi.batchCreate(ip, this.data.obj.num!, this.data.obj.suffix_name!, obj));
         });
         if (tasks.length == 1) {
             await tasks[0];
@@ -68,6 +75,9 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
                 { pattern: /^[a-zA-Z0-9_]*$/, message: i18n.t("noMinus"), trigger: 'blur' },
             ],
             image_addr: [
+                { required: true, message: i18n.t("notNull"), trigger: 'change' }
+            ],
+            custom_image: [
                 { required: true, message: i18n.t("notNull"), trigger: 'change' }
             ],
             num: [

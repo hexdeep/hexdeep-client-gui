@@ -35,10 +35,18 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
 
     @ErrorProxy({ success: i18n.t("success"), loading: i18n.t("loading"), validatForm: "formRef" })
     protected async confirming() {
-        if (this.data.isUpdate) {
-            await deviceApi.update(this.data);
+        const data = Object.assign({}, this.data);
+        data.obj = Object.assign({}, this.data.obj);
+        if (data.obj.image_addr === "[customImage]") {
+            data.obj.image_addr = data.obj.custom_image;
+            delete data.obj.custom_image;
         } else {
-            await deviceApi.create(this.data);
+            delete data.obj.custom_image;
+        }
+        if (this.data.isUpdate) {
+            await deviceApi.update(data);
+        } else {
+            await deviceApi.create(data);
             let re: any = "";
 
             re = await this.$confirm(this.$t("create.start").toString(), this.$t("confirm.title").toString(), {
