@@ -39,12 +39,16 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
     @ErrorProxy({ success: i18n.t("changeImage.success") })
     protected async confirming() {
         var tasks: Promise<void>[] = [];
+        let error: any;
         this.data.forEach(x => {
-            tasks.push(deviceApi.update({ info: x, hostId: x.hostId, obj: { name: "", image_addr: this.obj.image_addr } }));
+            tasks.push(deviceApi.update({ info: x, hostId: x.hostId, obj: { name: "", image_addr: this.obj.image_addr } }).catch(e => {
+                error = e;
+            }));
         });
         await Promise.allSettled(tasks).catch(e => {
             console.log(e);
         });
+        if (error) throw error;
         this.close(true);
     }
 
