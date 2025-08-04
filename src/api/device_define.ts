@@ -9,6 +9,7 @@ export interface DeviceInfo {
     image_addr: string;
     git_commit_id: string;
     ip: string;
+    macvlan: boolean;
     android_sdk: string;
     adb: string;
     hostIp: string;

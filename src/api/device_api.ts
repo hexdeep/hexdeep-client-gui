@@ -1,5 +1,5 @@
 
-import { makeVmApiUrl } from "@/common/common";
+import { makeMacvlanApiUrl, makeVmApiUrl } from "@/common/common";
 import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
@@ -273,6 +273,11 @@ class DeviceApi extends ApiBase {
 
     public async screenshot(ip: string, name: string, level: number = 1): Promise<Blob> {
         const result = await fetch(makeVmApiUrl("and_api/screenshots", ip, name, level.toString()));
+        return result.blob();
+    }
+
+    public async screenshotMacvlan(android_sdk: string, level: number = 1): Promise<Blob> {
+        const result = await fetch(makeMacvlanApiUrl("and_api/screenshots", android_sdk) + `?level=${level.toString()}`);
         return result.blob();
     }
 
