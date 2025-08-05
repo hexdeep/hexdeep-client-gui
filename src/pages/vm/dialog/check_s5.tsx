@@ -28,7 +28,7 @@ export class CheckS5Dialog extends CommonDialog<CheckS5FormData> {
     })
     protected override async onConfirm() {
         const result = await deviceApi.checkS5(this.data.hostIp, this.data.s5Param, this.formData.check_url);
-        if (result === "success") {
+        if (result === "ok") {
             this.close();
         } else {
             throw new Error(i18n.t("checkS5.fail").toString());
