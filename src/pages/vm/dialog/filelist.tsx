@@ -16,7 +16,7 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
     private delayShowLoadingTimer: any;
     private isLoading: boolean = false;
     private currentDir = "/sdcard";
-    private diviceInfo!: DeviceInfo;
+    private deviceInfo!: DeviceInfo;
 
     @Watch("currentDir")
     private async ls() {
@@ -29,19 +29,25 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
         }, 500);
         try {
             this.files = [];
-            const files = this.diviceInfo.macvlan
+            const files = this.deviceInfo.macvlan
             ? await deviceApi.getFilelist(this.data.hostIp, this.data.name, this.currentDir)
-            : await deviceApi.getFilelistMacvlan(this.diviceInfo.android_sdk);
+            : await deviceApi.getFilelistMacvlan(this.deviceInfo.android_sdk);
 
-            files && files.sort((f1, f2) => {
-                if (!f1.flag && f2.flag)
-                    return 1;
-                else if (f1.flag && !f2.flag)
-                    return -1;
-                else
-                    return 0;
-            });
-            this.files = files;
+            // 确保files是数组再调用sort方法
+            if (files && Array.isArray(files)) {
+                files.sort((f1, f2) => {
+                    if (!f1.flag && f2.flag)
+                        return 1;
+                    else if (f1.flag && !f2.flag)
+                        return -1;
+                    else
+                        return 0;
+                });
+                this.files = files;
+            } else {
+                console.warn('获取到的文件列表不是数组:', files);
+                this.files = Array.isArray(files) ? files : [];
+            }
         } catch (error) {
             this.$alert(`${error}`, this.$t("upload.loadFailed").toString());
             console.warn(error);
@@ -61,6 +67,7 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
 
     public override show(data: DeviceInfo) {
         this.data = data;
+        this.deviceInfo = data; // 初始化deviceInfo
         this.title = this.$t("upload.fileBrowser").toString();
         this.ls();
         return super.show(data);
