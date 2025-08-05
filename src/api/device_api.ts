@@ -7,6 +7,8 @@ import { ApiBase } from "./api_base";
 import { CloneVmParam, CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes } from "./device_define";
 
 class DeviceApi extends ApiBase {
+    private fileListInfo!: FilelistInfo;
+    private diviceInfo!: DeviceInfo;
     public async queryS5(hostIp: string, name: string) {
         const result = await fetch(makeVmApiUrl("and_api/s5_query", hostIp, name));
         let obj = await this.handleError(result);
@@ -217,7 +219,12 @@ class DeviceApi extends ApiBase {
     }
 
     public async getFilelist(ip: string, name: string, path: string): Promise<FilelistInfo[]> {
-        const result = await fetch(makeVmApiUrl("and_api/get_file_list", ip, name) + `?path=${path}`);
+        const baseUrl = this.fileListInfo.macvlan
+            ? this.getFileListMacvlan("and_api/get_file_list", this.diviceInfo.android_sdk)
+            : makeVmApiUrl("and_api/get_file_list", ip, name).toString();
+
+        const url = `${baseUrl}?path=${encodeURIComponent(path)}`;
+        const result = await fetch(url);
         return await this.handleError(result);
     }
 
@@ -321,6 +328,12 @@ class DeviceApi extends ApiBase {
         const result = await fetch(makeVmApiUrl("and_api/s5_check", ip) + `?${qs.stringify(query)}`);
         return await this.handleError(result);
     }
+
+    public getFileListMacvlan(endpoint: string, android_sdk: string): string {
+        return makeMacvlanApiUrl(endpoint, android_sdk).toString();
+    }
+
+    
 }
 
 export const deviceApi = new DeviceApi();

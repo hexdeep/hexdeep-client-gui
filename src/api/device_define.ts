@@ -113,6 +113,7 @@ export interface FilelistInfo {
     name: string;
     length: number;
     flag: boolean;
+    macvlan: boolean;
 }
 
 
