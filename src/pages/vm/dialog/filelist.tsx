@@ -16,9 +16,11 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
     private delayShowLoadingTimer: any;
     private isLoading: boolean = false;
     private currentDir = "/sdcard";
+    private diviceInfo!: DeviceInfo;
 
     @Watch("currentDir")
     private async ls() {
+        
         if (this.delayShowLoadingTimer) {
             clearTimeout(this.delayShowLoadingTimer);
         }
@@ -27,7 +29,10 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
         }, 500);
         try {
             this.files = [];
-            const files = await deviceApi.getFilelist(this.data.hostIp, this.data.name, this.currentDir);
+            const files = this.diviceInfo.macvlan
+            ? await deviceApi.getFilelist(this.data.hostIp, this.data.name, this.currentDir)
+            : await deviceApi.getFilelistMacvlan(this.diviceInfo.android_sdk);
+
             files && files.sort((f1, f2) => {
                 if (!f1.flag && f2.flag)
                     return 1;

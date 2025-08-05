@@ -8,7 +8,6 @@ import { CloneVmParam, CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, F
 
 class DeviceApi extends ApiBase {
     private fileListInfo!: FilelistInfo;
-    private diviceInfo!: DeviceInfo;
     public async queryS5(hostIp: string, name: string) {
         const result = await fetch(makeVmApiUrl("and_api/s5_query", hostIp, name));
         let obj = await this.handleError(result);
@@ -219,12 +218,7 @@ class DeviceApi extends ApiBase {
     }
 
     public async getFilelist(ip: string, name: string, path: string): Promise<FilelistInfo[]> {
-        const baseUrl = this.fileListInfo.macvlan
-            ? this.getFileListMacvlan("and_api/get_file_list", this.diviceInfo.android_sdk)
-            : makeVmApiUrl("and_api/get_file_list", ip, name).toString();
-
-        const url = `${baseUrl}?path=${encodeURIComponent(path)}`;
-        const result = await fetch(url);
+        const result = await fetch(makeVmApiUrl("and_api/get_file_list", ip, name) + `?path=${path}`);
         return await this.handleError(result);
     }
 
@@ -329,8 +323,17 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
-    public getFileListMacvlan(endpoint: string, android_sdk: string): string {
-        return makeMacvlanApiUrl(endpoint, android_sdk).toString();
+    public async getFilelistMacvlan(android_sdk: string, level: number = 1): Promise<FilelistInfo[]> {
+        const url = makeMacvlanApiUrl("and_api/get_file_list", android_sdk) + `?level=${level.toString()}`;
+        const result = await fetch(url);
+    
+        // 错误处理
+        if (!result.ok) {
+            throw new Error(`Failed to fetch file list: ${result.statusText}`);
+        }
+    
+        // 解析JSON数据
+        return await result.json() as FilelistInfo[];
     }
 
     
