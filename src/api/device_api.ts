@@ -21,6 +21,19 @@ class DeviceApi extends ApiBase {
         return re;
     }
 
+    public async queryS5Macvlan(android_sdk: string) {
+        const result = await fetch(makeMacvlanVmApiUrl("and_api/s5_query", android_sdk));
+        let obj = await this.handleError(result);
+        let re: S5setParam = { s5_domain_mode: obj.domain_mode };
+        try {
+            let url = new URL(obj.addr);
+            return { s5_domain_mode: obj.domain_mode, s5_ip: url.hostname, s5_port: url.port, s5_user: url.username, s5_pwd: url.password };
+        } catch (e) {
+            console.warn(e);
+        }
+        return re;
+    }
+
     public async cloneVm(hostIp: string, name: string, item: CloneVmParam) {
         const result = await fetch(makeVmApiUrl("dc_api/copy", hostIp, name, item.index.toString(), item.dst_name, item.remove.toString()));
         return await this.handleError(result);
@@ -350,8 +363,19 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    public async s5setMacvlan(android_sdk: string, param: S5setParam): Promise<void> {
+        var formData = qs.stringify(param);
+        const result = await fetch(makeMacvlanVmApiUrl("and_api/s5_set", android_sdk) + `?${formData}`);
+        return await this.handleError(result);
+    }
+
     public async closeS5(ip: string, name: string): Promise<void> {
         const result = await fetch(makeVmApiUrl("and_api/s5_stop", ip, name));
+        return await this.handleError(result);
+    }
+
+    public async closeS5Macvlan(android_sdk: string): Promise<void> {
+        const result = await fetch(makeMacvlanVmApiUrl("and_api/s5_stop", android_sdk));
         return await this.handleError(result);
     }
 

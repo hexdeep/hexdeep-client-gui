@@ -17,9 +17,18 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
     public override show(data: DeviceInfo[]) {
         this.data = data;
         this.title = this.$t("s5set.title").toString();
-        deviceApi.queryS5(data.first.hostIp, data.first.name).then(obj => {
-            this.item = obj;
-        });
+        if (!data.first.macvlan) {
+            deviceApi.queryS5(data.first.hostIp, data.first.name).then(obj => {
+                obj.s5_domain_mode = obj.s5_domain_mode == 2 ? 2 : 1;
+                this.item = obj;
+            });
+        } else {
+            deviceApi.queryS5Macvlan(data.first.android_sdk).then(obj => {
+                obj.s5_domain_mode = obj.s5_domain_mode == 2 ? 2 : 1;
+                this.item = obj;
+            });
+        }
+
 
         return super.show(data);
     }
@@ -30,9 +39,9 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
         this.data.forEach(async e => {
             if (e.state) {
                 if (this.isOpen) {
-                    tasks.push(deviceApi.s5set(e.hostIp, e.name, this.item));
+                    tasks.push(!e.macvlan ? deviceApi.s5set(e.hostIp, e.name, this.item) : deviceApi.s5setMacvlan(e.android_sdk, this.item));
                 } else {
-                    tasks.push(deviceApi.closeS5(e.hostIp, e.name));
+                    tasks.push(!e.macvlan ? deviceApi.closeS5(e.hostIp, e.name) : deviceApi.closeS5Macvlan(e.android_sdk));
                 }
             }
         });
