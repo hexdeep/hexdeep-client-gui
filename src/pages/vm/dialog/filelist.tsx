@@ -1,6 +1,6 @@
 import { deviceApi } from '@/api/device_api';
 import { DeviceInfo, FilelistInfo, } from '@/api/device_define';
-import { makeVmApiUrl, Tools } from '@/common/common';
+import { makeMacvlanVmApiUrl, makeVmApiUrl, Tools } from '@/common/common';
 import { i18n } from '@/i18n/i18n';
 import { Column, Row } from "@/lib/container";
 import { Dialog, DrawerDialog } from "@/lib/dialog/dialog";
@@ -102,7 +102,8 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
     }
 
     private renderActionSlot({ row }: { row: FilelistInfo; }) {
-        const url = makeVmApiUrl("and_api/down_file", this.data.hostIp, this.data.name) + `?path=${row.file}`;
+        const url = !this.data.macvlan ? makeVmApiUrl("and_api/down_file", this.data.hostIp, this.data.name) + `?path=${row.file}` :
+            makeMacvlanVmApiUrl("and_api/down_file", this.data.android_sdk) + `?path=${row.file}`;
         return (
             <Row>
                 {!row.flag && <a href={url} class={"link"} download={row.name}>{this.$t("upload.download")}</a>}
