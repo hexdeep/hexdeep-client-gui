@@ -1,5 +1,5 @@
 
-import { makeMacvlanApiUrl, makeVmApiUrl } from "@/common/common";
+import { makeMacvlanVmApiUrl, makeVmApiUrl } from "@/common/common";
 import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
@@ -127,9 +127,20 @@ class DeviceApi extends ApiBase {
     public async upload(ip: string, name: string, remotePath: string, file: File) {
         var formData = new FormData();
         formData.append('file', file);
-        formData.append('remote_path', remotePath);
+        formData.append('path', remotePath);
         formData.append('names', name);
         const result = await fetch(makeVmApiUrl("and_api/upload_file", ip), {
+            method: "POST",
+            body: formData,
+        });
+        return await this.handleError(result);
+    }
+
+    public async uploadMacvlan(android_sdk: string, remotePath: string, file: File) {
+        var formData = new FormData();
+        formData.append('file', file);
+        formData.append('path', remotePath);
+        const result = await fetch(makeMacvlanVmApiUrl("and_api/upload_file", android_sdk), {
             method: "POST",
             body: formData,
         });
@@ -140,9 +151,26 @@ class DeviceApi extends ApiBase {
         var formData = new FormData();
         formData.append('file', file);
         formData.append('names', names);
-        formData.append('remote_path', remotePath);
+        formData.append('path', remotePath);
         const result = await axios({
             url: makeVmApiUrl("and_api/upload_file", ip).toString(), //+
+            method: "POST",
+            data: formData,
+            onUploadProgress: progressEvent => {
+                progress(progressEvent);
+                // this.progressPercent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            }
+        });
+        return await this.handleAxiosError(result);
+    }
+
+    public async uploadToDockerMacvlan(android_sdk: string, remotePath: string, file: File, progress: (progressEvent: AxiosProgressEvent) => void) {
+        var formData = new FormData();
+        formData.append('file', file);
+        formData.append('path', remotePath);
+
+        const result = await axios({
+            url: makeMacvlanVmApiUrl("and_api/upload_file", android_sdk).toString(), //+
             method: "POST",
             data: formData,
             onUploadProgress: progressEvent => {
@@ -223,7 +251,7 @@ class DeviceApi extends ApiBase {
     }
 
     public async getFilelistMacvlan(android_sdk: string, path: string): Promise<FilelistInfo[]> {
-        const result = await fetch(makeMacvlanApiUrl("and_api/get_file_list", android_sdk) + `?path=${path}`);
+        const result = await fetch(makeMacvlanVmApiUrl("and_api/get_file_list", android_sdk) + `?path=${path}`);
         return await this.handleError(result);
     }
 
@@ -283,7 +311,7 @@ class DeviceApi extends ApiBase {
     }
 
     public async screenshotMacvlan(android_sdk: string, level: number = 1): Promise<Blob> {
-        const result = await fetch(makeMacvlanApiUrl("and_api/screenshots", android_sdk) + `?level=${level.toString()}`);
+        const result = await fetch(makeMacvlanVmApiUrl("and_api/screenshots", android_sdk) + `?level=${level.toString()}`);
         return result.blob();
     }
 
@@ -334,7 +362,7 @@ class DeviceApi extends ApiBase {
     }
 
     public async getContainerGitCommitIdMacvlan(android_sdk: string): Promise<string> {
-        const result = await fetch(makeMacvlanApiUrl("and_api/git", android_sdk));
+        const result = await fetch(makeMacvlanVmApiUrl("and_api/git", android_sdk));
         return await this.handleError(result);
     }
 

@@ -43,19 +43,25 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
     private async fillGitCommitId(devices: DeviceInfo[]) {
         devices.forEach(async (device) => {
+
             if (device.state != "running") {
                 return;
             }
 
-            if (!device.macvlan) {
-                deviceApi.getContainerGitCommitId(device.hostIp, device.name).then((gitCommitId: string) => {
-                    this.$set(device, 'git_commit_id', gitCommitId);
-                });
-            } else {
-                deviceApi.getContainerGitCommitIdMacvlan(device.android_sdk).then((gitCommitId: string) => {
-                    this.$set(device, 'git_commit_id', gitCommitId);
-                });
+            try {
+                if (!device.macvlan) {
+                    deviceApi.getContainerGitCommitId(device.hostIp, device.name).then((gitCommitId: string) => {
+                        this.$set(device, 'git_commit_id', gitCommitId);
+                    });
+                } else {
+                    deviceApi.getContainerGitCommitIdMacvlan(device.android_sdk).then((gitCommitId: string) => {
+                        this.$set(device, 'git_commit_id', gitCommitId);
+                    });
+                }
+            } catch (e) {
+
             }
+
         });
     }
 
@@ -318,7 +324,13 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
     @ErrorProxy({ success: i18n.t("upload.success") })
     protected async upload(data: DeviceInfo, file: File) {
-        await deviceApi.upload(data.hostIp, data.name, `/sdcard/${file.name}`, file);
+        console.log("upload into");
+        if (!data.macvlan) {
+            await deviceApi.upload(data.hostIp, data.name, `/sdcard/${file.name}`, file);
+        } else {
+            console.log("upload into1");
+            await deviceApi.uploadMacvlan(data.android_sdk, `/sdcard/${file.name}`, file);
+        }
     }
 
     private renderAction(row: DeviceInfo, hasBtn: boolean = true) {

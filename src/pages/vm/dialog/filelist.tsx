@@ -117,7 +117,11 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
 
     @ErrorProxy({ success: i18n.t("upload.success"), loading: i18n.t("loading") })
     private async upload(file: File) {
-        await deviceApi.upload(this.data.hostIp, this.data.name, `${this.currentDir}/${file.name}`, file);
+        if (!this.data.macvlan) {
+            await deviceApi.upload(this.data.hostIp, this.data.name, `${this.currentDir}/${file.name}`, file);
+        } else {
+            await deviceApi.uploadMacvlan(this.data.android_sdk, `${this.currentDir}/${file.name}`, file);
+        }
 
         await this.ls();
     }

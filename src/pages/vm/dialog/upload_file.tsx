@@ -43,13 +43,33 @@ export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
             this.progress.starttm = Date.now();
             this.progress.bytesPerSecond = 0;
             for (let ip of Object.keys(this.ips)) {
-                let names = this.ips[ip].map(x => x.name).join(",");
-                let re = await deviceApi.uploadToDocker(ip, names, `${this.item.path || "/sdcard"}/${this.fileList.first.raw.name}`, this.fileList.first.raw, (progressEvent) => {
-                    // console.log(progressEvent);
-                    this.progress.progress = Math.round((progressEvent.progress || 0) * 100 / Object.keys(this.ips).length);
-                    this.progress.bytesPerSecond = progressEvent.loaded / ((Date.now() - this.progress.starttm) / 1000);
-                });
-                console.log(re);
+                //处理非macvlan容器的文件上传
+                let names = this.ips[ip].filter(x => x.macvlan === false).map(x => x.name).join(",");
+                if (names.length > 0) {
+                    let re = await deviceApi.uploadToDocker(ip, names, `${this.item.path || "/sdcard"}/${this.fileList.first.raw.name}`, this.fileList.first.raw, (progressEvent) => {
+                        // console.log(progressEvent);
+                        this.progress.progress = Math.round((progressEvent.progress || 0) * 100 / Object.keys(this.ips).length);
+                        this.progress.bytesPerSecond = progressEvent.loaded / ((Date.now() - this.progress.starttm) / 1000);
+                    });
+                    console.log(re);
+                }
+
+                // 处理macvlan容器的文件上传
+                let android_sdks = this.ips[ip].filter(x => x.macvlan === true).map(x => x.android_sdk);
+                for (const android_sdk of android_sdks) {
+                    const re = await deviceApi.uploadToDockerMacvlan(
+                        android_sdk,
+                        `${this.item.path || "/sdcard"}/${this.fileList.first.raw.name}`,
+                        this.fileList.first.raw,
+                        (progressEvent) => {
+                            this.progress.progress = Math.round(
+                                (progressEvent.progress || 0) * 100 / Object.keys(this.ips).length
+                            );
+                            this.progress.bytesPerSecond = progressEvent.loaded / ((Date.now() - this.progress.starttm) / 1000);
+                        }
+                    );
+                    console.log(re);
+                }
             }
             // await deviceApi.upload(this.data.hostIp, this.data.name, `${this.path || "/sdcard"}/${this.fileList.first.raw.name}`, this.fileList.first.raw);
             console.log("close");

@@ -157,6 +157,6 @@ export function makeVmApiUrl(...url: string[]) {
     return new URL(urlJoin(url), "http://" + url[1]);
 }
 
-export function makeMacvlanApiUrl(...url: string[]) {
+export function makeMacvlanVmApiUrl(...url: string[]) {
     return new URL(url[0], "http://" + url[1]);
 }
