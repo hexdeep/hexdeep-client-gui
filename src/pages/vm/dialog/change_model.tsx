@@ -12,7 +12,7 @@ import { i18n } from "@/i18n/i18n";
 export class ChangeModelDialog extends CommonDialog<DeviceInfo, boolean> {
     protected model_id = 0;
     public override show(data: DeviceInfo) {
-        console.log(data)
+        console.log(data);
         this.data = data;
         this.title = this.$t("changeModel.title").toString();// "修改设备名称";
         return super.show(data);
@@ -20,8 +20,13 @@ export class ChangeModelDialog extends CommonDialog<DeviceInfo, boolean> {
 
     @ErrorProxy({ success: i18n.t("changeModel.success"), loading: i18n.t("loading"), validatForm: "formRef" })
     protected override async onConfirm() {
-        console.log(this.data, this.model_id)
-        await deviceApi.changeModel(this.data.hostIp, this.data.name, this.model_id);
+        console.log(this.data, this.model_id);
+        if (!this.data.macvlan) {
+            await deviceApi.changeModel(this.data.hostIp, this.data.name, this.model_id);
+        } else {
+            await deviceApi.changeModelMacvlan(this.data.android_sdk, this.model_id);
+        }
+
         this.close(true);
     }
 
