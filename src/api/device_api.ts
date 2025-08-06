@@ -222,6 +222,11 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    public async getFilelistMacvlan(android_sdk: string, path: string): Promise<FilelistInfo[]> {
+        const result = await fetch(makeMacvlanApiUrl("and_api/get_file_list", android_sdk) + `?path=${path}`);
+        return await this.handleError(result);
+    }
+
     public async getHosts(): Promise<HostInfo[]> {
         const result = await fetch(makeVmApiUrl("host/device/get", Config.host));
         return await this.handleError(result);
@@ -323,8 +328,13 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
-    public async getFilelistMacvlan(android_sdk: string, path: string): Promise<FilelistInfo[]> {
-        const result = await fetch(makeMacvlanApiUrl("and_api/get_file_list", android_sdk) + `?path=${path}`);
+    public async getContainerGitCommitId(ip: string, name: string): Promise<string> {
+        const result = await fetch(makeVmApiUrl("and_api/git", ip, name));
+        return await this.handleError(result);
+    }
+
+    public async getContainerGitCommitIdMacvlan(android_sdk: string): Promise<string> {
+        const result = await fetch(makeMacvlanApiUrl("and_api/git", android_sdk));
         return await this.handleError(result);
     }
 

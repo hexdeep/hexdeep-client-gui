@@ -19,6 +19,7 @@ import { UploadFileDialog } from './dialog/upload_file';
 import { VmDetailDialog } from './dialog/vm_detail';
 import { Screenshot } from './screenshot';
 import { ModelSelectotDialog } from '@/lib/component/model_selector';
+import { waapi } from 'animejs';
 
 @Component
 export class DeviceList extends tsx.Component<IProps, IEvents> {
@@ -33,10 +34,29 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
     private get data2(): DeviceInfo[] {
         var re = this.hostTree.flatMap(x => x.children?.filter(y => y.selected && (y.value.state == this.config.filterState || this.config.filterState == "all")).map(t => t.value));
+        this.fillGitCommitId(re);
         return re;
     }
 
     protected async created() {
+    }
+
+    private async fillGitCommitId(devices: DeviceInfo[]) {
+        devices.forEach(async (device) => {
+            if (device.state != "running") {
+                return;
+            }
+
+            if (!device.macvlan) {
+                deviceApi.getContainerGitCommitId(device.hostIp, device.name).then((gitCommitId: string) => {
+                    this.$set(device, 'git_commit_id', gitCommitId);
+                });
+            } else {
+                deviceApi.getContainerGitCommitIdMacvlan(device.android_sdk).then((gitCommitId: string) => {
+                    this.$set(device, 'git_commit_id', gitCommitId);
+                });
+            }
+        });
     }
 
     public selectAll() {
