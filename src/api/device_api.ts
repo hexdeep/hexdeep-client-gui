@@ -323,20 +323,12 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
-    public async getFilelistMacvlan(android_sdk: string, level: number = 1): Promise<FilelistInfo[]> {
-        const url = makeMacvlanApiUrl("and_api/get_file_list", android_sdk) + `?level=${level.toString()}`;
-        const result = await fetch(url);
-    
-        // 错误处理
-        if (!result.ok) {
-            throw new Error(`Failed to fetch file list: ${result.statusText}`);
-        }
-    
-        // 解析JSON数据
-        return await result.json() as FilelistInfo[];
+    public async getFilelistMacvlan(android_sdk: string, path: string): Promise<FilelistInfo[]> {
+        const result = await fetch(makeMacvlanApiUrl("and_api/get_file_list", android_sdk) + `?path=${path}`);
+        return await this.handleError(result);
     }
 
-    
+
 }
 
 export const deviceApi = new DeviceApi();

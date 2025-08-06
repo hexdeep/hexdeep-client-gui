@@ -20,7 +20,7 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
 
     @Watch("currentDir")
     private async ls() {
-        
+
         if (this.delayShowLoadingTimer) {
             clearTimeout(this.delayShowLoadingTimer);
         }
@@ -29,9 +29,9 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
         }, 500);
         try {
             this.files = [];
-            const files = this.deviceInfo.macvlan
-            ? await deviceApi.getFilelist(this.data.hostIp, this.data.name, this.currentDir)
-            : await deviceApi.getFilelistMacvlan(this.deviceInfo.android_sdk);
+            const files = !this.deviceInfo.macvlan
+                ? await deviceApi.getFilelist(this.data.hostIp, this.data.name, this.currentDir)
+                : await deviceApi.getFilelistMacvlan(this.deviceInfo.android_sdk, this.currentDir);
 
             // 确保files是数组再调用sort方法
             if (files && Array.isArray(files)) {
