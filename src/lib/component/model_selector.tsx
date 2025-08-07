@@ -105,12 +105,7 @@ export class ModelSelectotDialog extends CommonDialog<number, number> {
     protected override async onConfirm() {
         if (this.immediateSubmit) {
             if (!this.device) throw new Error("device is null");
-            if (!this.device.macvlan) {
-                await deviceApi.changeModel(this.device.hostIp, this.device.name, this.value);
-            } else {
-                await deviceApi.changeModelMacvlan(this.device.android_sdk, this.value);
-            }
-
+            await deviceApi.changeModelMacvlan(this.device.android_sdk, this.value);
         }
         this.close(this.value);
     }

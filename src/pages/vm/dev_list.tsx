@@ -49,15 +49,9 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             }
 
             try {
-                if (!device.macvlan) {
-                    deviceApi.getContainerGitCommitId(device.hostIp, device.name).then((gitCommitId: string) => {
-                        this.$set(device, 'git_commit_id', gitCommitId);
-                    });
-                } else {
-                    deviceApi.getContainerGitCommitIdMacvlan(device.android_sdk).then((gitCommitId: string) => {
-                        this.$set(device, 'git_commit_id', gitCommitId);
-                    });
-                }
+                deviceApi.getContainerGitCommitIdMacvlan(device.android_sdk).then((gitCommitId: string) => {
+                    this.$set(device, 'git_commit_id', gitCommitId);
+                });
             } catch (e) {
 
             }
