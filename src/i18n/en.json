@@ -173,6 +173,7 @@
         "imageAddr": "Image Address",
         "containerGitCommitId": "Version",
         "adb": "ADB",
+        "android_sdk": "Android SDK",
         "state": "Status",
         "rebootSDKSuccess": "Reboot SDK Successful",
         "temperature": "Temperature",

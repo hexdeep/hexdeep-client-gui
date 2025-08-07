@@ -42,6 +42,9 @@ export class VmDetailDialog extends CommonDialog<DeviceInfo, void> {
                 <el-descriptions-item label={i18n.t("vmDetail.adb")}>
                     {this.data.adb}
                 </el-descriptions-item>
+                <el-descriptions-item label={i18n.t("vmDetail.android_sdk")}>
+                    {this.data.android_sdk}
+                </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.state")}>
                     {i18n.t(this.data.state)}
                 </el-descriptions-item>
