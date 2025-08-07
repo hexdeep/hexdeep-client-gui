@@ -102,8 +102,7 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
     }
 
     private renderActionSlot({ row }: { row: FilelistInfo; }) {
-        const url = !this.data.macvlan ? makeVmApiUrl("and_api/down_file", this.data.hostIp, this.data.name) + `?path=${row.file}` :
-            makeMacvlanVmApiUrl("and_api/down_file", this.data.android_sdk) + `?path=${row.file}`;
+        const url = makeMacvlanVmApiUrl("and_api/down_file", this.data.android_sdk) + `?path=${row.file}`;
         return (
             <Row>
                 {!row.flag && <a href={url} class={"link"} download={row.name}>{this.$t("upload.download")}</a>}

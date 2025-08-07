@@ -29,7 +29,7 @@ export class Screenshot extends tsx.Component<IProps> {
             if (this.busy) return;
             try {
                 this.busy = true;
-                var b = !this.device.macvlan ? await deviceApi.screenshot(this.device.hostIp, this.device.name) : await deviceApi.screenshotMacvlan(this.device.android_sdk);
+                var b = await deviceApi.screenshotMacvlan(this.device.android_sdk);
                 if (b?.size > 100) {
                     this.updateImg(b);
                 }
