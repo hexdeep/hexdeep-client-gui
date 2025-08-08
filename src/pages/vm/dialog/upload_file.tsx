@@ -92,7 +92,7 @@ export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
                             this.responses = { ...this.responses };
                             return res;
                         } catch (err) {
-                            this.responses[android_sdk] = { code: 1, err: err.message || "upload fail" };
+                            this.responses[android_sdk] = { code: 1, err: err || "upload fail" };
                         }
 
                     })();
