@@ -59,6 +59,7 @@
         "name": "Name",
         "sandbox": "Sandbox",
         "sandbox_size": "Sandbox Size(GB)",
+        "subnet": "Subnet",
         "mac_vlan": "Static IP Mode",
         "ip": "IP",
         "image_addr": "Image Address",

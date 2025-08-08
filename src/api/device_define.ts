@@ -12,6 +12,7 @@ export interface DeviceInfo {
     macvlan: boolean;
     android_sdk: string;
     adb: string;
+    subnet: string;
     hostIp: string;
     hostId: string;
     create_req: DeviceDetail;
@@ -53,6 +54,7 @@ export interface CreateParam extends S5setParam, DeviceDetail {
     mac_vlan?: number;  //	独立ip模式:0,禁用；1，启用
     ip?: string;    //	ip:mac_vlan模式为1时，必须指定
     model_id?: number;  //	机型id:值为0时，随机机型；大于0时，固定机型
+    subnet?: string;
 
     // s5_domain_mode?: number;//	1,本地域名解析;2,服务端域名解析（默认）
     // s5_ip?: string; //	s5代理ip
