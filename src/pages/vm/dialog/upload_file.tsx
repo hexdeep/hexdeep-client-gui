@@ -1,4 +1,3 @@
-
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
 import { ErrorProxy } from "@/lib/error_handle";
 import { VNode } from "vue";
@@ -8,21 +7,30 @@ import { DeviceInfo } from "@/api/device_define";
 import { MyButton } from "@/lib/my_button";
 import { Tool } from "@/common/Tools";
 import s from './upload_file.module.less';
+import { copyFileSync } from "node:fs";
 
+interface UploadProgress {
+    progress: number;
+    start: boolean;
+    starttm: number;
+    bytesPerSecond: number;
+}
 
 @Dialog
 export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
     private ips: Record<string, DeviceInfo[]> = {};
     private fileList: any[] = [];
-    private progress = { progress: 0, start: false, starttm: Date.now(), bytesPerSecond: 0 };
+    private progresses: Record<string, UploadProgress> = {};
     private readonly = false;
     private item: any = { path: "/sdcard" };
+    private responses: Record<string, any> = {};
 
     public override show(data: DeviceInfo[]) {
         this.ips = data.filter(x => x.state == "running").groupBy(x => x.hostIp);
-        //console.log(this.ips);
         this.title = this.$t("upload.title").toString();
-        if (Object.keys(this.ips).length > 1) this.title = `${this.title} (${Object.keys(this.ips).length})`;
+        if (Object.keys(this.ips).length > 1) {
+            this.title = `${this.title} (${Object.keys(this.ips).length})`;
+        }
         return super.show(data);
     }
 
@@ -38,41 +46,65 @@ export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
     protected async confirming() {
         try {
             this.readonly = true;
-            this.progress.start = true;
-            this.progress.progress = 0;
-            this.progress.starttm = Date.now();
-            this.progress.bytesPerSecond = 0;
-            for (let ip of Object.keys(this.ips)) {
-                //处理非macvlan容器的文件上传
-                let names = this.ips[ip].filter(x => x.macvlan === false).map(x => x.name).join(",");
-                if (names.length > 0) {
-                    let re = await deviceApi.uploadToDocker(ip, names, `${this.item.path || "/sdcard"}/${this.fileList.first.raw.name}`, this.fileList.first.raw, (progressEvent) => {
-                        // console.log(progressEvent);
-                        this.progress.progress = Math.round((progressEvent.progress || 0) * 100 / Object.keys(this.ips).length);
-                        this.progress.bytesPerSecond = progressEvent.loaded / ((Date.now() - this.progress.starttm) / 1000);
-                    });
-                    console.log(re);
-                }
 
-                // 处理macvlan容器的文件上传
-                let android_sdks = this.ips[ip].filter(x => x.macvlan === true).map(x => x.android_sdk);
-                for (const android_sdk of android_sdks) {
-                    const re = await deviceApi.uploadToDockerMacvlan(
-                        android_sdk,
-                        `${this.item.path || "/sdcard"}/${this.fileList.first.raw.name}`,
-                        this.fileList.first.raw,
-                        (progressEvent) => {
-                            this.progress.progress = Math.round(
-                                (progressEvent.progress || 0) * 100 / Object.keys(this.ips).length
-                            );
-                            this.progress.bytesPerSecond = progressEvent.loaded / ((Date.now() - this.progress.starttm) / 1000);
-                        }
-                    );
-                    console.log(re);
+            // 初始化进度条
+            this.progresses = {};
+            for (let ip of Object.keys(this.ips)) {
+                for (const sdk of this.ips[ip].map(x => x.android_sdk)) {
+                    this.progresses[sdk] = {
+                        progress: 0,
+                        start: true,
+                        starttm: Date.now(),
+                        bytesPerSecond: 0
+                    };
                 }
             }
-            // await deviceApi.upload(this.data.hostIp, this.data.name, `${this.path || "/sdcard"}/${this.fileList.first.raw.name}`, this.fileList.first.raw);
-            console.log("close");
+
+            // 读取原始文件
+            const fileRaw = this.fileList.first.raw;
+
+            const uploadTasks: Promise<any>[] = [];
+
+
+            for (let ip of Object.keys(this.ips)) {
+                const android_sdks = this.ips[ip].map(x => x.android_sdk);
+                for (const android_sdk of android_sdks) {
+                    const task = (async () => {
+                        // 这里复用外层读取的 arrayBuffer，直接创建新 File
+
+                        try {
+                            const res = await deviceApi.uploadToDockerMacvlanWithoutHandlerError(
+                                android_sdk,
+                                `${this.item.path || "/sdcard"}/${fileRaw.name}`,
+                                fileRaw,
+                                (progressEvent) => {
+                                    const p = this.progresses[android_sdk];
+                                    if (p) {
+                                        p.progress = Math.round((progressEvent.progress || 0) * 100);
+                                        p.bytesPerSecond = progressEvent.loaded / ((Date.now() - p.starttm) / 1000);
+                                        this.progresses = { ...this.progresses };
+                                    }
+                                }
+                            );
+
+                            console.log(res.data);
+                            this.responses[android_sdk] = res.data;
+                            this.responses = { ...this.responses };
+                            return res;
+                        } catch (err) {
+                            this.responses[android_sdk] = { code: 1, err: err.message || "upload fail" };
+                        }
+
+                    })();
+
+                    uploadTasks.push(task);
+                }
+            }
+
+            // 并行执行所有上传
+            const results = await Promise.all(uploadTasks);
+            console.log("上传结果：", results);
+
             this.close(true);
         } catch (error) {
             throw error;
@@ -80,6 +112,7 @@ export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
             this.readonly = false;
         }
     }
+
 
     protected override renderFooter() {
         return (
@@ -94,9 +127,8 @@ export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
         this.fileList = [file];
     }
 
-    private formatSpeed(): string {
-
-        return `${Tool.getFileSize(this.progress.bytesPerSecond)}/s`;
+    private formatSpeed(bytesPerSecond: number): string {
+        return `${Tool.getFileSize(bytesPerSecond)}/s`;
     }
 
     protected renderDialog(): VNode {
@@ -105,8 +137,9 @@ export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
                 <el-form-item label={this.$t("upload.path")} prop="path">
                     <el-input v-model={this.item.path} maxlength={100} />
                 </el-form-item>
-                <el-form-item label={this.$t("upload.file")}  >
-                    <el-upload drag
+                <el-form-item label={`${this.$t("upload.file")}(${Object.keys(this.responses).length}/${Object.keys(this.progresses).length})`}>
+                    <el-upload
+                        drag
                         multiple={false}
                         limit={2}
                         action="#"
@@ -115,9 +148,9 @@ export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
                         }}
                         file-list={this.fileList}
                         show-file-list={false}
-                        auto-upload={false} class={s.body}>
-
-
+                        auto-upload={false}
+                        class={s.body}
+                    >
                         <i class="el-icon-upload"></i>
                         <div class="el-upload__text">
                             {this.$t("upload.tip")}
@@ -127,12 +160,34 @@ export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
                                 {this.fileList.length > 0 ? this.fileList[0].name : this.$t("upload.nofile")}
                             </span>
                         </div>
-                    </el-upload >
-                    {this.progress.start && <el-progress percentage={this.progress.progress} />}
-                    {this.progress.start && <div class={s.speed}>{this.$t("import.speed")}: {this.formatSpeed()}</div>}
-                    {this.progress.progress == 100 && <div class={s.speed}>{this.$t("import.copying")}</div>}
-                </el-form-item >
-            </el-form >
+                    </el-upload>
+
+                    {/* 多进度条 */}
+                    {Object.entries(this.progresses).map(([sdk, p]) => (
+                        <div key={sdk} style={{ marginBottom: "12px" }}>
+                            <div>{sdk}</div>
+                            <el-progress percentage={p.progress} />
+                            {p.start && (
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    {this.$t("import.speed")}: {this.formatSpeed(p.bytesPerSecond)}
+                                    {this.responses[sdk] && (
+                                        <span
+                                            style={{
+                                                color: this.responses[sdk].code === 200 ? "green" : "red",
+                                                whiteSpace: "nowrap",
+                                            }}
+                                        >
+                                            {this.responses[sdk].code === 200
+                                                ? i18n.t("upload.success")
+                                                : i18n.t("error") + `: ${this.responses[sdk].err || "Unknown error"}`}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </el-form-item>
+            </el-form>
         );
     }
 }

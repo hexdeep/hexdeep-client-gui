@@ -178,11 +178,15 @@ class DeviceApi extends ApiBase {
     }
 
     public async uploadToDockerMacvlan(android_sdk: string, remotePath: string, file: File, progress: (progressEvent: AxiosProgressEvent) => void) {
+        return await this.handleAxiosError(await this.uploadToDockerMacvlanWithoutHandlerError(android_sdk, remotePath, file, progress));
+    }
+
+    public async uploadToDockerMacvlanWithoutHandlerError(android_sdk: string, remotePath: string, file: File, progress: (progressEvent: AxiosProgressEvent) => void) {
         var formData = new FormData();
         formData.append('file', file);
         formData.append('path', remotePath);
 
-        const result = await axios({
+        return await axios({
             url: makeMacvlanVmApiUrl("and_api/upload_file", android_sdk).toString(), //+
             method: "POST",
             data: formData,
@@ -191,7 +195,6 @@ class DeviceApi extends ApiBase {
                 // this.progressPercent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
             }
         });
-        return await this.handleAxiosError(result);
     }
 
     public async batchCreate(hostIp: string, num: number, pre_name: string, param: CreateParam) {
