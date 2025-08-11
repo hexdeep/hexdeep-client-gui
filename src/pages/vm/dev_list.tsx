@@ -126,12 +126,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         return <span class={[s.status, r.state == "running" ? s.running : s.no_run]} title={this.$t(r.state == "running" ? "running" : "noRun").toString()}> </span>;
     }
 
-    private renderVmImage(r: DeviceInfo) {
-        var img = this.images.find(x => x.address == r.image_addr);
-        if (img) {
-            return img.name;
-        }
-        return r.image_addr;
+    private renderVmImage(r: DeviceInfo): ImageInfo | undefined {
+        return this.images.find(x => x.address == r.image_addr);
     }
 
     protected render() {
@@ -145,9 +141,41 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <el-table-column prop="name" label={this.$t("name")} width="100" formatter={r => getSuffixName(r.name)} show-overflow-tooltip />
                         {/* <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} /> */}
                         {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
-                        <el-table-column prop="adb" label="ADB" width="160" show-overflow-tooltip />
-                        <el-table-column prop="git_commit_id" label={this.$t("vmDetail.containerGitCommitId")} width="100" show-overflow-tooltip />
-                        <el-table-column prop="image_addr" label={this.$t("vmImage")} show-overflow-tooltip formatter={this.renderVmImage} />
+                        <el-table-column prop="adb" label="ADB" width="140" show-overflow-tooltip />
+                        <el-table-column prop="git_commit_id" label={this.$t("vmDetail.containerGitCommitId")} width="95" show-overflow-tooltip />
+                        <el-table-column
+                            // prop="image_addr" label={this.$t("vmImage")} show-overflow-tooltip formatter={(r) => {
+                            //     const img = this.renderVmImage(r);
+                            //     return img ? img.name : r.image_addr;
+                            // }}
+                            scopedSlots={{
+                                default: ({ row }) => {
+                                    const e = this.renderVmImage(row);
+                                    if (!e) {
+                                        return <span>{row.image_addr}</span>;
+                                    }
+                                    const download = row.image_digest === e.id;
+                                    return <div>
+                                        {e.android_version && <span
+                                            style={{
+                                                lineHeight: "20px",
+                                                padding: "0 3px",
+                                                marginRight: "5px",
+                                                backgroundColor: download ? "#f0f9eb" : "#fef0f0",
+                                                borderColor: download ? "#e1f3d8" : "#fde2e2",
+                                                color: download ? "#67c23a" : "#f56c6c",
+                                                borderRadius: "3px",
+                                            }}
+                                            title={download ? this.$t("create.downloaded").toString() : this.$t("create.unDownloaded").toString()}
+                                            type={download ? "success" : "danger"}>
+                                            {download && <i class="el-icon-check" />}
+                                            {!download && <i class="el-icon-close" />}
+                                        </span>}
+                                        {<span>{e.name}</span>}
+                                    </div>;
+                                }
+                            }}
+                        />
                         <el-table-column prop="state" label={this.$t("state")} width="90" formatter={this.renderStatus} align="center" />
                         <el-table-column label={this.$t("action")} width="120" formatter={this.renderAction} />
                     </el-table>
@@ -378,5 +406,4 @@ interface IProps {
 interface IEvents {
     onSelectChange(selectedRows: DeviceInfo[]): void;
 }
-
 

@@ -7,6 +7,7 @@ export interface DeviceInfo {
     index: number;
     created_at: string;
     image_addr: string;
+    image_digest: string;
     git_commit_id: string;
     ip: string;
     macvlan: boolean;

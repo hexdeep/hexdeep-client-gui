@@ -43,8 +43,8 @@ export default class VMPage extends Vue {
         } catch (ex) {
             console.log(ex);
         }
-        this.refreshHost();
         this.refreshImages();
+        this.refreshHost();
     }
 
     protected async refreshImages() {
