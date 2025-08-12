@@ -89,7 +89,7 @@
         "downloaded": "Downloaded",
         "unDownloaded": "Not downloaded",
         "need_update": "need to update",
-        "alredy_latest": "already the latest"
+        "already_latest": "already the latest"
     },
     "menu": {
         "start": "Start",

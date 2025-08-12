@@ -90,7 +90,7 @@
         "downloaded": "已下载",
         "unDownloaded": "未下载",
         "need_update": "有更新",
-        "alredy_latest": "已是最新"
+        "already_latest": "已是最新"
     },
     "menu": {
         "start": "开机",
