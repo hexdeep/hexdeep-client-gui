@@ -166,7 +166,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                                                 color: download ? "#67c23a" : "#f56c6c",
                                                 borderRadius: "3px",
                                             }}
-                                            title={download ? this.$t("create.downloaded").toString() : this.$t("create.unDownloaded").toString()}
+                                            title={download ? this.$t("create.already_latest").toString() : this.$t("create.need_update").toString()}
                                             type={download ? "success" : "danger"}>
                                             {download && <i class="el-icon-check" />}
                                             {!download && <i class="el-icon-close" />}
