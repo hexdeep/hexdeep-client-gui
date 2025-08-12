@@ -43,16 +43,38 @@ export default class VMPage extends Vue {
         } catch (ex) {
             console.log(ex);
         }
-        this.refreshImages();
+        await this.refreshImages();
         this.refreshHost();
     }
 
     protected async refreshImages() {
         try {
-            this.images = await deviceApi.getImages(Config.host);
+            const cacheFun = async () => {
+                this.images = await deviceApi.getImages(Config.host);
+                sessionStorage.setItem("imagesCache", JSON.stringify(this.images));
+            };
+            let cache = this.loadImageCache();
+            if (cache) {
+                this.images = cache;
+                cacheFun();
+            } else {
+                await cacheFun();
+            }
         } catch (error) {
             console.warn(`刷新镜像列表失败: ${error}`);
         }
+    }
+
+    private loadImageCache() {
+        try {
+            let cache = sessionStorage.getItem("imagesCache");
+            if (cache) {
+                return JSON.parse(cache) as ImageInfo[];
+            }
+        } catch (error) {
+            // ignore
+        }
+        return;
     }
 
     protected async refreshHost(ip?: string) {

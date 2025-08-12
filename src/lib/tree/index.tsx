@@ -40,7 +40,7 @@ export class MyTree extends tsx.Component<IProps, {}, ISlots> {
                 }
                 this.$emit("change");
             };
-            return <div class="mytree-item" style={{ height: `${height}px`, paddingLeft: `${level * 42}px` }}>
+            return <div class="mytree-item" style={{ height: `${height}px`, paddingLeft: `${level * 30}px` }}>
                 <div class="mytree-item-content">
                     {children && children.length > 0 && <i class={["el-icon-caret-right mytree-expand-icon", item.opened && "opened"]} onClick={() => this.toggleExpand(item)} />}
                     {this.showCheckbox && <el-checkbox value={allSelected} indeterminate={indeterminate} onInput={handleInput} />}

@@ -2,6 +2,7 @@ import { deviceApi } from '@/api/device_api';
 import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from '@/api/device_define';
 import { getPrefixName, getSuffixName, makeVmApiUrl } from '@/common/common';
 import { i18n } from '@/i18n/i18n';
+import { ModelSelectotDialog } from '@/lib/component/model_selector';
 import { Column, Row } from '@/lib/container';
 import { ErrorProxy } from '@/lib/error_handle';
 import { TextButton } from '@/lib/my_button';
@@ -9,7 +10,6 @@ import { ElTable } from 'element-ui/types/table';
 import { Component, InjectReactive, Ref, Watch } from 'vue-property-decorator';
 import * as tsx from 'vue-tsx-support';
 import s from './dev_list.module.less';
-import { ChangeModelDialog } from './dialog/change_model';
 import { CloneVmDialog } from './dialog/clone_vm';
 import { CreateDialog } from './dialog/create';
 import { FilelistDialog } from './dialog/filelist';
@@ -18,8 +18,6 @@ import { S5setDialog } from './dialog/s5set';
 import { UploadFileDialog } from './dialog/upload_file';
 import { VmDetailDialog } from './dialog/vm_detail';
 import { Screenshot } from './screenshot';
-import { ModelSelectotDialog } from '@/lib/component/model_selector';
-import { waapi } from 'animejs';
 
 @Component
 export class DeviceList extends tsx.Component<IProps, IEvents> {
@@ -73,7 +71,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         this.$emit("selectChange", this.rightChecked);
     }
 
-    @Watch("config")
+    @Watch("config", { deep: true })
     protected viewChange() {
         if (this.config.view == "list") {
             this.toggleRowSelection();
@@ -83,7 +81,6 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     private toggleRowSelection() {
         var tmp = [...this.rightChecked];
         this.$nextTick(() => {
-            // console.log(this.data, tmp);
             this.data2.forEach(x => {
                 var t = (tmp.find(y => x.key == y) != null);
                 //console.log("设置选中项", x, t);
@@ -133,23 +130,25 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     protected render() {
         return (
             <div class={[s.deviceList, "contentBox"]}>
-                {this.config.view == "list" && <div class={s.table}>
+                <div class={s.table} style={{ display: this.config.view == "list" ? "block" : "none" }}>
                     <el-table default-expand-all data={this.data2} width="100%" height="100%" row-key="key"
                         ref="tb" on-selection-change={(e, e2) => this.handleSelectionChange(e, e2)} empty-text={this.$t("table.emptyText")}>
-                        <el-table-column type="selection" width="45" reserve-selection={true} />
-                        <el-table-column prop="index" label={this.$t("table.index")} width="60" align="center" />
-                        <el-table-column prop="name" label={this.$t("name")} width="100" formatter={r => getSuffixName(r.name)} show-overflow-tooltip />
+                        <el-table-column type="selection" width="30" reserve-selection={true} />
+                        <el-table-column prop="index" label={"No"} width="30" align="center" />
+                        <el-table-column prop="name" label={this.$t("name")} formatter={r => getSuffixName(r.name)} show-overflow-tooltip />
                         {/* <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} /> */}
                         {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
                         <el-table-column prop="adb" label="ADB" width="140" show-overflow-tooltip />
-                        <el-table-column prop="git_commit_id" label={this.$t("vmDetail.containerGitCommitId")} width="95" show-overflow-tooltip />
+                        <el-table-column prop="git_commit_id" label={this.$t("vmDetail.containerGitCommitId")} width="100" show-overflow-tooltip />
                         <el-table-column
+                            width="250"
+                            show-overflow-tooltip
                             // prop="image_addr" label={this.$t("vmImage")} show-overflow-tooltip formatter={(r) => {
                             //     const img = this.renderVmImage(r);
                             //     return img ? img.name : r.image_addr;
                             // }}
                             scopedSlots={{
-                                default: ({ row }) => {
+                                default: ({ row }: { row: DeviceInfo; }) => {
                                     const e = this.renderVmImage(row);
                                     if (!e) {
                                         return <span>{row.image_addr}</span>;
@@ -179,7 +178,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <el-table-column prop="state" label={this.$t("state")} width="90" formatter={this.renderStatus} align="center" />
                         <el-table-column label={this.$t("action")} width="120" formatter={this.renderAction} />
                     </el-table>
-                </div>}
+                </div>
                 {(this.config.view == "horizontal" || this.config.view == "vertical") &&
                     <el-checkbox-group value={this.rightChecked}>
                         <div class={s[this.config.view]}>
