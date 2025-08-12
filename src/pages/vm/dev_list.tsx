@@ -133,8 +133,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                 <div class={s.table} style={{ display: this.config.view == "list" ? "block" : "none" }}>
                     <el-table default-expand-all data={this.data2} width="100%" height="100%" row-key="key"
                         ref="tb" on-selection-change={(e, e2) => this.handleSelectionChange(e, e2)} empty-text={this.$t("table.emptyText")}>
-                        <el-table-column type="selection" width="30" reserve-selection={true} />
-                        <el-table-column prop="index" label={"No"} width="30" align="center" />
+                        <el-table-column type="selection" width="45" reserve-selection={true} />
+                        <el-table-column prop="index" label={"No"} width="40" align="center" />
                         <el-table-column prop="name" label={this.$t("name")} formatter={r => getSuffixName(r.name)} show-overflow-tooltip />
                         {/* <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} /> */}
                         {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
