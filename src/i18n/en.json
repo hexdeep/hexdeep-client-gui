@@ -87,7 +87,9 @@
         "tip": "One host can create up to 12 VMs, with a total of {0} VMs available",
         "downloadingImage": "Downloading image, please wait...",
         "downloaded": "Downloaded",
-        "unDownloaded": "Not downloaded"
+        "unDownloaded": "Not downloaded",
+        "need_update": "need to update",
+        "already_latest": "already the latest"
     },
     "menu": {
         "start": "Start",

@@ -88,7 +88,9 @@
         "tip": "一台主机最多可创建12台云机，剩余可创建云机总数：{0}台",
         "downloadingImage": "正在下载镜像，请稍后...",
         "downloaded": "已下载",
-        "unDownloaded": "未下载"
+        "unDownloaded": "未下载",
+        "need_update": "有更新",
+        "already_latest": "已是最新"
     },
     "menu": {
         "start": "开机",
