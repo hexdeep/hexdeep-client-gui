@@ -1,17 +1,17 @@
-
-
-import { i18n } from "@/i18n/i18n";
-import { CommonDialog, Dialog, DrawerDialog } from "@/lib/dialog/dialog";
-import { ErrorProxy } from "@/lib/error_handle";
-import { VNode } from "vue";
 import { deviceApi } from '@/api/device_api';
 import { CreateParam, DockerEditParam, ImageInfo } from "@/api/device_define";
+import { i18n } from "@/i18n/i18n";
+import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
+import { ErrorProxy } from "@/lib/error_handle";
+import { VNode } from "vue";
+import { Watch } from "vue-property-decorator";
 import { CreateForm } from "../../../lib/component/create_form";
 
 @Dialog
 export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     public override width: string = "650px";
     protected images: ImageInfo[] = [];
+    private dirty = 0;
     public override show(data: DockerEditParam) {
         this.data = data;
         this.title = data.isUpdate ? this.$t("menu.updateVm").toString() : this.$t("createVm").toString();
@@ -21,15 +21,23 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         return super.show(data);
     }
 
+    @Watch("data", { deep: true })
+    protected onDataChange() {
+        this.dirty++;
+    }
+
     @ErrorProxy({ loading: i18n.t("create.downloadingImage") })
     protected override async onConfirm() {
+        if (this.dirty < 2) {
+            this.close();
+            return;
+        };
         if (this.data.obj.image_addr) {
             var image = this.images.find(x => x.address == this.data.obj.image_addr);
             if (image && !image.download) {
                 await deviceApi.pullImages(this.data.info.hostIp, this.data.obj.image_addr);
             }
         }
-
         this.confirming();
     }
 
