@@ -117,7 +117,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                             <el-input v-model={this.data.s5_ip} />
                         </el-form-item>
                         <el-form-item label={this.$t("create.s5_port")} prop="s5_port">
-                            <el-input v-model={this.data.s5_port} type="number" min={1} max={65535} />
+                            <el-input v-model={this.data.s5_port} type="number" min={1} max={65535} onBlur={this.fixNumber("s5_port")} />
                         </el-form-item>
                     </Row>
                 )}
