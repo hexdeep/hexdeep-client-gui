@@ -37,6 +37,8 @@ export abstract class DialogBase<TResult = void> extends Vue {
     public result: any;
     private onKeyup!: (e: KeyboardEvent) => void;
     private completer = new Completer<TResult | undefined>();
+    /** 是否允许按ESC关闭 */
+    public allowEscape = true;
 
     private init() {
         this.onKeyup = (e) => {
@@ -48,7 +50,7 @@ export abstract class DialogBase<TResult = void> extends Vue {
             if (elementDialog && display !== 'none') {
                 return;
             }
-            if (e.key === "Escape") {
+            if (e.key === "Escape" && this.allowEscape) {
                 this.close();
                 console.log("esc");
             }

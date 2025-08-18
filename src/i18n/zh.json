@@ -301,5 +301,9 @@
         "fail": "检查S5连接失败",
         "ipNotNull": "S5 IP不能为空",
         "portNotNull": "S5 端口不能为空"
+    },
+    "pullImage": {
+        "title": "正在下载镜像",
+        "failed": "镜像下载失败"
     }
 }

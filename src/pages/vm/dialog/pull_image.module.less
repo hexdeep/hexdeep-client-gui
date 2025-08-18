@@ -1,0 +1,30 @@
+.pullImageDialog {
+    padding: 30px 50px;
+}
+
+.progressContainer {
+    width: 100%;
+    background: #e0e0e0;
+    border-radius: 20px;
+    overflow: hidden;
+    height: 24px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.progressBar {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, var(--main-color), #b53ff2);
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 0.2s ease;
+}
+
+.progressText {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 14px;
+}

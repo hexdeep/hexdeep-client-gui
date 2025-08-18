@@ -12,6 +12,7 @@ import { CreateForm } from "../../../lib/component/create_form";
 import s from './batch_create.module.less';
 import { CheckS5Dialog } from "./check_s5";
 import { InjectReactive } from 'vue-property-decorator';
+import { PullImageDialog } from './pull_image';
 
 
 @Dialog
@@ -19,6 +20,8 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     @InjectReactive() private config!: MyConfig;
     public override width: string = "650px";
     protected images: ImageInfo[] = [];
+    public override allowEscape: boolean = false;
+
     public override show(data: DockerBatchCreateParam) {
         this.data = data;
         this.title = i18n.t("batchCreateVm").toString();
@@ -28,14 +31,18 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         return super.show(data);
     }
 
-    @ErrorProxy({ loading: i18n.t("create.downloadingImage") })
+    @ErrorProxy({ validatForm: "formRef" })
     protected override async onConfirm() {
         if (this.data.obj.image_addr) {
             for (var ip of this.data.hostIp) {
                 var imgs = await deviceApi.getImages(ip);
                 var image = imgs.find(x => x.address == this.data.obj.image_addr);
                 if (image && !image.download) {
-                    await deviceApi.pullImages(ip, this.data.obj.image_addr);
+                    const err = await this.$dialog(PullImageDialog).show({
+                        hostIp: ip,
+                        imageAddress: this.data.obj.image_addr!,
+                    });
+                    if (err) throw err;
                 }
             }
         }
@@ -44,7 +51,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         this.confirming();
     }
 
-    @ErrorProxy({ success: i18n.t("batchCreate.success"), loading: i18n.t("loading"), validatForm: "formRef" })
+    @ErrorProxy({ success: i18n.t("batchCreate.success"), loading: i18n.t("loading") })
     protected async confirming() {
         var tasks: Promise<void>[] = [];
         this.data.hostIp.forEach(ip => {

@@ -299,5 +299,9 @@
         "fail": "Check S5 Failed",
         "ipNotNull": "S5 IP cannot be empty",
         "portNotNull": "S5 Port cannot be empty"
+    },
+    "pullImage": {
+        "title": "Downloading image",
+        "failed": "Download image failed"
     }
 }

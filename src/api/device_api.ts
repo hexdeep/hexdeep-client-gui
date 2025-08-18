@@ -5,6 +5,7 @@ import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
 import { CloneVmParam, CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes } from "./device_define";
+import { Completer } from "@/lib/completer";
 
 class DeviceApi extends ApiBase {
     private fileListInfo!: FilelistInfo;
@@ -260,6 +261,48 @@ class DeviceApi extends ApiBase {
         const result = await fetch(makeVmApiUrl("image_api/pull", ip) + `?address=${addr}`);
         return await this.handleError(result);
     }
+
+    public async pullImageProgress(ip: string, addr: string, progressCb: (progress: number) => void) {
+        return new Promise<void>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            const TOTAL_BYTES = 10_000; // 服务端固定推送字节数
+
+            // 拼 URL
+            const url = new URL(makeVmApiUrl("image_api/pull_progress", ip).toString());
+            url.searchParams.set("address", addr);
+
+            // 进度事件
+            xhr.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    // 如果服务端有 Content-Length，可直接用 event.total
+                    const pct = Math.min((event.loaded / event.total) * 100, 100);
+                    progressCb(pct);
+                } else {
+                    // 如果没有 Content-Length，就用固定的 TOTAL_BYTES
+                    const pct = Math.min((event.loaded / TOTAL_BYTES) * 100, 100);
+                    progressCb(pct);
+                }
+            };
+
+            xhr.onload = () => {
+                progressCb(100);
+                resolve();
+            };
+
+            xhr.onerror = () => {
+                reject(new Error(`下载失败: ${xhr.status} ${xhr.statusText}`));
+            };
+
+            // 打开连接
+            xhr.open("GET", url.toString(), true);
+            // 二进制模式，这里不解析成字符串
+            xhr.responseType = "arraybuffer";
+
+            // 发送请求
+            xhr.send();
+        });
+    }
+
 
     public async getFilelist(ip: string, name: string, path: string): Promise<FilelistInfo[]> {
         const result = await fetch(makeVmApiUrl("and_api/get_file_list", ip, name) + `?path=${path}`);
