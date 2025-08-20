@@ -201,7 +201,7 @@ export default class VMPage extends Vue {
         this.list.selectAll();
     }
 
-    protected async batchOperate(callback: (data: DeviceInfo) => Promise<void>, operate: string) {
+    protected async batchOperate(callback: (data: DeviceInfo) => Promise<any>, operate: string) {
         this.batchOperateName = i18n.t(`batch.${operate}`).toString();
         let arr = this.selectedItems;
         switch (operate) {

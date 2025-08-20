@@ -210,9 +210,16 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
-    public async reboot(ip: string, name: string) {
+    public async reboot(ip: string, name: string): Promise<string | undefined> {
         const result = await fetch(makeVmApiUrl("dc_api/reboot", ip, name));
-        return await this.handleError(result);
+        const j = await result.json();
+        if (j.code == 4) {
+            return j.err;
+        } else if (j.code == 200) {
+            return;
+        } else {
+            throw j.err;
+        }
     }
 
     public async download(ip: string, name: string, path: string, localPath: string) {

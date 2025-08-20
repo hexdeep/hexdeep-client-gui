@@ -18,6 +18,7 @@ import { S5setDialog } from './dialog/s5set';
 import { UploadFileDialog } from './dialog/upload_file';
 import { VmDetailDialog } from './dialog/vm_detail';
 import { Screenshot } from './screenshot';
+import { PullImageDialog } from './dialog/pull_image';
 
 @Component
 export class DeviceList extends tsx.Component<IProps, IEvents> {
@@ -252,9 +253,22 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         }
     }
 
-    @ErrorProxy({ confirm: i18n.t("confirm.rebootTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
+    @ErrorProxy({ confirm: i18n.t("confirm.rebootTitle"), success: i18n.t("success") })
     public async reboot(data: DeviceInfo) {
-        await deviceApi.reboot(data.hostIp, data.name);
+        const l = this.$loading({
+            lock: true,
+            text: i18n.t("loading").toString(),
+        });
+        const imageAddress = await deviceApi.reboot(data.hostIp, data.name).finally(() => {
+            l.close();
+        });
+        if (imageAddress) {
+            await this.$dialog(PullImageDialog).show({
+                hostIp: data.hostIp,
+                imageAddress: imageAddress,
+            });
+            await deviceApi.reboot(data.hostIp, data.name);
+        }
         this.$emit("changed", data.hostIp);
     }
 
