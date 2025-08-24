@@ -40,9 +40,13 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
                 }
             }
         });
-        await Promise.allSettled(tasks).catch(e => {
-            console.log(e);
-        });
+        if (tasks.length == 1) {
+            await tasks[0];
+        } else {
+            await Promise.allSettled(tasks).catch(e => {
+                console.warn(e);
+            });
+        }
         this.close(true);
     }
 
