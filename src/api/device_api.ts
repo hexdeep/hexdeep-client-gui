@@ -351,9 +351,16 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
-    public async reset(ip: string, name: string): Promise<void> {
+    public async reset(ip: string, name: string): Promise<string | undefined> {
         const result = await fetch(makeVmApiUrl("dc_api/reset", ip, name));
-        return await this.handleError(result);
+        const j = await result.json();
+        if (j.code == 4) {
+            return j.err;
+        } else if (j.code == 200) {
+            return;
+        } else {
+            throw j.err;
+        }
     }
 
     public async rename(ip: string, name: string, newName: string): Promise<void> {
@@ -366,9 +373,16 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
-    public async start(ip: string, name: string): Promise<void> {
+    public async start(ip: string, name: string): Promise<string | undefined> {
         const result = await fetch(makeVmApiUrl("dc_api/run", ip, name));
-        return await this.handleError(result);
+        const j = await result.json();
+        if (j.code == 4) {
+            return j.err;
+        } else if (j.code == 200) {
+            return;
+        } else {
+            throw j.err;
+        }
     }
 
     public async delete(ip: string, name: string): Promise<void> {

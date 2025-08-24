@@ -1,17 +1,17 @@
 import { deviceApi } from '@/api/device_api';
+import { DeviceInfo, HostInfo, MyConfig, MyTreeNode, TreeConfig, } from '@/api/device_define';
+import { orderApi } from '@/api/order_api';
+import { getPrefixName, getSuffixName } from '@/common/common';
+import { i18n } from '@/i18n/i18n';
 import { Column, Row } from '@/lib/container';
+import { ErrorProxy } from '@/lib/error_handle';
+import { ITreeSlotProps, MyTree } from "@/lib/tree";
 import { Component, InjectReactive, Watch } from 'vue-property-decorator';
 import * as tsx from 'vue-tsx-support';
 import s from './dev_picker.module.less';
-import { DeviceInfo, HostInfo, MyConfig, MyTreeNode, TreeConfig, } from '@/api/device_define';
 import { BatchCreateDialog } from './dialog/batch_create';
 import { CreateDialog } from './dialog/create';
-import { i18n } from '@/i18n/i18n';
-import { ErrorProxy } from '@/lib/error_handle';
-import { orderApi } from '@/api/order_api';
-import { getPrefixName, getSuffixName } from '@/common/common';
 import { RenameDialog } from './dialog/rename';
-import { ITreeSlotProps, MyTree } from "@/lib/tree";
 
 @Component
 export class DevicePicker extends tsx.Component<IProps> {
@@ -34,8 +34,8 @@ export class DevicePicker extends tsx.Component<IProps> {
     }
 
     @Watch("hosts", { deep: true })
-    private hostChange() {
-        console.log("host change");
+    protected hostChange() {
+        // console.log("host change");
         this.loading = false;
     };
 

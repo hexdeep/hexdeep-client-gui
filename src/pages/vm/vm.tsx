@@ -1,19 +1,19 @@
+import { deviceApi } from "@/api/device_api";
+import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from "@/api/device_define";
+import { Config } from "@/common/Config";
+import { i18n } from "@/i18n/i18n";
 import { Column, Row } from "@/lib/container";
+import { ErrorProxy } from "@/lib/error_handle";
+import { MyButton } from "@/lib/my_button";
+import { WebCastPlugin } from "@/lib/webcast/webcast";
 import Vue from "vue";
 import { Component, ProvideReactive, Ref, Watch } from "vue-property-decorator";
-import { DevicePicker } from "./dev_picker";
-import { MyButton } from "@/lib/my_button";
 import { DeviceList } from "./dev_list";
-import { deviceApi } from "@/api/device_api";
-import { ErrorProxy } from "@/lib/error_handle";
-import { i18n } from "@/i18n/i18n";
-import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from "@/api/device_define";
+import { DevicePicker } from "./dev_picker";
 import { ChangeImageDialog } from "./dialog/change_image";
-import { Screenshot } from "./screenshot";
-import { WebCastPlugin } from "@/lib/webcast/webcast";
 import { ImportVmDialog } from "./dialog/import_vm";
-import { Config } from "@/common/Config";
 import { UploadFileDialog } from "./dialog/upload_file";
+import { Screenshot } from "./screenshot";
 import s from './vm.module.less';
 
 

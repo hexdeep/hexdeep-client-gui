@@ -31,7 +31,7 @@ export class MyTree extends tsx.Component<IProps, {}, ISlots> {
             const allSelected = children && children.length > 0 ? children.every(child => child.selected) : item.selected;
             const indeterminate = children ? children.some(child => child.selected) && !allSelected : false;
             const handleInput = (val: boolean) => {
-                console.log("handleInput", item, val, allSelected);
+                // console.log("handleInput", item, val, allSelected);
                 item.selected = val;
                 if (children) {
                     children.forEach(child => {

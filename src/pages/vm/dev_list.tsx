@@ -13,17 +13,16 @@ import s from './dev_list.module.less';
 import { CloneVmDialog } from './dialog/clone_vm';
 import { CreateDialog } from './dialog/create';
 import { FilelistDialog } from './dialog/filelist';
+import { PullImageDialog } from './dialog/pull_image';
 import { RenameDialog } from './dialog/rename';
 import { S5setDialog } from './dialog/s5set';
 import { UploadFileDialog } from './dialog/upload_file';
 import { VmDetailDialog } from './dialog/vm_detail';
 import { Screenshot } from './screenshot';
-import { PullImageDialog } from './dialog/pull_image';
 
 @Component
 export class DeviceList extends tsx.Component<IProps, IEvents> {
     @InjectReactive() protected hostTree!: MyTreeNode[];
-    @InjectReactive() private selectedDevices!: DeviceInfo[];
     @InjectReactive() private treeConfig!: TreeConfig[];
     @InjectReactive() private rightChecked!: string[];
     @InjectReactive() private hosts!: HostInfo[];
@@ -80,17 +79,28 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
 
     private toggleRowSelection() {
+        if (this.data2.length == 0) {
+            this.rightChecked.clear();
+            this.tb?.clearSelection();
+            return;
+        }
+        for (let i = this.rightChecked.length - 1; i >= 0; i--) {
+            const element = this.rightChecked[i];
+            if (this.data2.find(x => x.key == element) == null) {
+                this.rightChecked.splice(i, 1);
+            }
+        }
         var tmp = [...this.rightChecked];
         this.$nextTick(() => {
             this.data2.forEach(x => {
                 var t = (tmp.find(y => x.key == y) != null);
-                //console.log("设置选中项", x, t);
+                // console.log("设置选中项", x, t);
                 this.tb?.toggleRowSelection(x, t);
             });
         });
     }
 
-    @Watch("selectedDevices", { deep: true })
+    @Watch("data2", { deep: true })
     public async selectedDevicesChange() {
         this.toggleRowSelection();
     }
@@ -154,6 +164,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                                     if (!e) {
                                         return <span>{row.image_addr}</span>;
                                     }
+                                    debugger;
                                     const download = row.image_digest === e.id;
                                     return <div>
                                         {e.android_version && <span
@@ -272,9 +283,22 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         this.$emit("changed", data.hostIp);
     }
 
-    @ErrorProxy({ confirm: i18n.t("confirm.resetTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
+    @ErrorProxy({ confirm: i18n.t("confirm.resetTitle"), success: i18n.t("success") })
     private async reset(data: DeviceInfo) {
-        await deviceApi.reset(data.hostIp, data.name);
+        const l = this.$loading({
+            lock: true,
+            text: i18n.t("loading").toString(),
+        });
+        const imageAddress = await deviceApi.reset(data.hostIp, data.name).finally(() => {
+            l.close();
+        });
+        if (imageAddress) {
+            await this.$dialog(PullImageDialog).show({
+                hostIp: data.hostIp,
+                imageAddress: imageAddress,
+            });
+            await deviceApi.reset(data.hostIp, data.name);
+        }
         this.$emit("changed", data.hostIp);
     }
 
@@ -284,9 +308,22 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         this.$emit("changed", data.hostIp);
     }
 
-    @ErrorProxy({ confirm: i18n.t("confirm.startTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
+    @ErrorProxy({ confirm: i18n.t("confirm.startTitle"), success: i18n.t("success") })
     private async start(data: DeviceInfo) {
-        await deviceApi.start(data.hostIp, data.name);
+        const l = this.$loading({
+            lock: true,
+            text: i18n.t("loading").toString(),
+        });
+        const imageAddress = await deviceApi.start(data.hostIp, data.name).finally(() => {
+            l.close();
+        });
+        if (imageAddress) {
+            await this.$dialog(PullImageDialog).show({
+                hostIp: data.hostIp,
+                imageAddress: imageAddress,
+            });
+            await deviceApi.start(data.hostIp, data.name);
+        }
         this.$emit("changed", data.hostIp);
     }
 
