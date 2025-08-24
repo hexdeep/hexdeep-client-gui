@@ -264,7 +264,7 @@ export default class VMPage extends Vue {
     protected render() {
         return (
             <Row crossAlign="stretch" flex gap={15} class={s.body}>
-                <DevicePicker ref="devicePicker" on-changed={this.onHostChanged} />
+                <DevicePicker ref="devicePicker" onChanged={this.onHostChanged} />
                 <Column flex gap={13}>
                     <Row class={"contentBox"}>
                         <Row flex gap={8}>
@@ -307,7 +307,7 @@ export default class VMPage extends Vue {
                             <MyButton type="primary" text={this.$t("remoteControl")} onClick={this.remoteControl} />
                         </Row>
                     </Row>
-                    <DeviceList ref="list" on-changed={this.onHostChanged} />
+                    <DeviceList ref="list" onChanged={this.onHostChanged} />
                 </Column >
             </Row >
         );

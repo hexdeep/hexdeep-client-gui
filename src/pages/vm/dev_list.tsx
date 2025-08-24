@@ -1,6 +1,6 @@
 import { deviceApi } from '@/api/device_api';
 import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from '@/api/device_define';
-import { getPrefixName, getSuffixName, makeVmApiUrl } from '@/common/common';
+import { getPrefixName, getSuffixName, makeVmApiUrl, sleep } from '@/common/common';
 import { i18n } from '@/i18n/i18n';
 import { ModelSelectotDialog } from '@/lib/component/model_selector';
 import { Column, Row } from '@/lib/container';
@@ -106,7 +106,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
 
 
-    private handleSelectionChange(selectedRows: any[], e: any) {
+    private handleSelectionChange(selectedRows: any[]) {
         if (this.data2.length > 0) {
             this.rightChecked.clear();
             this.rightChecked.push(...selectedRows.map(e => e.key));
@@ -143,7 +143,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             <div class={[s.deviceList, "contentBox"]}>
                 <div class={s.table} style={{ display: this.config.view == "list" ? "block" : "none" }}>
                     <el-table default-expand-all data={this.data2} width="100%" height="100%" row-key="key"
-                        ref="tb" on-selection-change={(e, e2) => this.handleSelectionChange(e, e2)} empty-text={this.$t("table.emptyText")}>
+                        ref="tb" on-selection-change={this.handleSelectionChange} empty-text={this.$t("table.emptyText")}>
                         <el-table-column type="selection" width="45" reserve-selection={true} />
                         <el-table-column prop="index" label={"No"} width="40" align="center" />
                         <el-table-column prop="name" label={this.$t("name")} formatter={r => getSuffixName(r.name)} show-overflow-tooltip />
@@ -340,8 +340,20 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         if (re) {
             var index = this.rightChecked.findIndex(x => x == data.key);
             if (index > -1) {
-                this.rightChecked.removeWhere(x => x == data.key);
-                this.rightChecked.push(`${data.hostIp}-${data.index}-${re}`);
+                this.tb?.toggleRowSelection(data, false);
+                (async () => {
+                    const newKey = `${data.hostIp}-${data.index}-${re}`;
+                    let newData: DeviceInfo | undefined = undefined;
+                    let count = 0;
+                    do {
+                        newData = this.data2.find(x => x.key == newKey);
+                        if (!newData) await sleep(50);
+                        count++;
+                    } while (!newData && count < 20);
+                    if (newData) {
+                        this.tb?.toggleRowSelection(newData, true);
+                    }
+                })();
             }
             var t = this.treeConfig.find(x => x.key == data.key);
             if (t) {
@@ -455,5 +467,6 @@ interface IProps {
 
 interface IEvents {
     onSelectChange(selectedRows: DeviceInfo[]): void;
+    onChanged(hostIp: string): void;
 }
 

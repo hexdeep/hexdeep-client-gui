@@ -14,7 +14,7 @@ import { CreateDialog } from './dialog/create';
 import { RenameDialog } from './dialog/rename';
 
 @Component
-export class DevicePicker extends tsx.Component<IProps> {
+export class DevicePicker extends tsx.Component<IProps, IEvents> {
     @InjectReactive() private hosts!: HostInfo[];
     @InjectReactive() private treeConfig!: TreeConfig[];
     @InjectReactive() protected hostTree!: MyTreeNode[];
@@ -180,4 +180,8 @@ export class DevicePicker extends tsx.Component<IProps> {
 
 interface IProps {
 
+}
+
+interface IEvents {
+    onChanged(hostIp: string): void;
 }
