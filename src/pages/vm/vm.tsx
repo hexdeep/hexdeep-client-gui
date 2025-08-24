@@ -221,7 +221,7 @@ export default class VMPage extends Vue {
         await this.batchOperateIng(arr, callback);
     }
 
-    @ErrorProxy({ confirm: (self) => self.batchOperateName, success: i18n.t("batch.success"), loading: i18n.t("loading") })
+    @ErrorProxy({ confirm: (self, _1, _2) => self.batchOperateName, success: i18n.t("batch.success"), loading: i18n.t("loading") })
     protected async batchOperateIng(arr: DeviceInfo[], callback: (data: DeviceInfo) => Promise<void>) {
         let tasks: Promise<void>[] = [];
 

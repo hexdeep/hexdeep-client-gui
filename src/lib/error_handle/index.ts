@@ -8,23 +8,25 @@ interface IString {
     toString(): string;
 }
 
-// MethodDecorator
-// intercept error and show alert
-export function ErrorProxy<T extends Vue>(options?: {
-    confirm?: LikeString | ((self: T) => LikeString);
+interface ErrorProxyOptions<T extends Vue, Args extends any[]> {
+    confirm?: LikeString | ((self: T, ...args: Args) => LikeString);
     loading?: LikeString;
     success?: LikeString;
     error?: LikeString;
     validatForm?: string | ((self: T) => any);
 }
-) {
-    return (vm: T, _1: any, propertyDescriptor: PropertyDescriptor) => {
+
+// MethodDecorator
+// intercept error and show alert
+export function ErrorProxy<T extends Vue, TArgs extends any[]>(options?: ErrorProxyOptions<T, TArgs>) {
+    return (vm: T, _1: any, propertyDescriptor: TypedPropertyDescriptor<(...args: TArgs) => any>) => {
+        console.log("ErrorProxy", vm, _1, propertyDescriptor);
         let originMethod = propertyDescriptor.value;
-        propertyDescriptor.value = async function (...args: any) {
+        propertyDescriptor.value = async function (...args: TArgs) {
             const self = this as T;
             if (options?.confirm) {
                 const ret = await self.$confirm(
-                    typeof options.confirm === "function" ? (options.confirm as any)(self) : options.confirm.toString(),
+                    typeof options.confirm === "function" ? (options.confirm as any)(self, ...args) : options.confirm.toString(),
                     i18n.t("confirm.title") as string,
                     {
                         confirmButtonText: i18n.t("confirm.ok") as string,
@@ -46,7 +48,7 @@ export function ErrorProxy<T extends Vue>(options?: {
             }
             const l = options?.loading ? self.$loading({ text: options.loading.toString(), lock: true }) : null;
             try {
-                const result = originMethod.call(self, ...args);
+                const result = originMethod!.call(self, ...args);
                 if (result instanceof Promise) {
                     await result;
                 }

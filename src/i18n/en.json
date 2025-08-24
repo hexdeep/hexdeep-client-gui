@@ -121,13 +121,13 @@
         "ok": "Ok",
         "cancel": "Cancel",
         "title": "Prompt",
-        "resetTitle": "Are you sure you want to reset the VM?",
-        "rebootTitle": "Are you sure you want to reboot the VM?",
-        "shutdownTitle": "Are you sure you want to shutdown the VM?",
-        "deleteTitle": "Are you sure you want to delete the VM?",
-        "startTitle": "Are you sure you want to start the VM?",
-        "batch": "Batch",
-        "backupTitle": "Are you sure you want to backup the VM?"
+        "resetTitle": "Are you sure you want to reset host: {0}, index: {1}, vm: {2}?",
+        "rebootTitle": "Are you sure you want to reboot host: {0}, index: {1}, vm: {2}?",
+        "shutdownTitle": "Are you sure you want to shutdown host: {0}, index: {1}, vm: {2}?",
+        "deleteTitle": "Are you sure you want to delete host: {0}, index: {1}, vm: {2}?",
+        "startTitle": "Are you sure you want to start host: {0}, index: {1}, vm: {2}?",
+        "backupTitle": "Are you sure you want to backup host: {0}, index: {1}, vm: {2}?",
+        "batch": "Batch"
     },
     "rename": {
         "success": "Name modification successful",

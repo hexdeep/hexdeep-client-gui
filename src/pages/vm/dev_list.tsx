@@ -264,7 +264,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         }
     }
 
-    @ErrorProxy({ confirm: i18n.t("confirm.rebootTitle"), success: i18n.t("success") })
+    @ErrorProxy({ confirm: t("confirm.rebootTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     public async reboot(data: DeviceInfo) {
         const l = this.$loading({
             lock: true,
@@ -283,7 +283,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         this.$emit("changed", data.hostIp);
     }
 
-    @ErrorProxy({ confirm: i18n.t("confirm.resetTitle"), success: i18n.t("success") })
+    @ErrorProxy({ confirm: t("confirm.resetTitle"), success: i18n.t("success") })
     private async reset(data: DeviceInfo) {
         const l = this.$loading({
             lock: true,
@@ -302,13 +302,13 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         this.$emit("changed", data.hostIp);
     }
 
-    @ErrorProxy({ confirm: i18n.t("confirm.shutdownTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
+    @ErrorProxy({ confirm: t("confirm.shutdownTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async shutdown(data: DeviceInfo) {
         await deviceApi.shutdown(data.hostIp, data.name);
         this.$emit("changed", data.hostIp);
     }
 
-    @ErrorProxy({ confirm: i18n.t("confirm.startTitle"), success: i18n.t("success") })
+    @ErrorProxy({ confirm: t("confirm.startTitle"), success: i18n.t("success") })
     private async start(data: DeviceInfo) {
         const l = this.$loading({
             lock: true,
@@ -327,7 +327,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         this.$emit("changed", data.hostIp);
     }
 
-    @ErrorProxy({ confirm: i18n.t("confirm.deleteTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
+    @ErrorProxy({ confirm: t("confirm.deleteTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async delete(data: DeviceInfo) {
         await deviceApi.delete(data.hostIp, data.name);
         this.treeConfig.removeWhere(x => x.key == data.key);
@@ -385,7 +385,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         await this.$dialog(VmDetailDialog).show(data);
     }
 
-    @ErrorProxy({ confirm: i18n.t("confirm.backupTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
+    @ErrorProxy({ confirm: t("confirm.backupTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async backupVm(data: DeviceInfo) {
         let url = await deviceApi.exportDocker(data.hostIp, data.name);
         let link = makeVmApiUrl("host/download", data.hostIp) + `?path=${url}`;
@@ -470,3 +470,12 @@ interface IEvents {
     onChanged(hostIp: string): void;
 }
 
+function t(t: string) {
+    return function (self: DeviceList, data: DeviceInfo) {
+        return i18n.t(t, {
+            0: `${data.hostIp}`,
+            1: `${data.index}`,
+            2: `${getSuffixName(data.name)}`,
+        });
+    };
+}

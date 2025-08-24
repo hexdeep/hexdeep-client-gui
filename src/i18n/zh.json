@@ -122,13 +122,13 @@
         "ok": "确定",
         "cancel": "取消",
         "title": "提示",
-        "resetTitle": "您确定要重置云手机吗？",
-        "rebootTitle": "您确定要重启云手机吗？",
-        "shutdownTitle": "您确定要关闭云手机吗？",
-        "deleteTitle": "您确定要删除云手机吗？",
-        "startTitle": "您确定要启动云手机吗？",
-        "batch": "批量",
-        "backupTitle": "您确定要备份云手机吗？"
+        "resetTitle": "您确定要重置主机：{0} 实例：{1} 云手机：{2} 吗？",
+        "rebootTitle": "您确定要重启主机：{0} 实例：{1} 云手机：{2} 吗？",
+        "shutdownTitle": "您确定要关闭主机：{0} 实例：{1} 云手机：{2} 吗？",
+        "deleteTitle": "您确定要删除主机：{0} 实例：{1} 云手机：{2} 吗？",
+        "startTitle": "您确定要启动主机：{0} 实例：{1} 云手机：{2} 吗？",
+        "backupTitle": "您确定要备份主机：{0} 实例：{1} 云手机：{2} 吗？",
+        "batch": "批量"
     },
     "rename": {
         "success": "名称修改成功",
