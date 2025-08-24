@@ -193,6 +193,10 @@
         "rebootHostSuccess": "主机正在重启...",
         "pruneImages": "清理镜像",
         "pruneImagesSuccess": "清理镜像成功",
+        "rebootHostConfirm": "确定要重启主机吗？",
+        "resetConfirm": "确定要恢复出厂设置吗？",
+        "resetSuccess": "主机重置成功，请等待主机重启。",
+        "reset": "恢复出厂",
         "apiGitCommitId": "版本号"
     },
     "changeImage": {

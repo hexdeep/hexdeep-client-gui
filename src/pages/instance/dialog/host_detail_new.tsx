@@ -104,6 +104,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         <Row gap={10}>
                             <MyButton type="primary" size="small" onClick={this.rebootHost}>{this.$t("vmDetail.rebootHost")}</MyButton>
                             <MyButton type="primary" size="small" onClick={this.pruneImages}>{this.$t("vmDetail.pruneImages")}</MyButton>
+                            <MyButton type="primary" size="small" onClick={this.resetHost}>{this.$t("vmDetail.reset")}</MyButton>
                         </Row>
                     </Row>
                 </el-descriptions-item>
@@ -116,7 +117,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         await deviceApi.rebootSDK(this.data.address);
     }
 
-    @ErrorProxy({ success: i18n.t("vmDetail.rebootHostSuccess"), loading: i18n.t("loading") })
+    @ErrorProxy({ confirm: i18n.t("vmDetail.rebootHostConfirm"), success: i18n.t("vmDetail.rebootHostSuccess"), loading: i18n.t("loading") })
     private async rebootHost() {
         await deviceApi.rebootHost(this.data.address);
     }
@@ -124,6 +125,11 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     @ErrorProxy({ success: i18n.t("vmDetail.pruneImagesSuccess"), loading: i18n.t("loading") })
     private async pruneImages() {
         await deviceApi.pruneImages(this.data.address);
+    }
+
+    @ErrorProxy({ confirm: i18n.t("vmDetail.resetConfirm"), success: i18n.t("vmDetail.resetSuccess"), loading: i18n.t("loading") })
+    private async resetHost() {
+        await deviceApi.resetHost(this.data.address);
     }
 
     private async switchSDK() {

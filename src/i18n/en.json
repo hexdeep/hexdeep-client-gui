@@ -192,6 +192,10 @@
         "rebootHostSuccess": "Host is restarting...",
         "pruneImages": "Prune Images",
         "pruneImagesSuccess": "Prune Images Successful",
+        "rebootHostConfirm": "Are you sure you want to reboot host?",
+        "resetConfirm": "Are you sure you want to restore factory settings?",
+        "resetSuccess": "Host is resetting, please wait rebooting...",
+        "reset": "Restore factory",
         "apiGitCommitId": "Version"
     },
     "changeImage": {
