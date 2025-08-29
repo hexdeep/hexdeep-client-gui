@@ -164,7 +164,6 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                                     if (!e) {
                                         return <span>{row.image_addr}</span>;
                                     }
-                                    debugger;
                                     const download = row.image_digest === e.id;
                                     return <div>
                                         {e.android_version && <span
