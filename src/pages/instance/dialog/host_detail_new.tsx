@@ -104,7 +104,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         <Row gap={10}>
                             <MyButton type="primary" size="small" onClick={this.rebootHost}>{this.$t("vmDetail.rebootHost")}</MyButton>
                             <MyButton type="primary" size="small" onClick={this.pruneImages}>{this.$t("vmDetail.pruneImages")}</MyButton>
-                            <MyButton type="primary" size="small" onClick={this.resetHost}>{this.$t("vmDetail.reset")}</MyButton>
+                            {/* <MyButton type="primary" size="small" onClick={this.resetHost}>{this.$t("vmDetail.reset")}</MyButton> */}
                         </Row>
                     </Row>
                 </el-descriptions-item>

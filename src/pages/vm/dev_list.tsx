@@ -154,6 +154,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <el-table-column
                             width="250"
                             show-overflow-tooltip
+                            label={this.$t("vmImage")}
                             // prop="image_addr" label={this.$t("vmImage")} show-overflow-tooltip formatter={(r) => {
                             //     const img = this.renderVmImage(r);
                             //     return img ? img.name : r.image_addr;

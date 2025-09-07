@@ -54,7 +54,7 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
         return {
             s5_ip: [
                 { required: this.isOpen, message: i18n.t("notNull"), trigger: 'blur' },
-                { pattern: /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/, message: i18n.t("invalidIp"), trigger: 'blur' },
+                // { pattern: /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/, message: i18n.t("invalidIp"), trigger: 'blur' },
             ],
             s5_port: [
                 { required: this.isOpen, message: i18n.t("notNull"), trigger: 'blur' },

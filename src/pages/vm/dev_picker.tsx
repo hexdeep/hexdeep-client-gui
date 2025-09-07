@@ -97,7 +97,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         }
     }
 
-    @ErrorProxy({ confirm: i18n.t("confirm.deleteTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
+    @ErrorProxy({ confirm: t("confirm.deleteTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async deleteVM(v: DeviceInfo) {
         await deviceApi.delete(v.hostIp, v.name);
         this.treeConfig.removeWhere(x => x.key == v.key);
@@ -184,4 +184,14 @@ interface IProps {
 
 interface IEvents {
     onChanged(hostIp: string): void;
+}
+
+function t(t: string) {
+    return function (self: DevicePicker, data: DeviceInfo) {
+        return i18n.t(t, {
+            0: `${data.hostIp}`,
+            1: `${data.index}`,
+            2: `${getSuffixName(data.name)}`,
+        });
+    };
 }
