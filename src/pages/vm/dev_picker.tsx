@@ -63,6 +63,8 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
             hostIp: [h.address],
             obj: {
                 name: "", num: 1,
+                sandbox: 1,
+                sandbox_size: 16,
                 suffix_name: this.config.suffixName || "deep",
                 width: 720,
                 height: 1280,
@@ -86,7 +88,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
             isUpdate: true,
             info: v,
             hostId: v.hostId,
-            obj: { name: getSuffixName(v.name) }
+            obj: { name: getSuffixName(v.name), sandbox: 1 }
         });
         if (re) {
             if (re.name != getSuffixName(v.name)) {

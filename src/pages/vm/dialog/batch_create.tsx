@@ -128,8 +128,8 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
 
     @ErrorProxy()
     private checkS5() {
-        if (!this.data.obj.s5_ip) throw new Error(i18n.t("checkS5.ipNotNull").toString());
-        if (!this.data.obj.s5_port) throw new Error(i18n.t("checkS5.portNotNull").toString());
+        if (!this.data.obj.host) throw new Error(i18n.t("checkS5.ipNotNull").toString());
+        if (!this.data.obj.port) throw new Error(i18n.t("checkS5.portNotNull").toString());
         let checkS5FormData = {
             hostIp: this.data.hostIp[0],
             s5Param: this.data.obj,

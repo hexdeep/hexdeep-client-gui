@@ -88,6 +88,20 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             ip: [
                 { required: this.data.obj.mac_vlan == 1, message: i18n.t("notNull"), trigger: 'blur' },
                 { pattern: /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/, message: i18n.t("invalidIp"), trigger: 'blur' },
+            ],
+            host: [
+                { required: this.data.obj.isOpenProxy && this.data.obj.protocol_type == 1, message: i18n.t("notNull"), trigger: 'blur' },
+                // { pattern: /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/, message: i18n.t("invalidIp"), trigger: 'blur' },
+            ],
+            protocol_type: [
+                { required: this.data.obj.isOpenProxy, message: i18n.t("notNull"), trigger: 'blur' },
+            ],
+            address: [{
+                required: this.data.obj.isOpenProxy && this.data.obj.protocol_type != 1, message: i18n.t("notNull"), trigger: 'blur'
+            },],
+            port: [
+                { required: this.data.obj.isOpenProxy && this.data.obj.protocol_type == 1, message: i18n.t("notNull"), trigger: 'blur' },
+                { pattern: /^([0-9]|[1-9]\d{1,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$/, message: i18n.t("invalidPort"), trigger: 'blur' },
             ]
         };
     }

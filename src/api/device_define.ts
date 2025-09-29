@@ -91,11 +91,16 @@ export interface SDKImagesRes {
 }
 
 export interface S5setParam {
-    s5_domain_mode?: number;//	1,本地域名解析;2,服务端域名解析（默认）
-    s5_ip?: string; //	s5代理ip
-    s5_port?: string;   //	s5代理端口
-    s5_user?: string;   //	s5代理用户名
-    s5_pwd?: string;//	s5代理密码   
+    isOpenProxy?: boolean;
+    engine?: number;//	1,tun2socks;2,singbox
+    protocol_type?: number;//	 socks5=1 shadowssocks=2 vmess=3 hysteria2=4
+    dns_mode?: number;//	1,本地域名解析;2,服务端域名解析（默认）
+    host?: string; //	代理服务器地址
+    address?: string;  //协议地址 singbox模式下使用
+    port?: string;   //	代理服务器端口
+    username?: string;   //	用户名
+    password?: string;//	密码   
+    udp_over_tcp?: number; //	1,启用;0,禁用
 }
 
 export interface DockerEditParam {
@@ -164,3 +169,11 @@ export interface TreeConfig {
     opened: boolean;
     selected: boolean;
 }
+
+
+export const ProxyProtocolTypeOps: Record<number, any> = ({
+    1: { label: "socks5" },
+    2: { label: "shadowssocks", engine: 2 },
+    3: { label: "vmess", engine: 2 },
+    4: { label: "hysteria2", engine: 2 },
+});

@@ -20,7 +20,7 @@ interface ErrorProxyOptions<T extends Vue, Args extends any[]> {
 // intercept error and show alert
 export function ErrorProxy<T extends Vue, TArgs extends any[]>(options?: ErrorProxyOptions<T, TArgs>) {
     return (vm: T, _1: any, propertyDescriptor: TypedPropertyDescriptor<(...args: TArgs) => any>) => {
-        console.log("ErrorProxy", vm, _1, propertyDescriptor);
+        // console.log("ErrorProxy", vm, _1, propertyDescriptor);
         let originMethod = propertyDescriptor.value;
         propertyDescriptor.value = async function (...args: TArgs) {
             const self = this as T;

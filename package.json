@@ -1,6 +1,6 @@
 {
   "name": "hexdeep-web-admin",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "private": true,
   "engines": {
     "node": ">=18.0.0"
@@ -19,6 +19,7 @@
     "buffer": "^6.0.3",
     "element-ui": "2.15.6",
     "events": "^3.3.0",
+    "humps": "^2.0.1",
     "lodash": "^4.17.21",
     "moment": "^2.30.1",
     "openapi-fetch": "^0.14.0",

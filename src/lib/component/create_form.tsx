@@ -7,6 +7,7 @@ import { Row } from '../container';
 import "./create_form.less";
 import { ImageSelector2 } from "./image_selector2";
 import { ModelSelector } from "./model_selector";
+import { S5FormItems } from "./s5_form_items";
 
 
 @Component
@@ -106,31 +107,8 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 <el-form-item label={this.$t("create.dns_urls")} prop="dns_urls">
                     <el-input v-model={this.data.dns_urls} />
                 </el-form-item>
-                {!this.isUpdate && (
-                    <el-form-item label={this.$t("create.s5_domain_mode")} prop="s5_domain_mode">
-                        <el-switch v-model={this.data.s5_domain_mode} active-value={2} active-text={this.$t("create.s5_domain_mode2")} inactive-value={1} inactive-text={this.$t("create.s5_domain_mode1")} />
-                    </el-form-item>
-                )}
-                {!this.isUpdate && (
-                    <Row>
-                        <el-form-item label={this.$t("create.s5_ip")} prop="s5_ip">
-                            <el-input v-model={this.data.s5_ip} />
-                        </el-form-item>
-                        <el-form-item label={this.$t("create.s5_port")} prop="s5_port">
-                            <el-input v-model={this.data.s5_port} type="number" min={1} max={65535} onBlur={this.fixNumber("s5_port")} />
-                        </el-form-item>
-                    </Row>
-                )}
-                {!this.isUpdate && (
-                    <Row>
-                        <el-form-item label={this.$t("create.s5_user")} prop="s5_user">
-                            <el-input v-model={this.data.s5_user} />
-                        </el-form-item>
-                        <el-form-item label={this.$t("create.s5_pwd")} prop="s5_pwd">
-                            <el-input v-model={this.data.s5_pwd} />
-                        </el-form-item>
-                    </Row>
-                )}
+
+                {/* {!this.isUpdate && <S5FormItems v-model={this.data}></S5FormItems>} */}
             </div>
         );
     }

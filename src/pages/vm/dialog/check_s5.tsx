@@ -7,6 +7,7 @@ import { VNode } from "vue";
 
 interface CheckS5FormData {
     hostIp: string;
+    android_sdk?: string;
     s5Param: S5setParam;
 }
 
@@ -27,7 +28,13 @@ export class CheckS5Dialog extends CommonDialog<CheckS5FormData> {
         validatForm: "formRef"
     })
     protected override async onConfirm() {
-        const result = await deviceApi.checkS5(this.data.hostIp, this.data.s5Param, this.formData.check_url);
+        let result = "";
+        if (!this.data.android_sdk) {
+            result = await deviceApi.checkS5(this.data.hostIp, this.data.s5Param, this.formData.check_url);
+        } else {
+            result = await deviceApi.checkS5Macvlan(this.data.android_sdk, this.data.s5Param, this.formData.check_url);
+        }
+
         if (result === "ok") {
             this.close();
         } else {

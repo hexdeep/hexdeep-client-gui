@@ -2,6 +2,7 @@ import Vue from "vue";
 import { Component } from "vue-property-decorator";
 import s from "./styles/app.module.less";
 import "./styles/tabs.less";
+import "./styles/common.less";
 import { version } from "../package.json";
 
 @Component

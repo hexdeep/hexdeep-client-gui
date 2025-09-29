@@ -236,6 +236,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             obj: {
                 name: name,
                 sandbox_size: 16,
+                sandbox: 1,
                 width: 720,
                 height: 1280,
                 dpi: 320,
