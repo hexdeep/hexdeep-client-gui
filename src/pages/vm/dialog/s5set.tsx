@@ -37,9 +37,9 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
         this.data.forEach(async e => {
             if (e.state) {
                 if (this.item.isOpenProxy) {
-                    tasks.push(deviceApi.s5setMacvlan(e.android_sdk, this.item));
+                    tasks.push(deviceApi.s5set(e.hostIp, e.name, this.item));
                 } else {
-                    tasks.push(deviceApi.closeS5Macvlan(e.android_sdk));
+                    tasks.push(deviceApi.closeS5(e.hostIp, e.name));
                 }
             }
         });
