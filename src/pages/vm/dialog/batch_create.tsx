@@ -126,26 +126,27 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         );
     }
 
-    @ErrorProxy()
-    private checkS5() {
-        if (!this.data.obj.host) throw new Error(i18n.t("checkS5.ipNotNull").toString());
-        if (!this.data.obj.port) throw new Error(i18n.t("checkS5.portNotNull").toString());
-        let checkS5FormData = {
-            hostIp: this.data.hostIp[0],
-            s5Param: this.data.obj,
-        };
-        this.$dialog(CheckS5Dialog).show(checkS5FormData);
-    }
+    // @ErrorProxy()
+    // private checkS5() {
+    //     if (!this.data.obj.host) throw new Error(i18n.t("checkS5.ipNotNull").toString());
+    //     if (!this.data.obj.port) throw new Error(i18n.t("checkS5.portNotNull").toString());
+    //     let checkS5FormData = {
+    //         hostIp: this.data.hostIp[0],
+    //         s5Param: this.data.obj,
+    //     };
+    //     this.$dialog(CheckS5Dialog).show(checkS5FormData);
+    // }
 
-    protected override renderFooter() {
-        return (
-            <Row class={"dialog-footer"} padding={20} mainAlign="space-between">
-                <MyButton text={i18n.t("checkS5.check")} onClick={() => this.checkS5()} plain />
-                <Row gap={10}>
-                    <MyButton text={i18n.t("confirm.ok")} onClick={() => this.onConfirm()} type="primary" />
-                    <MyButton text={i18n.t("confirm.cancel")} onClick={() => this.close()} />
-                </Row>
-            </Row>
-        );
-    }
+    // protected override renderFooter() {
+    //     return (
+    //         <Row gap={10} padding={20}>
+    //             <MyButton text={i18n.t("confirm.ok")} onClick={() => this.onConfirm()} type="primary" />
+    //             <MyButton text={i18n.t("confirm.cancel")} onClick={() => this.close()} />
+    //         </Row>
+    //         // <Row class={"dialog-footer"} padding={20} mainAlign="flex-end">
+    //         // {/* <MyButton text={i18n.t("checkS5.check")} onClick={() => this.checkS5()} plain /> */}
+
+    //         // </Row>
+    //     );
+    // }
 }
