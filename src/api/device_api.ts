@@ -433,7 +433,13 @@ class DeviceApi extends ApiBase {
 
     public async s5set(ip: string, name: string, param: S5setParam): Promise<void> {
         var formData = qs.stringify(param);
-        const result = await fetch(makeVmApiUrl("and_api/proxy_set", ip, name) + `?${formData}`);
+        const result = await fetch(makeVmApiUrl("and_api/proxy_set", ip, name), {
+            method: "POST",
+            body: formData,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+        });
         return await this.handleError(result);
     }
 
