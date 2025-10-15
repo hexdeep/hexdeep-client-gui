@@ -37,7 +37,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         };
         if (this.data.obj.image_addr) {
             var image = this.images.find(x => x.address == this.data.obj.image_addr);
-            if (image && !image.download) {
+            if (!image || !image.download) {
                 const err = await this.$dialog(PullImageDialog).show({
                     hostIp: this.data.info.hostIp,
                     imageAddress: this.data.obj.image_addr!,
