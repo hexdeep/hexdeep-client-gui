@@ -67,7 +67,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 </el-form-item>
 
                 <el-form-item label={this.$t("create.memory")} prop="memory" >
-                    <el-input v-model={this.data.memory} />
+                    <el-input v-model={this.data.memory} placeholder="请输入内存大小字节数" />
                 </el-form-item>
 
                 <Row>
