@@ -33,7 +33,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
 
     @ErrorProxy({ validatForm: "formRef" })
     protected override async onConfirm() {
-        if (this.data.obj.image_addr) {
+        if (this.data.obj.image_addr && ((this.data.obj.image_addr.includes('.') && this.data.obj.image_addr.includes('/')))) {
             for (var ip of this.data.hostIp) {
                 var imgs = await deviceApi.getImages(ip);
                 var image = imgs.find(x => x.address == this.data.obj.image_addr);

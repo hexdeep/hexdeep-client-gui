@@ -43,6 +43,8 @@ export interface DeviceDetail {
     dpi?: number;   //	解析度
     fps?: number;   //	分辨率
     dns_urls?: string;  //	dns服务器地址,例如:223.5.5.5,8.8.8.8
+    subnet?: string;
+    memory?: number;
 }
 
 export interface CreateParam extends S5setParam, DeviceDetail {
@@ -56,6 +58,7 @@ export interface CreateParam extends S5setParam, DeviceDetail {
     ip?: string;    //	ip:mac_vlan模式为1时，必须指定
     model_id?: number;  //	机型id:值为0时，随机机型；大于0时，固定机型
     subnet?: string;
+    memory?: number; // 内存大小
 
     // s5_domain_mode?: number;//	1,本地域名解析;2,服务端域名解析（默认）
     // s5_ip?: string; //	s5代理ip

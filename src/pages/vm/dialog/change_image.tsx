@@ -24,18 +24,21 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
 
     @ErrorProxy({ validatForm: "formRef" })
     protected override async onConfirm() {
-        var gp = this.data.groupBy(x => x.hostIp);
-        for (var ip of Object.keys(gp)) {
-            var imgs = await deviceApi.getImages(ip);
-            var image = imgs.find(x => x.address == this.obj.image_addr);
-            if (image && !image.download) {
-                const err = await this.$dialog(PullImageDialog).show({
-                    hostIp: ip,
-                    imageAddress: this.obj.image_addr!,
-                });
-                if (err) throw err;
+        if (this.obj.image_addr && ((this.obj.image_addr.includes('.') && this.obj.image_addr.includes('/')))) {
+            var gp = this.data.groupBy(x => x.hostIp);
+            for (var ip of Object.keys(gp)) {
+                var imgs = await deviceApi.getImages(ip);
+                var image = imgs.find(x => x.address == this.obj.image_addr);
+                if (image && !image.download && (image.address.includes('.') && image.address.includes('/'))) {
+                    const err = await this.$dialog(PullImageDialog).show({
+                        hostIp: ip,
+                        imageAddress: this.obj.image_addr!,
+                    });
+                    if (err) throw err;
+                }
             }
         }
+
         this.confirming();
     }
 

@@ -35,7 +35,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             this.close();
             return;
         };
-        if (this.data.obj.image_addr) {
+        if (this.data.obj.image_addr && ((this.data.obj.image_addr.includes('.') && this.data.obj.image_addr.includes('/')))) {
             var image = this.images.find(x => x.address == this.data.obj.image_addr);
             if (!image || !image.download) {
                 const err = await this.$dialog(PullImageDialog).show({

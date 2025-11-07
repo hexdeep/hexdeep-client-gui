@@ -62,6 +62,7 @@
         "sandbox": "沙盒",
         "sandbox_size": "沙盒大小(GB)",
         "subnet": "子网",
+        "memory": "内存",
         "mac_vlan": "静态IP模式",
         "ip": "IP",
         "image_addr": "镜像地址",
