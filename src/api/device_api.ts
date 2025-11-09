@@ -261,6 +261,7 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+
     public async switchSDKImages(ip: string, addr: string): Promise<ImageInfo[]> {
         const result = await fetch(makeVmApiUrl("super_sdk_api/switch_version", ip) + `?address=${addr}`);
         return await this.handleError(result);
@@ -332,6 +333,17 @@ class DeviceApi extends ApiBase {
         const result = await fetch(makeVmApiUrl("host/device/reboot", ip));
         return await this.handleError(result);
     }
+
+    public async checkFirmware(ip: string): Promise<boolean> {
+        const result = await fetch(makeVmApiUrl("host/device/check_firmware", ip));
+        return await this.handleError(result);
+    }
+
+    public async updateFirmware(ip: string) {
+        const result = await fetch(makeVmApiUrl("host/device/update_firmware", ip));
+        return await this.handleError(result);
+    }
+
 
     public async pruneImages(ip: string) {
         const result = await fetch(makeVmApiUrl("dc_api/prune_images", ip));

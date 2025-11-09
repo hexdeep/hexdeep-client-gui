@@ -16,6 +16,7 @@ import { SwitchSDKDialog } from "./switch_sdk";
 export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected detail: HostDetailInfo = {} as HostDetailInfo;
     protected sdk?: SDKImagesRes;
+    protected firmwareIsLatest: boolean = false;
     protected timer: any;
     override width: string = "600px";
     public override async show(data: HostInfo) {
@@ -23,6 +24,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         this.title = this.$t("instance.hostDetail").toString();
         deviceApi.getHostDetail(data.address).then(e => this.detail = e);
         deviceApi.getSDKImages(data.address).then(e => this.sdk = e);
+        deviceApi.checkFirmware(data.address).then(e => this.firmwareIsLatest = e);
         this.timer = setInterval(() => {
             deviceApi.getHostDetail(data.address).then(e => this.detail = e);
         }, 1000);
@@ -51,7 +53,16 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.apiGitCommitId")}>
                     <Row crossAlign="center">
-                        {this.detail?.git_commit_id}/{this.sdk?.git_commit_id}
+                        <div style={{ "flex": 1 }}>{this.detail?.git_commit_id}/{this.sdk?.git_commit_id}</div>
+                        <MyButton
+                            type="primary"
+                            size="small"
+                            onClick={this.updateFirmware}
+                            disabled={this.firmwareIsLatest}
+                        >
+                            {this.$t("vmDetail.updateFirmware")}
+                            {"(" + (this.firmwareIsLatest ? this.$t("create.already_latest") : this.$t("create.need_update")) + ")"}
+                        </MyButton>
                     </Row>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.ip")}>
@@ -120,6 +131,12 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     @ErrorProxy({ confirm: i18n.t("vmDetail.rebootHostConfirm"), success: i18n.t("vmDetail.rebootHostSuccess"), loading: i18n.t("loading") })
     private async rebootHost() {
         await deviceApi.rebootHost(this.data.address);
+    }
+
+    @ErrorProxy({ success: i18n.t("vmDetail.updateFirmwareSuccess"), loading: i18n.t("loading") })
+    private async updateFirmware() {
+        await deviceApi.updateFirmware(this.data.address);
+        deviceApi.checkFirmware(this.data.address).then(e => this.firmwareIsLatest = e);
     }
 
     @ErrorProxy({ success: i18n.t("vmDetail.pruneImagesSuccess"), loading: i18n.t("loading") })

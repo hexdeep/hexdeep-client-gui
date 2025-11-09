@@ -204,13 +204,15 @@
         "hostOperate": "主机操作",
         "rebootHost": "重启主机",
         "rebootHostSuccess": "主机正在重启...",
+        "updateFirmwareSuccess": "固件更新成功，主机正在重启...",
         "pruneImages": "清理镜像",
         "pruneImagesSuccess": "清理镜像成功",
         "rebootHostConfirm": "确定要重启主机吗？",
         "resetConfirm": "确定要恢复出厂设置吗？",
         "resetSuccess": "主机重置成功，请等待主机重启。",
         "reset": "恢复出厂",
-        "apiGitCommitId": "版本号"
+        "apiGitCommitId": "版本号",
+        "updateFirmware": "升级固件"
     },
     "changeImage": {
         "title": "更换镜像",

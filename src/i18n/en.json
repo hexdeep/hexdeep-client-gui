@@ -203,13 +203,15 @@
         "hostOperate": "Host Operate",
         "rebootHost": "Reboot Host",
         "rebootHostSuccess": "Host is restarting...",
+        "updateFirmwareSuccess": "Firmware update successful, host is restarting...",
         "pruneImages": "Prune Images",
         "pruneImagesSuccess": "Prune Images Successful",
         "rebootHostConfirm": "Are you sure you want to reboot host?",
         "resetConfirm": "Are you sure you want to restore factory settings?",
         "resetSuccess": "Host is resetting, please wait rebooting...",
         "reset": "Restore factory",
-        "apiGitCommitId": "Version"
+        "apiGitCommitId": "Version",
+        "updateFirmware": "Update firmware"
     },
     "changeImage": {
         "title": "Change Image",
