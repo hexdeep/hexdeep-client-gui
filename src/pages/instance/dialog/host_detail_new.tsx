@@ -115,6 +115,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         <Row gap={10}>
                             <MyButton type="primary" size="small" onClick={this.rebootHost}>{this.$t("vmDetail.rebootHost")}</MyButton>
                             <MyButton type="primary" size="small" onClick={this.pruneImages}>{this.$t("vmDetail.pruneImages")}</MyButton>
+                            <MyButton type="primary" size="small" onClick={this.formatNvme}>{this.$t("vmDetail.formatNvme")}</MyButton>
                             {/* <MyButton type="primary" size="small" onClick={this.resetHost}>{this.$t("vmDetail.reset")}</MyButton> */}
                         </Row>
                     </Row>
@@ -132,6 +133,12 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     private async rebootHost() {
         await deviceApi.rebootHost(this.data.address);
     }
+
+    @ErrorProxy({ confirm: i18n.t("vmDetail.formatNvmeConfirm"), success: i18n.t("vmDetail.formatNvmeSuccess"), loading: i18n.t("loading") })
+    private async formatNvme() {
+        await deviceApi.formatNvme(this.data.address);
+    }
+
 
     @ErrorProxy({ success: i18n.t("vmDetail.updateFirmwareSuccess"), loading: i18n.t("loading") })
     private async updateFirmware() {

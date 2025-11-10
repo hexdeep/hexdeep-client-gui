@@ -344,6 +344,11 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    public async formatNvme(ip: string) {
+        const result = await fetch(makeVmApiUrl("host/device/format_nvme", ip));
+        return await this.handleError(result);
+    }
+
 
     public async pruneImages(ip: string) {
         const result = await fetch(makeVmApiUrl("dc_api/prune_images", ip));
