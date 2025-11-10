@@ -51,8 +51,15 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
             this.$alert(this.$t("create.maxCreate").toString(), this.$t("error").toString(), { type: "error" });
             return;
         }
-        const createdCount = (new Set(h.devices.map(e => e.index))).size;
-        var maxCanCreate = Math.max(0, std.first.device_indexes.filter(x => x.state != "expired").length - createdCount);
+
+        var rentalIndexSet = std.first.device_indexes.filter(x => x.state != "expired").map(x => x.index);
+        var set = new Set(
+            h.devices
+                .filter(e => rentalIndexSet.includes(e.index))  // O(1) 判断
+                .map(e => e.index)
+        );
+        const createdCount = set.size;
+        var maxCanCreate = Math.max(0, rentalIndexSet.length - createdCount);
         if (maxCanCreate < 1) {
             this.$alert(this.$t("create.maxCreate").toString(), this.$t("error").toString(), { type: "error" });
             return;
