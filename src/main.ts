@@ -21,6 +21,9 @@ Vue.use(DialogPlugin);
 document.title = Config.title;
 console.log("current browser version" + navigator.appVersion);
 
+document.addEventListener("submit", (e) => {
+    e.preventDefault();
+});
 
 new Vue({
     i18n,

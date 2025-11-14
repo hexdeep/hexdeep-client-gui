@@ -33,14 +33,15 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
 
     @ErrorProxy({ validatForm: "formRef" })
     protected override async onConfirm() {
-        if (this.data.obj.image_addr && ((this.data.obj.image_addr.includes('.') && this.data.obj.image_addr.includes('/')))) {
+        const image_addr = this.data.obj.image_addr == "[customImage]" ? this.data.obj.custom_image : this.data.obj.image_addr;
+        if (image_addr && ((image_addr.includes('.') && image_addr.includes('/')))) {
             for (var ip of this.data.hostIp) {
-                var imgs = await deviceApi.getImages(ip);
-                var image = imgs.find(x => x.address == this.data.obj.image_addr);
-                if (image && !image.download) {
+                var imgs = await this.getImages(ip);
+                var image = imgs.find(x => x.address == image_addr);
+                if (!image || !image.download) {
                     const err = await this.$dialog(PullImageDialog).show({
                         hostIp: ip,
-                        imageAddress: this.data.obj.image_addr!,
+                        imageAddress: image_addr!,
                     });
                     if (err) throw err;
                 }
@@ -49,6 +50,20 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
 
         this.config.suffixName = this.data.obj.suffix_name || "";
         this.confirming();
+    }
+
+    private async getImages(ip: string) {
+        const loading = this.$loading({
+            lock: true,
+            text: i18n.t("loading").toString(),
+        });
+        try {
+            return await deviceApi.getImages(ip);
+        } catch (error) {
+            throw error;
+        } finally {
+            loading.close();
+        }
     }
 
     @ErrorProxy({ success: i18n.t("batchCreate.success"), loading: i18n.t("loading") })

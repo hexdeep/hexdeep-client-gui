@@ -35,12 +35,13 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             this.close();
             return;
         };
-        if (this.data.obj.image_addr && ((this.data.obj.image_addr.includes('.') && this.data.obj.image_addr.includes('/')))) {
-            var image = this.images.find(x => x.address == this.data.obj.image_addr);
+        const image_addr = this.data.obj.image_addr == "[customImage]" ? this.data.obj.custom_image : this.data.obj.image_addr;
+        if (image_addr && ((image_addr.includes('.') && image_addr.includes('/')))) {
+            var image = this.images.find(x => x.address == image_addr);
             if (!image || !image.download) {
                 const err = await this.$dialog(PullImageDialog).show({
                     hostIp: this.data.info.hostIp,
-                    imageAddress: this.data.obj.image_addr!,
+                    imageAddress: image_addr!,
                 });
                 if (err) throw err;
             }

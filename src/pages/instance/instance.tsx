@@ -114,7 +114,7 @@ export default class InstancePage extends Vue {
                     <Column flex class={"fixTable"}>
                         <el-table data={this.data} width="100%" height="100%" v-loading={this.loading} on-selection-change={this.onSelectionChange}>
                             <el-table-column type="selection" width="45" />
-                            <el-table-column prop="address" label={this.$t("instance.host").toString()} width="110" />
+                            <el-table-column prop="address" label={this.$t("instance.host").toString()} width="115" />
                             <el-table-column label={this.$t("instance.indexs").toString()} formatter={this.renderVm} />
                             <el-table-column label={this.$t("instance.action").toString()} width={i18n.locale == "zh" ? 200 : 270} formatter={this.renderAction} align="center" />
                         </el-table>
@@ -124,14 +124,14 @@ export default class InstancePage extends Vue {
         );
     }
 
-    protected onSelectionChange(e: HostInfo[]) {     
+    protected onSelectionChange(e: HostInfo[]) {
         this.checkList.clear();
         e.forEach(x => {
             for (let i = 1; i <= 12; i++) {
                 var str = `${x.address}-${i}`;
                 if (!this.checkList.includes(str)) this.checkList.push(str);
             }
-        });       
+        });
     }
 
     private renderVm(row: HostInfo) {

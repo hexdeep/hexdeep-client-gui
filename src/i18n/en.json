@@ -46,6 +46,7 @@
     "invalidPort": "Invalid Port",
     "vmImage": "VM Image",
     "customImage": "Custom image",
+    "filterNameOrIp": "Filter name or IP",
     "table": {
         "index": "Index",
         "create": "Create successfully",
@@ -191,6 +192,7 @@
         "adb": "ADB",
         "android_sdk": "Android SDK",
         "state": "Status",
+        "createdAt": "Created At",
         "rebootSDKSuccess": "Reboot SDK Successful",
         "temperature": "Temperature",
         "swap": "Swap",

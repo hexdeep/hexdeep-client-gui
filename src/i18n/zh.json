@@ -33,6 +33,7 @@
     "invalidPort": "端口格式错误",
     "vmImage": "镜像",
     "customImage": "自定义镜像",
+    "filterNameOrIp": "过滤名称或IP",
     "table": {
         "index": "实例位",
         "create": "创建成功",
@@ -192,6 +193,7 @@
         "adb": "ADB",
         "android_sdk": "Android SDK",
         "state": "状态",
+        "createdAt": "创建时间",
         "rebootSDKSuccess": "重启SDK成功",
         "temperature": "温度",
         "swap": "交换空间",

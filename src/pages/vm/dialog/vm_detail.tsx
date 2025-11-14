@@ -48,6 +48,9 @@ export class VmDetailDialog extends CommonDialog<DeviceInfo, void> {
                 <el-descriptions-item label={i18n.t("vmDetail.state")}>
                     {i18n.t(this.data.state)}
                 </el-descriptions-item>
+                <el-descriptions-item label={i18n.t("vmDetail.createdAt")}>
+                    {this.data.created_at}
+                </el-descriptions-item>
             </el-descriptions>
         );
     }

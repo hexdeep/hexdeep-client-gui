@@ -165,6 +165,7 @@ export interface MyConfig {
     refreshDuration: number;
     filterState: string;
     suffixName: string;
+    filterNameOrIp: string;
 }
 
 export interface TreeConfig {

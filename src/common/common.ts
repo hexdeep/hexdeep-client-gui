@@ -1,6 +1,6 @@
+import { DeviceInfo, MyConfig } from "@/api/device_define";
 import { cloneDeep } from "lodash";
 import moment from "moment";
-import { Config } from "./Config";
 import urlJoin from "url-join";
 
 export namespace Tools {
@@ -159,4 +159,10 @@ export function makeVmApiUrl(...url: string[]) {
 
 export function makeMacvlanVmApiUrl(...url: string[]) {
     return new URL(url[0], "http://" + url[1]);
+}
+
+export function filterWithConfig(config: MyConfig, item: DeviceInfo) {
+    const filterAllow = !config.filterNameOrIp || config.filterNameOrIp.trim().length == 0 || (item.name.includes(config.filterNameOrIp) || item.adb.includes(config.filterNameOrIp));
+    const filterStateAllow = item.state == config.filterState || config.filterState == "all";
+    return filterStateAllow && filterAllow;
 }

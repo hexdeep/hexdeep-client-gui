@@ -16,7 +16,7 @@ export class PullImageDialog extends CommonDialog<PullImageRequest, void | strin
 
     public override show(data: PullImageRequest) {
         deviceApi.pullImageProgress(data.hostIp, data.imageAddress, (progress) => {
-            console.log(progress);
+            // console.log(progress);
             this.progress = progress;
         }).then(() => {
             this.close();

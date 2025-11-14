@@ -59,8 +59,25 @@
         }
     }
 
-    :global .el-divider--horizontal {
-        margin: 14px 0;
+    :global {
+        .el-divider--horizontal {
+            margin: 14px 0;
+        }
+
+        .el-input {
+            padding-right: 5px;
+            margin-bottom: 10px;
+
+            &:has(:focus) .el-input__prefix {
+                color: var(--main-color);
+            }
+        }
+
+        .el-input__inner {
+            border: none;
+            border-bottom: 1px #c1c1c1 solid;
+            border-radius: 0;
+        }
     }
 }
 

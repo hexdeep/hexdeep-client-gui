@@ -1,7 +1,7 @@
 import { deviceApi } from '@/api/device_api';
 import { DeviceInfo, HostInfo, MyConfig, MyTreeNode, TreeConfig, } from '@/api/device_define';
 import { orderApi } from '@/api/order_api';
-import { getPrefixName, getSuffixName } from '@/common/common';
+import { filterWithConfig, getPrefixName, getSuffixName } from '@/common/common';
 import { i18n } from '@/i18n/i18n';
 import { Column, Row } from '@/lib/container';
 import { ErrorProxy } from '@/lib/error_handle';
@@ -30,7 +30,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
     }
 
     private childrenFilter(item: MyTreeNode) {
-        return item.children ? true : item.value.state == this.config.filterState || this.config.filterState == "all";
+        return item.children ? true : filterWithConfig(this.config, item.value);
     }
 
     @Watch("hosts", { deep: true })
@@ -166,6 +166,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
     protected render() {
         return (
             <Column width={240} class={[s.DevicePicker, "contentBox"]}>
+                <el-input prefix-icon="el-icon-search" v-model={this.config.filterNameOrIp} placeholder={this.$t("filterNameOrIp")} clearable />
                 <div class={s.treeBox} v-loading={this.loading}>
                     <div class={s.tree}>
                         <MyTree data={this.hostTree} on-change={this.onTreeChange}

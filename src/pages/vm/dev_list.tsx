@@ -1,6 +1,6 @@
 import { deviceApi } from '@/api/device_api';
 import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from '@/api/device_define';
-import { getPrefixName, getSuffixName, makeVmApiUrl, sleep } from '@/common/common';
+import { filterWithConfig, getPrefixName, getSuffixName, makeVmApiUrl, sleep } from '@/common/common';
 import { i18n } from '@/i18n/i18n';
 import { ModelSelectotDialog } from '@/lib/component/model_selector';
 import { Column, Row } from '@/lib/container';
@@ -31,7 +31,9 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     @Ref() private tb!: ElTable;
 
     private get data2(): DeviceInfo[] {
-        var re = this.hostTree.flatMap(x => x.children?.filter(y => y.selected && (y.value.state == this.config.filterState || this.config.filterState == "all")).map(t => t.value));
+        var re = this.hostTree.flatMap(x => x.children?.filter(y => {
+            return y.selected && filterWithConfig(this.config, y.value);
+        }) || []).map(t => t.value);
         this.fillGitCommitId(re);
         return re;
     }
