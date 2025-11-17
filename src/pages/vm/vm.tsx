@@ -129,7 +129,7 @@ export default class VMPage extends Vue {
                 node.value = x;
             } else {
                 node = {
-                    label: x.remark && x.remark != "" ? x.address + "(" + x.remark + ")" : x.address,
+                    label: x.address,
                     value: x,
                     key: x.address,
                     opened: false,

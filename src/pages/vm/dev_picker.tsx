@@ -99,7 +99,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
             if (node) {
                 // Vue.set 保证响应式
                 this.$set(node.value, "remark", re);
-                node.label = v.address + (re ? "(" + re + ")" : "");
+                node.label = v.address;
             }
         }
     }
@@ -134,7 +134,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
             <Row gap={10} crossAlign='center' class="row" style={{ "flex": 1 }} mainAlign='center'>
                 {children && <Row crossAlign='center' mainAlign='space-between' style={{ "flex": 1 }}>
                     <Row gap={5} crossAlign='center'>
-                        <span>{data.label}</span>
+                        <span>{data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
                         <el-tag type={data.value.has_error ? "danger" : ""}> {data.value.has_error ? <i class="el-icon-warning"></i> : children.length} </el-tag>
                     </Row>
                     <Row>
