@@ -186,7 +186,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
 
     protected render() {
         return (
-            <Column width={270} class={[s.DevicePicker, "contentBox"]}>
+            <Column width={290} class={[s.DevicePicker, "contentBox"]}>
                 <el-input prefix-icon="el-icon-search" v-model={this.config.filterNameOrIp} placeholder={this.$t("filterNameOrIp")} clearable />
                 <div class={s.treeBox} v-loading={this.loading}>
                     <div class={s.tree}>
