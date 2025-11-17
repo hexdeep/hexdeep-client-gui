@@ -93,12 +93,14 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
 
     private async remark(v: HostInfo) {
         const re = await this.$dialog(RemarkDialog).show(v);
-        // 找到 hostTree 对应节点
-        const node = this.hostTree.find(x => x.label.startsWith(v.address));
-        if (node) {
-            // Vue.set 保证响应式
-            this.$set(node.value, "remark", re);
-            node.label = v.address + (re ? "(" + re + ")" : "");
+        if (re != undefined) {
+            // 找到 hostTree 对应节点
+            const node = this.hostTree.find(x => x.label.startsWith(v.address));
+            if (node) {
+                // Vue.set 保证响应式
+                this.$set(node.value, "remark", re);
+                node.label = v.address + (re ? "(" + re + ")" : "");
+            }
         }
     }
 

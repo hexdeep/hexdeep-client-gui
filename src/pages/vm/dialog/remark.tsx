@@ -17,7 +17,7 @@ export class RemarkDialog extends CommonDialog<HostInfo, string> {
     @ErrorProxy({ success: i18n.t("remark.success"), validatForm: "formRef", loading: i18n.t("loading") })
     protected override async onConfirm() {
         await deviceApi.setHostRemark(this.data.address, this.newName);
-        this.close(this.newName);
+        this.close(this.newName ? this.newName : "");
     }
 
     private get formRules() {
