@@ -22,7 +22,7 @@ export class ImportVmDialog extends CommonDialog<HostInfo[], boolean> {
     private progress: { bytesPerSecond: number, progress: number, startTime: number; } | null = null;
 
     private item: ImportVmParam = {
-        host: { address: "", device_id: "", devices: [] },
+        host: { address: "", device_id: "", devices: [], remark: "" },
         index: 0,
         name: "",
         local: ""
