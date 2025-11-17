@@ -125,6 +125,12 @@ class DeviceApi extends ApiBase {
                 element.devices = [];
             });
             tasks.push(t);
+
+            this.getHostRemark(element.address).then(e => {
+                element.remark = e;
+            }).catch(error => {
+                console.log(error);
+            });
         });
         //console.log("await all");
         await Promise.allSettled(tasks).catch(e => {
@@ -253,6 +259,11 @@ class DeviceApi extends ApiBase {
 
     public async getImages(ip: string): Promise<ImageInfo[]> {
         const result = await fetch(makeVmApiUrl("image_api/get", ip));
+        return await this.handleError(result);
+    }
+
+    public async getHostRemark(ip: string): Promise<string> {
+        const result = await fetch(makeVmApiUrl("/host/device/get_remark", ip));
         return await this.handleError(result);
     }
 
@@ -391,6 +402,12 @@ class DeviceApi extends ApiBase {
         const result = await fetch(makeVmApiUrl("dc_api/rename", ip, name, newName));
         return await this.handleError(result);
     }
+
+    public async setHostRemark(ip: string, name: string): Promise<void> {
+        const result = await fetch(makeVmApiUrl("/host/device/set_remark", ip) + `?name=${name}`);
+        return await this.handleError(result);
+    }
+
 
     public async shutdown(ip: string, name: string): Promise<void> {
         const result = await fetch(makeVmApiUrl("dc_api/stop", ip, name));

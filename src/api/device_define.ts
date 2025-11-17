@@ -22,6 +22,7 @@ export interface DeviceInfo {
 export interface HostInfo {
     address: string;
     device_id: string;
+    remark: string;
     devices: DeviceInfo[];
     has_error?: boolean;
 }

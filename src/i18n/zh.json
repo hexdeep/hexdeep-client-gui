@@ -150,6 +150,12 @@
         "title": "修改设备名称",
         "deviceName": "设备名称"
     },
+    "remark": {
+        "success": "备注修改成功",
+        "length": "长度为1 - 4个数字或字母",
+        "title": "修改主机备注",
+        "hostRemark": "主机备注"
+    },
     "changeModel": {
         "title": "更改型号",
         "success": "型号修改成功"

@@ -149,6 +149,12 @@
         "title": "Modify device name",
         "deviceName": "Device name"
     },
+    "remark": {
+        "success": "Remark modification successful",
+        "length": "The length is 1-4 characters",
+        "title": "Modify Host remark",
+        "hostRemark": "Host remark"
+    },
     "changeModel": {
         "title": "Change Model",
         "success": "Model modification successful"

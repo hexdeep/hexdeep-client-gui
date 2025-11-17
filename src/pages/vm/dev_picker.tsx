@@ -12,6 +12,7 @@ import s from './dev_picker.module.less';
 import { BatchCreateDialog } from './dialog/batch_create';
 import { CreateDialog } from './dialog/create';
 import { RenameDialog } from './dialog/rename';
+import { RemarkDialog } from './dialog/remark';
 
 @Component
 export class DevicePicker extends tsx.Component<IProps, IEvents> {
@@ -90,6 +91,17 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         }
     }
 
+    private async remark(v: HostInfo) {
+        const re = await this.$dialog(RemarkDialog).show(v);
+        // 找到 hostTree 对应节点
+        const node = this.hostTree.find(x => x.label.startsWith(v.address));
+        if (node) {
+            // Vue.set 保证响应式
+            this.$set(node.value, "remark", re);
+            node.label = v.address + (re ? "(" + re + ")" : "");
+        }
+    }
+
     private async updateVM(v: DeviceInfo) {
         var re = await this.$dialog(CreateDialog).show({
             isUpdate: true,
@@ -123,10 +135,17 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                         <span>{data.label}</span>
                         <el-tag type={data.value.has_error ? "danger" : ""}> {data.value.has_error ? <i class="el-icon-warning"></i> : children.length} </el-tag>
                     </Row>
-                    <div class="autohide" onClick={(e) => {
-                        this.createVms(data.value);
-                        e.stopPropagation();
-                    }}><i class="el-icon-circle-plus-outline"></i></div>
+                    <Row>
+                        <div class="autohide" onClick={(e) => {
+                            this.remark(data.value);
+                            e.stopPropagation();
+                        }}><i class="el-icon-edit-outline"></i></div>
+                        <div class="autohide" onClick={(e) => {
+                            this.createVms(data.value);
+                            e.stopPropagation();
+                        }}><i class="el-icon-circle-plus-outline"></i></div>
+                    </Row>
+
                 </Row>}
                 {!children && <Row gap={10} style={{ "flex": 1 }} mainAlign='space-between' crossAlign='center' class={data.value.state !== "running" ? s.no_run : ""}>
                     <Row gap={3} style={{ "flex": 1 }} crossAlign='center'>
@@ -165,7 +184,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
 
     protected render() {
         return (
-            <Column width={240} class={[s.DevicePicker, "contentBox"]}>
+            <Column width={270} class={[s.DevicePicker, "contentBox"]}>
                 <el-input prefix-icon="el-icon-search" v-model={this.config.filterNameOrIp} placeholder={this.$t("filterNameOrIp")} clearable />
                 <div class={s.treeBox} v-loading={this.loading}>
                     <div class={s.tree}>

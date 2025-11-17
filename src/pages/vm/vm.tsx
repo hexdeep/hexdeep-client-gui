@@ -28,7 +28,8 @@ export default class VMPage extends Vue {
         view: "list",
         refreshDuration: 5,
         filterState: "all",
-        suffixName: "deep"
+        suffixName: "deep",
+        filterNameOrIp: ""
     };
     @ProvideReactive() protected images: ImageInfo[] = [];
     @Ref() private list!: DeviceList;
@@ -86,6 +87,7 @@ export default class VMPage extends Vue {
                 curr = this.hosts.find(x => x.address == ip);
                 if (curr) {
                     curr.devices = await deviceApi.getDeviceListByHost(curr);
+                    curr.remark = await deviceApi.getHostRemark(curr.address);
                 } else {
                     this.hosts = await deviceApi.getAllDevices();
                 }
@@ -127,7 +129,7 @@ export default class VMPage extends Vue {
                 node.value = x;
             } else {
                 node = {
-                    label: x.address,
+                    label: x.remark && x.remark != "" ? x.address + "(" + x.remark + ")" : x.address,
                     value: x,
                     key: x.address,
                     opened: false,
