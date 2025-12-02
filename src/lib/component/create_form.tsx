@@ -88,15 +88,15 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 </el-form-item>}
                 <Row>
                     <el-form-item label={this.$t("create.width")} prop="width">
-                        <el-input v-model={this.data.width} onBlur={this.fixNumber("width")} min={600} max={2400} type="number" />
+                        <el-input v-model={this.data.width} onBlur={this.fixNumber("width")} min={600} max={3000} type="number" />
                     </el-form-item>
                     <el-form-item label={this.$t("create.height")} prop="height">
-                        <el-input v-model={this.data.height} onBlur={this.fixNumber("height")} min={600} max={2400} type="number" />
+                        <el-input v-model={this.data.height} onBlur={this.fixNumber("height")} min={600} max={3000} type="number" />
                     </el-form-item>
                 </Row>
                 <Row>
                     <el-form-item label={this.$t("create.dpi")} prop="dpi">
-                        <el-input v-model={this.data.dpi} onBlur={this.fixNumber("dpi")} min={100} max={400} type="number" />
+                        <el-input v-model={this.data.dpi} onBlur={this.fixNumber("dpi")} min={100} max={600} type="number" />
                     </el-form-item>
                     <el-form-item label={this.$t("create.fps")} prop="fps">
                         <el-input v-model={this.data.fps} onBlur={this.fixNumber("fps")} min={10} max={60} type="number" />
