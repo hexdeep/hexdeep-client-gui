@@ -8,17 +8,19 @@ import "./create_form.less";
 import { ImageSelector2 } from "./image_selector2";
 import { ModelSelector } from "./model_selector";
 import { S5FormItems } from "./s5_form_items";
+import { i18n } from "@/i18n/i18n";
 
 
 @Component
 export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
     @Prop({ default: () => { return []; } }) images!: ImageInfo[];
+    @Prop({ default: () => { return []; } }) validInstance!: number[];
+    @Prop({ default: () => { return 0; } }) validIndex!: number;
     @Prop({ default: () => { sandbox_size: 16; } }) data!: CreateParam;
     @Prop({ default: true }) needName!: boolean;
     @Prop({ default: false }) isUpdate!: boolean;
 
-    protected async created() {
-    }
+    private index: number = this.validIndex;
 
     private inputNumber(key: string, min: number, max: number) {
         return (v: string) => {
@@ -27,6 +29,10 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
             if (val > max) val = max;
             this.$set(this.data, key, val);
         };
+    }
+
+    protected async created() {
+        this.index = this.validIndex;
     }
 
     private fixNumber(key: string) {
@@ -45,11 +51,28 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
         return (
             <div>
                 {this.$scopedSlots.default ? this.$scopedSlots.default() : ""}
-                {this.needName && (
+                {this.needName && this.isUpdate && (
                     <el-form-item label={this.$t("create.name")} prop="name">
                         <el-input v-model={this.data.name} maxlength={20} />
                     </el-form-item>
                 )}
+
+                {this.needName && !this.isUpdate && (
+                    <Row>
+                        <el-form-item label={this.$t("create.name")} prop="name">
+                            <el-input v-model={this.data.name} maxlength={20} />
+                        </el-form-item>
+                        <el-form-item label={this.$t("clone.dstIndex")} prop="index">
+                            <el-select v-model={this.index} onChange={(v: number) => {
+                                // 选择变化时触发
+                                this.$set(this.data, "index", v);
+                            }}>
+                                {this.validInstance.map(x => <el-option label={`${i18n.t("instance.instance")}${x}`} value={x} />)}
+                            </el-select>
+                        </el-form-item>
+                    </Row>
+                )}
+
                 {!this.isUpdate && (
                     <Row>
                         <el-form-item label={this.$t("create.sandbox")} prop="sandbox">
@@ -125,5 +148,7 @@ interface IPorps {
     data?: CreateParam;
     needName?: boolean;
     images?: ImageInfo[];
+    validInstance: number[];
+    validIndex: number;
     isUpdate?: boolean;
 }

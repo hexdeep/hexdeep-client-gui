@@ -443,7 +443,7 @@ class DeviceApi extends ApiBase {
 
     public async create(param: DockerEditParam): Promise<void> {
         var formData = qs.stringify(param.obj);
-        const result = await fetch(makeVmApiUrl("dc_api/create", param.info.hostIp, param.info.index.toString(), param.obj.name), {
+        const result = await fetch(makeVmApiUrl("dc_api/create", param.info.hostIp, param.obj.index!.toString(), param.obj.name), {
             method: "POST",
             body: formData,
             headers: {

@@ -69,7 +69,10 @@ export class ImportVmDialog extends CommonDialog<HostInfo[], boolean> {
             let arr = Array.from({ length: 12 }, (_, index) => index + 1);
             if (this.record.length > 0) {
                 const rental = this.record.find(x => x.device_id == this.item.host.device_id);
-                if (rental) arr.removeWhere(x => rental.device_indexes.contains(y => y.index == x && y.state == "expired"));
+                if (rental) arr.removeWhere(x =>
+                    this.record.first.device_indexes.contains(y => y.index === x && y.state === "expired")
+                    || !this.record.first.device_indexes.contains(y => y.index === x)
+                );
             }
             this.validInstance = arr || [];
             this.item.index = arr.length > 0 ? arr.first : 0;

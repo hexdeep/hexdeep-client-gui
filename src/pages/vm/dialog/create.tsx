@@ -1,4 +1,5 @@
 import { deviceApi } from '@/api/device_api';
+import { orderApi } from "@/api/order_api";
 import { CreateParam, DockerEditParam, ImageInfo } from "@/api/device_define";
 import { i18n } from "@/i18n/i18n";
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
@@ -12,21 +13,40 @@ import { PullImageDialog } from './pull_image';
 export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     public override width: string = "650px";
     protected images: ImageInfo[] = [];
+    private validInstance: number[] = [];
+    private validIndex: number = 0;
     private dirty = 0;
     public override allowEscape: boolean = false;
 
-    public override show(data: DockerEditParam) {
+    public override async show(data: DockerEditParam) {
         this.data = data;
         this.title = data.isUpdate ? this.$t("menu.updateVm").toString() : this.$t("createVm").toString();
         deviceApi.getImages(this.data.info.hostIp).then((images) => {
             this.images = images;
         });
+        await this.hostIpChange();
         return super.show(data);
     }
 
     @Watch("data", { deep: true })
     protected onDataChange() {
         this.dirty++;
+    }
+
+    protected async hostIpChange() {
+        let record = await orderApi.getRental(this.data.hostId) || [];
+        let arr = Array.from({ length: 12 }, (_, index) => index + 1);
+
+        if (record.length > 0) {
+            arr.removeWhere(x =>
+                record.first.device_indexes.contains(y => y.index === x && y.state === "expired")
+                || !record.first.device_indexes.contains(y => y.index === x)
+            );
+        }
+        //arr.forEach((x, i) => console.log(`arr[${i}] = ${x}`));
+        this.validInstance = arr || [];
+        this.validIndex = arr.length > 0 ? (arr.includes(this.data.info.index ?? 0) ? this.data.info.index ?? 0 : arr.first) : 0;
+        this.$forceUpdate();
     }
 
     @ErrorProxy({ validatForm: "formRef" })
@@ -62,6 +82,12 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         if (this.data.isUpdate) {
             await deviceApi.update(data);
         } else {
+            const createForm = this.$refs.formRef as any;
+
+            // 打印 data prop
+            console.log("CreateForm data:", JSON.stringify(createForm.data, null, 2));
+
+            console.log("data index is " + this.validIndex);
             await deviceApi.create(data);
             let re: any = "";
 
@@ -110,7 +136,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     protected renderDialog(): VNode {
         return (
             <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="140px" >
-                <CreateForm data={this.data.obj} images={this.images} isUpdate={this.data.isUpdate}></CreateForm>
+                <CreateForm data={this.data.obj} images={this.images} validInstance={this.validInstance} validIndex={this.validIndex} isUpdate={this.data.isUpdate} ></CreateForm>
             </el-form>
         );
     }

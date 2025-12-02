@@ -33,7 +33,10 @@ export class CloneVmDialog extends CommonDialog<DeviceInfo, boolean> {
         this.record = await orderApi.getRental(this.data.hostId) || [];
         let arr = Array.from({ length: 12 }, (_, index) => index + 1);
         if (this.record.length > 0) {
-            arr.removeWhere(x => this.record.first.device_indexes.contains(y => y.index == x && y.state == "expired"));
+            arr.removeWhere(x =>
+                this.record.first.device_indexes.contains(y => y.index === x && y.state === "expired")
+                || !this.record.first.device_indexes.contains(y => y.index === x)
+            );
         }
         this.validInstance = arr || [];
         this.item.index = arr.length > 0 ? (arr.includes(this.data.index) ? this.data.index : arr.first) : 0;

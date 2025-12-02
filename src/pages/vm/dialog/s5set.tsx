@@ -86,7 +86,7 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
     protected override renderFooter() {
         return (
             <Row class={"dialog-footer"} padding={20} mainAlign="space-between">
-                <MyButton text={i18n.t("checkS5.check")} onClick={() => this.checkS5()} plain disabled={!this.item.isOpenProxy} />
+
                 <Row gap={10}>
                     <MyButton text={i18n.t("confirm.ok")} onClick={() => this.onConfirm()} type="primary" />
                     <MyButton text={i18n.t("confirm.cancel")} onClick={() => this.close()} />
