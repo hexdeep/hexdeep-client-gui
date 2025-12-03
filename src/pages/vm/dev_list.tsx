@@ -151,7 +151,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <el-table-column prop="name" label={this.$t("name")} formatter={r => getSuffixName(r.name)} show-overflow-tooltip />
                         {/* <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} /> */}
                         {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
-                        <el-table-column prop="adb" label="ADB" width="140" show-overflow-tooltip />
+                        <el-table-column prop="adb" formatter={(row: DeviceInfo) => this.formatAdb(row.adb)} label="ADB" width="100" show-overflow-tooltip />
+                        <el-table-column prop="created_at" formatter={(row: DeviceInfo) => this.formatCreatedAt(row.created_at)} label={this.$t("createdAt")} width="110" />
                         <el-table-column prop="git_commit_id" label={this.$t("vmDetail.containerGitCommitId")} width="100" show-overflow-tooltip />
                         <el-table-column
                             width="250"
@@ -221,6 +222,32 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
     protected renderMenu(e: DeviceInfo) {
 
+    }
+
+    private formatAdb(adb: string) {
+        // adb 格式一般是 "192.168.31.54:5005"
+        const parts = adb.split(".");
+        if (parts.length !== 4) return adb;
+
+        // 取后两个字段
+        const ipPart = parts[2] + "." + parts[3];   // => "31.54:5005"
+        return ipPart;
+    }
+
+    private formatCreatedAt(time: string) {
+        try {
+            // 格式示例：2020-11-04 11:05:24
+            const [date, t] = time.split(" ");
+            const parts = date.split("-");  // [2020, 11, 04]
+            if (parts.length !== 3) return time;
+
+            const month = parts[1];
+            const day = parts[2];
+
+            return `${month}-${day} ${t}`;
+        } catch {
+            return time;
+        }
     }
 
     public async create(data: DeviceInfo) {

@@ -46,6 +46,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         //arr.forEach((x, i) => console.log(`arr[${i}] = ${x}`));
         this.validInstance = arr || [];
         this.validIndex = arr.length > 0 ? (arr.includes(this.data.info.index ?? 0) ? this.data.info.index ?? 0 : arr.first) : 0;
+        this.data.obj.index = this.validIndex;
         this.$forceUpdate();
     }
 
