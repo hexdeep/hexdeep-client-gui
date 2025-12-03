@@ -46,8 +46,6 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         //arr.forEach((x, i) => console.log(`arr[${i}] = ${x}`));
         this.validInstance = arr || [];
         this.validIndex = arr.length > 0 ? (arr.includes(this.data.info.index ?? 0) ? this.data.info.index ?? 0 : arr.first) : 0;
-        this.data.obj.index = this.validIndex;
-        this.$forceUpdate();
     }
 
     @ErrorProxy({ validatForm: "formRef" })
@@ -89,6 +87,9 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             console.log("CreateForm data:", JSON.stringify(createForm.data, null, 2));
 
             console.log("data index is " + this.validIndex);
+            if (!data.obj.index) {
+                data.obj.index = this.validIndex;
+            }
             await deviceApi.create(data);
             let re: any = "";
 
