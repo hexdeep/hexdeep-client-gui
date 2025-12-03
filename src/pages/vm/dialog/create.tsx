@@ -42,6 +42,8 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                 record.first.device_indexes.contains(y => y.index === x && y.state === "expired")
                 || !record.first.device_indexes.contains(y => y.index === x)
             );
+        } else {
+            arr = [];
         }
         //arr.forEach((x, i) => console.log(`arr[${i}] = ${x}`));
         this.validInstance = arr || [];

@@ -37,6 +37,8 @@ export class CloneVmDialog extends CommonDialog<DeviceInfo, boolean> {
                 this.record.first.device_indexes.contains(y => y.index === x && y.state === "expired")
                 || !this.record.first.device_indexes.contains(y => y.index === x)
             );
+        } else {
+            arr = [];
         }
         this.validInstance = arr || [];
         this.item.index = arr.length > 0 ? (arr.includes(this.data.index) ? this.data.index : arr.first) : 0;
