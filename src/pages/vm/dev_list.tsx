@@ -147,12 +147,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                     <el-table default-expand-all data={this.data2} width="100%" height="100%" row-key="key"
                         ref="tb" on-selection-change={this.handleSelectionChange} empty-text={this.$t("table.emptyText")}>
                         <el-table-column type="selection" width="45" reserve-selection={true} />
-                        <el-table-column prop="index" label={"No"} width="40" align="center" />
+                        <el-table-column prop="index" label={"No"} width="20" align="center" />
                         <el-table-column prop="name" label={this.$t("name")} formatter={r => getSuffixName(r.name)} show-overflow-tooltip />
                         {/* <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} /> */}
                         {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
                         <el-table-column prop="adb" formatter={(row: DeviceInfo) => this.formatAdb(row.adb)} label="ADB" width="100" show-overflow-tooltip />
-                        <el-table-column prop="created_at" formatter={(row: DeviceInfo) => this.formatCreatedAt(row.created_at)} label={this.$t("createdAt")} width="110" />
+                        <el-table-column prop="created_at" formatter={(row: DeviceInfo) => this.formatCreatedAt(row.created_at)} label={this.$t("createdAt")} width="90" />
                         <el-table-column prop="git_commit_id" label={this.$t("vmDetail.containerGitCommitId")} width="100" show-overflow-tooltip />
                         <el-table-column
                             width="250"
@@ -191,7 +191,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                             }}
                         />
                         <el-table-column prop="state" label={this.$t("state")} width="90" formatter={this.renderStatus} align="center" />
-                        <el-table-column label={this.$t("action")} width="120" formatter={this.renderAction} />
+                        <el-table-column label={this.$t("action")} width="100" formatter={this.renderAction} />
                     </el-table>
                 </div>
                 {(this.config.view == "horizontal" || this.config.view == "vertical") &&
@@ -244,11 +244,15 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             const month = parts[1];
             const day = parts[2];
 
-            return `${month}-${day} ${t}`;
+            // 去掉秒，保留 HH:MM
+            const shortTime = t.slice(0, 5);
+
+            return `${month}-${day} ${shortTime}`;
         } catch {
             return time;
         }
     }
+
 
     public async create(data: DeviceInfo) {
         let name = getSuffixName(data.name);
@@ -264,7 +268,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             info: data,
             obj: {
                 name: name,
-                sandbox_size: 16,
+                sandbox_size: 64,
                 sandbox: 1,
                 width: 720,
                 height: 1280,
@@ -466,20 +470,25 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
                     <TextButton text={this.$t("more")} />
                     <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item nativeOnClick={() => this.create(row)}>{this.$t("createVm")}</el-dropdown-item>
                         <el-dropdown-item disabled={row.state == 'running'} nativeOnClick={() => this.start(row)}>{this.$t("menu.start")}</el-dropdown-item>
                         <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.shutdown(row)}>{this.$t("menu.shutdown")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.reboot(row)}>{this.$t("menu.reboot")}</el-dropdown-item>
-                        <el-dropdown-item nativeOnClick={() => this.create(row)}>{this.$t("createVm")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.reset(row)}>{this.$t("menu.reset")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.delete(row)}>{this.$t("menu.delete")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.rename(row)}>{this.$t("menu.rename")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.updateVm(row)}>{this.$t("menu.updateVm")}</el-dropdown-item>
-                        <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.fileBrowser(row)}>{this.$t("menu.fileBrowser")}</el-dropdown-item>
-                        <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.selectFile(row)}>{this.$t("menu.upload")}</el-dropdown-item>
-                        <el-dropdown-item nativeOnClick={() => this.setS5Proxy(row)}>{this.$t("menu.setS5Proxy")}</el-dropdown-item>
-                        <el-dropdown-item nativeOnClick={() => this.hostDetails(row)}>{this.$t("menu.hostDetails")}</el-dropdown-item>
+
+
+
+
                         <el-dropdown-item nativeOnClick={() => this.backupVm(row)}>{this.$t("menu.backup")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.cloneVm(row)}>{this.$t("menu.clone")}</el-dropdown-item>
+
+                        <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.selectFile(row)}>{this.$t("menu.upload")}</el-dropdown-item>
+                        <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.fileBrowser(row)}>{this.$t("menu.fileBrowser")}</el-dropdown-item>
+                        <el-dropdown-item nativeOnClick={() => this.hostDetails(row)}>{this.$t("menu.hostDetails")}</el-dropdown-item>
+                        <el-dropdown-item nativeOnClick={() => this.setS5Proxy(row)}>{this.$t("menu.setS5Proxy")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.androidSdkApi(row)}>{this.$t("menu.androidSdkApi")}</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>

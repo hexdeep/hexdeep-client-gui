@@ -124,7 +124,7 @@
         "changeImage": "更换镜像",
         "success": "上传成功",
         "backup": "备份",
-        "clone": "克隆",
+        "clone": "移动",
         "androidSdkApi": "安卓SdkApi"
     },
     "batchCreate": {

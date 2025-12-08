@@ -72,7 +72,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
             obj: {
                 name: "", num: 1,
                 sandbox: 1,
-                sandbox_size: 16,
+                sandbox_size: 64,
                 suffix_name: this.config.suffixName || "deep",
                 width: 720,
                 height: 1280,

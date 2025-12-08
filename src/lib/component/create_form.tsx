@@ -16,7 +16,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
     @Prop({ default: () => { return []; } }) images!: ImageInfo[];
     @Prop({ default: () => { return []; } }) validInstance!: number[];
     @Prop({ default: () => { return 0; } }) validIndex!: number;
-    @Prop({ default: () => { sandbox_size: 16; } }) data!: CreateParam;
+    @Prop({ default: () => { sandbox_size: 64; } }) data!: CreateParam;
     @Prop({ default: true }) needName!: boolean;
     @Prop({ default: false }) isUpdate!: boolean;
 

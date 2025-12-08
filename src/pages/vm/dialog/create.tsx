@@ -83,12 +83,6 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         if (this.data.isUpdate) {
             await deviceApi.update(data);
         } else {
-            const createForm = this.$refs.formRef as any;
-
-            // 打印 data prop
-            console.log("CreateForm data:", JSON.stringify(createForm.data, null, 2));
-
-            console.log("data index is " + this.validIndex);
             if (!data.obj.index) {
                 data.obj.index = this.validIndex;
             }
@@ -100,7 +94,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                 cancelButtonText: this.$t("confirm.cancel").toString(),
                 type: "warning",
             }).catch(e => "cancel");
-            if (re == "confirm") await deviceApi.start(this.data.info.hostIp, `${this.data.hostId}_${this.data.info.index}_${this.data.obj.name}`);
+            if (re == "confirm") await deviceApi.start(this.data.info.hostIp, `${this.data.hostId}_${this.data.obj.index}_${this.data.obj.name}`);
         }
         this.close(this.data.obj);
     }

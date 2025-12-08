@@ -110,7 +110,7 @@
         "stop": "Stop",
         "reset": "Reset",
         "reboot": "Reboot",
-        "shutdown": "Shutdown",
+        "shutdown": "Stop",
         "delete": "Delete",
         "rename": "Rename",
         "updateVm": "Update",
@@ -123,7 +123,7 @@
         "hostDetails": "Host Details",
         "changeImage": "Change Image",
         "backup": "Backup",
-        "clone": "Clone",
+        "clone": "Move",
         "androidSdkApi": "Android Sdk Api"
     },
     "batchCreate": {
