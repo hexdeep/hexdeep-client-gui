@@ -125,6 +125,7 @@
         "success": "上传成功",
         "backup": "备份",
         "clone": "移动",
+        "screenMirror": "运行投屏",
         "androidSdkApi": "安卓SdkApi"
     },
     "batchCreate": {
@@ -298,7 +299,7 @@
         "downloadHere": "点击这里下载插件"
     },
     "import": {
-        "btn": "导入",
+        "btn": "导入备份",
         "title": "导入云手机",
         "hostIp": "主机IP",
         "index": "实例位",
@@ -335,5 +336,16 @@
     "pullImage": {
         "title": "正在下载镜像",
         "failed": "镜像下载失败"
+    },
+    "screenMirror": {
+        "operate": "操作",
+        "run": "运行投屏",
+        "stop": "停止投屏",
+        "deviceId": "设备id",
+        "regenerate": "重新生成",
+        "download": "客户端下载",
+        "downloadClient": "Hexdeep投屏客户端",
+        "runSuccess": "投屏运行成功，设备id已复制到剪贴板，请前往投屏客户端添加",
+        "regenerateSuccess": "重新生成id成功，id已复制到剪贴板，请前往投屏客户端添加"
     }
 }

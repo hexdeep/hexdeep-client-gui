@@ -335,6 +335,16 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    public async screenMirrorRun(android_sdk: string, act: number): Promise<string> {
+        const result = await fetch(makeMacvlanVmApiUrl("and_api/screen_mirror_run", android_sdk) + `?act=${act}`);
+        return await this.handleError(result);
+    }
+
+    public async screenMirrorId(android_sdk: string, act: number): Promise<string> {
+        const result = await fetch(makeMacvlanVmApiUrl("and_api/screen_mirror_id", android_sdk) + `?act=${act}`);
+        return await this.handleError(result);
+    }
+
     public async getHosts(): Promise<HostInfo[]> {
         const result = await fetch(makeVmApiUrl("host/device/get", Config.host));
         return await this.handleError(result);

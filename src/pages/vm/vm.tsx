@@ -306,7 +306,6 @@ export default class VMPage extends Vue {
                         </Row>
                         <Row gap={8} crossAlign="center">
                             <MyButton type="primary" text={this.$t("import.btn")} onClick={this.importVm} />
-                            <MyButton type="primary" text={this.$t("remoteControl")} onClick={this.remoteControl} />
                         </Row>
                     </Row>
                     <DeviceList ref="list" onChanged={this.onHostChanged} />

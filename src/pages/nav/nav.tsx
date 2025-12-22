@@ -126,7 +126,7 @@ export default class Nav extends Vue {
                             <i class={`iconfont icon-shiyongwendang`} />
                             <span>{this.$t("nav.apiDoc")}</span>
                         </a>
-                        <a href={`https://github.com/hexdeep/hexdeep-client-gui`} onMouseenter={this.onMouseenter} target="_blank" onMouseleave={this.onMouseleave} draggable={false} class={s.menu} >
+                        <a href={`https://github.com/hexdeep`} onMouseenter={this.onMouseenter} target="_blank" onMouseleave={this.onMouseleave} draggable={false} class={s.menu} >
                             <i class={`iconfont icon-github-fill`} />
                             <span>{this.$t("nav.openSource")}</span>
                         </a>

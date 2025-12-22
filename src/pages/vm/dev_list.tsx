@@ -11,6 +11,7 @@ import { Component, InjectReactive, Ref, Watch } from 'vue-property-decorator';
 import * as tsx from 'vue-tsx-support';
 import s from './dev_list.module.less';
 import { CloneVmDialog } from './dialog/clone_vm';
+import { ScreenMirrorDialog } from './dialog/screen_mirror';
 import { CreateDialog } from './dialog/create';
 import { FilelistDialog } from './dialog/filelist';
 import { PullImageDialog } from './dialog/pull_image';
@@ -431,6 +432,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         if (re) this.$emit("changed", data.hostIp);
     }
 
+    private async screenMirror(data: DeviceInfo) {
+        let re = await this.$dialog(ScreenMirrorDialog).show(data);
+        if (re) this.$emit("changed", data.hostIp);
+    }
+
+
     private async androidSdkApi(data: DeviceInfo) {
         window.open("http://" + data.android_sdk, "_blank");
     }
@@ -478,14 +485,10 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <el-dropdown-item nativeOnClick={() => this.delete(row)}>{this.$t("menu.delete")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.rename(row)}>{this.$t("menu.rename")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.updateVm(row)}>{this.$t("menu.updateVm")}</el-dropdown-item>
-
-
-
-
                         <el-dropdown-item nativeOnClick={() => this.backupVm(row)}>{this.$t("menu.backup")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.cloneVm(row)}>{this.$t("menu.clone")}</el-dropdown-item>
-
                         <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.selectFile(row)}>{this.$t("menu.upload")}</el-dropdown-item>
+                        <el-dropdown-item nativeOnClick={() => this.screenMirror(row)}>{this.$t("menu.screenMirror")}</el-dropdown-item>
                         <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.fileBrowser(row)}>{this.$t("menu.fileBrowser")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.hostDetails(row)}>{this.$t("menu.hostDetails")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.setS5Proxy(row)}>{this.$t("menu.setS5Proxy")}</el-dropdown-item>

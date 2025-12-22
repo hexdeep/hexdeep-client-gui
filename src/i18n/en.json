@@ -124,6 +124,7 @@
         "changeImage": "Change Image",
         "backup": "Backup",
         "clone": "Move",
+        "screenMirror": "Screen Mirror",
         "androidSdkApi": "Android Sdk Api"
     },
     "batchCreate": {
@@ -296,7 +297,7 @@
         "downloadHere": "Click here to download the plugin"
     },
     "import": {
-        "btn": "Import",
+        "btn": "Import Backup",
         "title": "Import VMs",
         "hostIp": "Host IP",
         "index": "Index",
@@ -333,5 +334,16 @@
     "pullImage": {
         "title": "Downloading image",
         "failed": "Download image failed"
+    },
+    "screenMirror": {
+        "operate": "Operate",
+        "run": "Run Screen Mirror",
+        "stop": "Stop Screen Mirro",
+        "deviceId": "Device ID",
+        "regenerate": "Regenerate",
+        "download": "Client Download",
+        "downloadClient": "Hexdeep Screen Mirror Client",
+        "run_success": "Screen mirroring worked successfully. The device ID has been copied to the screenshot panel. Please add it in the screen cast app",
+        "regenerateSuccess": "ID regenerated successfully. The ID has been copied to the clipboard. Please add it in the screen mirroring client"
     }
 }
