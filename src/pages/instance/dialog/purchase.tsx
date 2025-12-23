@@ -24,7 +24,7 @@ export class PurchaseDialog extends CommonDialog<PurchaseInfo, boolean> {
         this.title = this.$t("instance.purchaseTitle").toString();
         this.packages = await orderApi.getPackages();
         if (this.packages.length > 0) this.data.package_id = this.packages.first.id;
-        this.data.hosts.entries().toArray().forEach(([k, v]) => {
+        Array.from(this.data.hosts.entries()).forEach(([k, v]) => {
             v.forEach(x => {
                 this.selected.push(`${k.device_id}_${x}`);
             });
@@ -88,7 +88,7 @@ export class PurchaseDialog extends CommonDialog<PurchaseInfo, boolean> {
                         </span>
                     </div>
                     <el-checkbox-group class={s.checkbox} v-model={this.selected}>
-                        {this.data.hosts.entries().toArray().map(([k, v]) => {
+                        {Array.from(this.data.hosts.entries()).map(([k, v]) => {
                             return <Row wrap={true}>
                                 {v.map(x =>
                                     <el-checkbox label={`${k.device_id}_${x}`} border size="medium">{`${k.address} ${this.$t("instance.instance")}-${x.toString().padStart(2, "0")}`}</el-checkbox>
