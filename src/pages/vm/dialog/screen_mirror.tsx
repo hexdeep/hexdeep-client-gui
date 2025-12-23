@@ -99,7 +99,7 @@ export class ScreenMirrorDialog extends CommonDialog<DeviceInfo, void> {
                 size="medium"
                 column={1}
                 border
-                labelStyle={{ width: "120px" }}
+                labelStyle={{ width: "130px" }}
                 style={{ padding: "20px" }}
             >
                 {/* 设备 ID */}

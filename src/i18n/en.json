@@ -341,7 +341,7 @@
         "stop": "Stop Screen Mirro",
         "deviceId": "Device ID",
         "regenerate": "Regenerate",
-        "download": "Client Download",
+        "download": "android app download",
         "downloadClient": "Hexdeep Screen Mirror Client",
         "run_success": "Screen mirroring worked successfully. The device ID has been copied to the screenshot panel. Please add it in the screen cast app",
         "regenerateSuccess": "ID regenerated successfully. The ID has been copied to the clipboard. Please add it in the screen mirroring client"

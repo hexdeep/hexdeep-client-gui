@@ -343,7 +343,7 @@
         "stop": "停止投屏",
         "deviceId": "设备id",
         "regenerate": "重新生成",
-        "download": "客户端下载",
+        "download": "android app下载",
         "downloadClient": "Hexdeep投屏客户端",
         "runSuccess": "投屏运行成功，设备id已复制到剪贴板，请前往投屏客户端添加",
         "regenerateSuccess": "重新生成id成功，id已复制到剪贴板，请前往投屏客户端添加"
