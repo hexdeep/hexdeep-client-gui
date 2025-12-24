@@ -95,7 +95,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                 cancelButtonText: this.$t("confirm.cancel").toString(),
                 type: "warning",
             }).catch(e => "cancel");
-            if (re == "confirm") await deviceApi.start(this.data.info.hostIp, `${this.data.hostId}_${this.validIndex}_${this.data.obj.name}`);
+            if (re == "confirm") await deviceApi.start(this.data.info.hostIp, `${this.data.hostId}_${data.obj.index}_${this.data.obj.name}`);
         }
         this.close(this.data.obj);
     }

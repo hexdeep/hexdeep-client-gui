@@ -1,5 +1,3 @@
-
-
 import { CreateParam, ImageInfo } from "@/api/device_define";
 import { Component, Prop } from "vue-property-decorator";
 import * as tsx from 'vue-tsx-support';
@@ -9,7 +7,7 @@ import { ImageSelector2 } from "./image_selector2";
 import { ModelSelector } from "./model_selector";
 import { S5FormItems } from "./s5_form_items";
 import { i18n } from "@/i18n/i18n";
-
+import Vue from 'vue';
 
 @Component
 export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
@@ -20,7 +18,8 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
     @Prop({ default: true }) needName!: boolean;
     @Prop({ default: false }) isUpdate!: boolean;
 
-    private index: number = this.validIndex;
+    // 将 index 包裹为响应式对象
+    private index = Vue.observable({ value: this.validIndex });
 
     private inputNumber(key: string, min: number, max: number) {
         return (v: string) => {
@@ -32,7 +31,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
     }
 
     protected async created() {
-        this.index = this.validIndex;
+        this.index.value = this.validIndex;
     }
 
     private fixNumber(key: string) {
@@ -63,11 +62,23 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                             <el-input v-model={this.data.name} maxlength={20} />
                         </el-form-item>
                         <el-form-item label={this.$t("clone.dstIndex")} prop="index">
-                            <el-select v-model={this.index} onChange={(v: number) => {
-                                // 选择变化时触发
-                                this.$set(this.data, "index", v);
-                            }}>
-                                {this.validInstance.map(x => <el-option label={`${i18n.t("instance.instance")}${x}`} value={x} />)}
+                            <el-select
+                                v-model={this.index.value}
+                                onChange={(v: number) => {
+                                    console.log("v is", v);
+                                    this.index.value = v;
+                                    // 同步到 data.index，如果你有这个字段
+                                    if (this.data) {
+                                        this.$set(this.data, "index", v);
+                                    }
+                                }}
+                            >
+                                {this.validInstance.map(x => (
+                                    <el-option
+                                        label={`${i18n.t("instance.instance")}${x}`}
+                                        value={x}
+                                    />
+                                ))}
                             </el-select>
                         </el-form-item>
                     </Row>
@@ -83,8 +94,8 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                             <el-input v-model={this.data.sandbox_size} type="number" disabled={this.data.sandbox != 1} />
                         </el-form-item>
                     </Row>
-                )
-                }
+                )}
+
                 <el-form-item label={this.$t("create.subnet")} prop="subnet" >
                     <el-input v-model={this.data.subnet} placeholder="172.17.0.0/16" disabled={this.data.mac_vlan == 1} />
                 </el-form-item>
@@ -106,9 +117,12 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 <el-form-item label={this.$t("create.image_addr")} prop="image_addr">
                     <ImageSelector2 images={this.images} v-model={this.data.image_addr} />
                 </el-form-item>
-                {this.data.image_addr == "[customImage]" && <el-form-item label={this.$t("customImage")} prop="custom_image">
-                    <el-input v-model={this.data.custom_image} />
-                </el-form-item>}
+                {this.data.image_addr == "[customImage]" && (
+                    <el-form-item label={this.$t("customImage")} prop="custom_image">
+                        <el-input v-model={this.data.custom_image} />
+                    </el-form-item>
+                )}
+
                 <Row>
                     <el-form-item label={this.$t("create.width")} prop="width">
                         <el-input v-model={this.data.width} onBlur={this.fixNumber("width")} min={600} max={3000} type="number" />
@@ -117,6 +131,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                         <el-input v-model={this.data.height} onBlur={this.fixNumber("height")} min={600} max={3000} type="number" />
                     </el-form-item>
                 </Row>
+
                 <Row>
                     <el-form-item label={this.$t("create.dpi")} prop="dpi">
                         <el-input v-model={this.data.dpi} onBlur={this.fixNumber("dpi")} min={100} max={600} type="number" />
@@ -125,6 +140,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                         <el-input v-model={this.data.fps} onBlur={this.fixNumber("fps")} min={10} max={60} type="number" />
                     </el-form-item>
                 </Row>
+
                 {!this.isUpdate && (
                     <el-form-item label={this.$t("create.model_id")} prop="model_id"  >
                         <ModelSelector v-model={this.data.model_id} />
