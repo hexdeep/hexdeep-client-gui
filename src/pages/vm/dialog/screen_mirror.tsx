@@ -14,7 +14,7 @@ export class ScreenMirrorDialog extends CommonDialog<DeviceInfo, void> {
     protected deviceId: string = "";
     protected isRunning: boolean = false;
 
-    protected downloadUrl: string = "https://hexdeep.oss-cn-shanghai.aliyuncs.com/screen_mirror/app-arm64-v8a-release.zip";
+    protected downloadUrl: string = "https://download.hexdeep.com/screen_mirror/hexdeep.apk";
 
     override width: string = "600px";
 
