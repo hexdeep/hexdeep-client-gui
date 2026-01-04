@@ -241,7 +241,7 @@ class DeviceApi extends ApiBase {
 
     public async getDeviceListByIp(hostIp: string, hostId: string): Promise<DeviceInfo[]> {
         const url = makeVmApiUrl("dc_api/get", hostIp);
-        const result = await axios.get(url.toString(), { timeout: 1000 });
+        const result = await axios.get(url.toString(), { timeout: 4000 });
         var re = await this.handleAxiosError(result);
         (re ?? []).forEach(t => {
             t.hostIp = hostIp;
