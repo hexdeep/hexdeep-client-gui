@@ -80,9 +80,7 @@ export class CloneVmDialog extends CommonDialog<DeviceInfo, boolean> {
                 <el-form-item label={this.$t("clone.dstName")} prop="dst_name">
                     <el-input v-model={this.item.dst_name} maxlength={20} />
                 </el-form-item>
-                <el-form-item prop="local">
-                    <el-checkbox v-model={this.item.remove}>{this.$t("clone.remove")}</el-checkbox>
-                </el-form-item>
+
             </el-form >
         );
     }

@@ -38,7 +38,7 @@ class DeviceApi extends ApiBase {
     }
 
     public async cloneVm(hostIp: string, name: string, item: CloneVmParam) {
-        const result = await fetch(makeVmApiUrl("dc_api/copy", hostIp, name, item.index.toString(), item.dst_name, item.remove.toString()));
+        const result = await fetch(makeVmApiUrl("dc_api/move", hostIp, name, item.index.toString(), item.dst_name));
         return await this.handleError(result);
     }
 
