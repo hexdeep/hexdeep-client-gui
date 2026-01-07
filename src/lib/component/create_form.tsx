@@ -100,10 +100,6 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                     <el-input v-model={this.data.subnet} placeholder="172.17.0.0/16" disabled={this.data.mac_vlan == 1} />
                 </el-form-item>
 
-                <el-form-item label={this.$t("create.memory")} prop="memory" >
-                    <el-input v-model={this.data.memory} placeholder="请输入内存大小字节数" />
-                </el-form-item>
-
                 <Row>
                     <el-form-item label={this.$t("create.mac_vlan")} prop="mac_vlan">
                         <el-switch v-model={this.data.mac_vlan} active-value={1} inactive-value={0} />
