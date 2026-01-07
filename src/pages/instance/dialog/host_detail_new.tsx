@@ -11,6 +11,7 @@ import { ErrorProxy } from "@/lib/error_handle";
 import { MyButton } from "@/lib/my_button";
 import { VNode } from "vue";
 import { SwitchSDKDialog } from "./switch_sdk";
+import { SwitchDiskDialog } from "./switch_disk";
 
 @Dialog
 export class HostDetailDialog extends CommonDialog<HostInfo, void> {
@@ -111,14 +112,50 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                     {this.detail?.temperature} ℃
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.hostOperate")}>
-                    <Row crossAlign="center">
-                        <Row gap={10}>
-                            <MyButton type="primary" size="small" onClick={this.rebootHost}>{this.$t("vmDetail.rebootHost")}</MyButton>
-                            <MyButton type="primary" size="small" onClick={this.pruneImages}>{this.$t("vmDetail.pruneImages")}</MyButton>
-                            <MyButton type="primary" size="small" onClick={this.formatNvme}>{this.$t("vmDetail.formatNvme")}</MyButton>
-                            {/* <MyButton type="primary" size="small" onClick={this.resetHost}>{this.$t("vmDetail.reset")}</MyButton> */}
-                        </Row>
-                    </Row>
+                    <div
+                        style={{
+                            display: "flex",
+                            flexWrap: "wrap",      // ✅ 允许自动换行
+                            gap: "10px 10px",      // 行间距 + 列间距
+                            alignItems: "center",
+                        }}
+                    >
+                        <MyButton
+                            type="primary"
+                            size="small"
+                            style={{ whiteSpace: "nowrap" }}   // ❗按钮内不换行
+                            onClick={this.rebootHost}
+                        >
+                            {this.$t("vmDetail.rebootHost")}
+                        </MyButton>
+
+                        <MyButton
+                            type="primary"
+                            size="small"
+                            style={{ whiteSpace: "nowrap" }}
+                            onClick={this.pruneImages}
+                        >
+                            {this.$t("vmDetail.pruneImages")}
+                        </MyButton>
+
+                        <MyButton
+                            type="primary"
+                            size="small"
+                            style={{ whiteSpace: "nowrap" }}
+                            onClick={this.formatDisk}
+                        >
+                            {this.$t("vmDetail.formatDisk")}
+                        </MyButton>
+
+                        <MyButton
+                            type="primary"
+                            size="small"
+                            style={{ whiteSpace: "nowrap" }}
+                            onClick={this.switchDisk}
+                        >
+                            {this.$t("vmDetail.switchDisk")}
+                        </MyButton>
+                    </div>
                 </el-descriptions-item>
             </el-descriptions>
         );
@@ -134,11 +171,14 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         await deviceApi.rebootHost(this.data.address);
     }
 
-    @ErrorProxy({ confirm: i18n.t("vmDetail.formatNvmeConfirm"), success: i18n.t("vmDetail.formatNvmeSuccess"), loading: i18n.t("loading") })
-    private async formatNvme() {
-        await deviceApi.formatNvme(this.data.address);
+    @ErrorProxy({ confirm: i18n.t("vmDetail.formatDiskConfirm"), success: i18n.t("vmDetail.formatDiskSuccess"), loading: i18n.t("loading") })
+    private async formatDisk() {
+        await deviceApi.formatDisk(this.data.address);
     }
 
+    private async switchDisk() {
+        await this.$dialog(SwitchDiskDialog).show(this.data);
+    }
 
     @ErrorProxy({ success: i18n.t("vmDetail.updateFirmwareSuccess"), loading: i18n.t("loading") })
     private async updateFirmware() {

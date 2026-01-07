@@ -182,3 +182,27 @@ export const ProxyProtocolTypeOps: Record<number, any> = ({
     3: { label: "vmess", engine: 2 },
     4: { label: "hysteria2", engine: 2 },
 });
+
+export interface DiskListInfo {
+    /**
+     * 当前正在使用的磁盘，当前正在使用的磁盘
+     */
+    current_disk: string;
+    /**
+     * 磁盘列表，磁盘列表
+     */
+    list: DiskItem[];
+    [property: string]: any;
+}
+
+export interface DiskItem {
+    /**
+     * 是否可用，是否可用
+     */
+    enable: boolean;
+    /**
+     * 磁盘名称，磁盘名称
+     */
+    name: string;
+    [property: string]: any;
+}

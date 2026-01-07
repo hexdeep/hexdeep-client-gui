@@ -4,7 +4,7 @@ import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
-import { CloneVmParam, CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes } from "./device_define";
+import { CloneVmParam, CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
@@ -272,11 +272,16 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    public async getDisks(ip: string): Promise<DiskListInfo> {
+        const result = await fetch(makeVmApiUrl("/host/device/get_disk", ip));
+        return await this.handleError(result);
+    }
 
     public async switchSDKImages(ip: string, addr: string): Promise<ImageInfo[]> {
         const result = await fetch(makeVmApiUrl("super_sdk_api/switch_version", ip) + `?address=${addr}`);
         return await this.handleError(result);
     }
+
 
     public async pullImages(ip: string, addr: string) {
         const result = await fetch(makeVmApiUrl("image_api/pull", ip) + `?address=${addr}`);
@@ -365,8 +370,13 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
-    public async formatNvme(ip: string) {
-        const result = await fetch(makeVmApiUrl("host/device/format_nvme", ip));
+    public async formatDisk(ip: string) {
+        const result = await fetch(makeVmApiUrl("host/device/format_disk", ip));
+        return await this.handleError(result);
+    }
+
+    public async switchDisk(ip: string, disk: string) {
+        const result = await fetch(makeVmApiUrl("host/device/switch_disk", ip) + `?disk=${disk}`);
         return await this.handleError(result);
     }
 
