@@ -20,6 +20,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     @InjectReactive() private config!: MyConfig;
     public override width: string = "650px";
     protected images: ImageInfo[] = [];
+    private dockerRegistries: string[] = [];
     public override allowEscape: boolean = false;
 
     public override show(data: DockerBatchCreateParam) {
@@ -27,6 +28,9 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         this.title = i18n.t("batchCreateVm").toString();
         deviceApi.getImages(this.data.hostIp.first).then((images) => {
             this.images = images;
+        });
+        deviceApi.getDockerRegistries(this.data.hostIp.first).then((list) => {
+            this.dockerRegistries = Array.isArray(list) ? list : [];
         });
         return super.show(data);
     }
@@ -42,6 +46,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
                     const err = await this.$dialog(PullImageDialog).show({
                         hostIp: ip,
                         imageAddress: image_addr!,
+                        dockerRegistry: this.data.obj.docker_registry,
                     });
                     if (err) throw err;
                 }
@@ -127,7 +132,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         return (
             <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="140px" class={s.form}>
                 <div class={s.tip}>{this.$t("create.tip", { 0: this.data.maxNum })}</div>
-                <CreateForm data={this.data.obj} needName={false} images={this.images} validIndex={0} validInstance={[]}>
+                <CreateForm data={this.data.obj} needName={false} images={this.images} dockerRegistries={this.dockerRegistries} validIndex={0} validInstance={[]}>
                     <Row>
                         <el-form-item label={this.$t("batchCreate.num")} prop="num" style={{ "width": "100%" }}>
                             <el-input v-model={this.data.obj.num} min={1} max={this.data.maxNum} type="number" />

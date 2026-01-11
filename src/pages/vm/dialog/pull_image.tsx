@@ -5,6 +5,7 @@ import s from "./pull_image.module.less";
 interface PullImageRequest {
     hostIp: string;
     imageAddress: string;
+    dockerRegistry?: string;
 }
 
 @Dialog
@@ -15,15 +16,29 @@ export class PullImageDialog extends CommonDialog<PullImageRequest, void | strin
     public override title: string = this.$t("pullImage.title").toString();
 
     public override show(data: PullImageRequest) {
-        deviceApi.pullImageProgress(data.hostIp, data.imageAddress, (progress) => {
-            // console.log(progress);
-            this.progress = progress;
-        }).then(() => {
-            this.close();
-        }).catch((e) => {
-            console.error(e);
-            this.close(this.$t("pullImage.failed").toString());
-        });
+        if (data.dockerRegistry) {
+            deviceApi.pullImageFromRegistry(data.hostIp, data.imageAddress, data.dockerRegistry, (progress) => {
+                // console.log(progress);
+                this.progress = progress;
+            }).then(() => {
+                this.close();
+            }).catch((e) => {
+                console.error(e);
+                this.close(this.$t("pullImage.failed").toString());
+            });
+        } else {
+            deviceApi.pullImageProgress(data.hostIp, data.imageAddress, (progress) => {
+                // console.log(progress);
+                this.progress = progress;
+            }).then(() => {
+                this.close();
+            }).catch((e) => {
+                console.error(e);
+                this.close(this.$t("pullImage.failed").toString());
+            });
+        }
+
+
         return super.show(data);
     }
 

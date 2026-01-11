@@ -8,16 +8,21 @@ import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
 import { ErrorProxy } from "@/lib/error_handle";
 import { VNode } from "vue";
 import { PullImageDialog } from "./pull_image";
+import { Watch } from 'vue-property-decorator';
 
 @Dialog
 export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
     protected images: ImageInfo[] = [];
-    protected obj = { image_addr: "", custom_image: "" };
+    protected dockerRegistries: string[] = [];
+    protected obj = { image_addr: "", custom_image: "", docker_registry: "" };
     public override show(data: DeviceInfo[]) {
         this.title = this.$t("changeImage.title").toString();
         this.data = data;
         deviceApi.getImages(this.data.first.hostIp).then((images) => {
             this.images = images;
+        });
+        deviceApi.getDockerRegistries(this.data.first.hostIp).then((list) => {
+            this.dockerRegistries = Array.isArray(list) ? list : [];
         });
         return super.show(data);
     }
@@ -33,6 +38,7 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
                     const err = await this.$dialog(PullImageDialog).show({
                         hostIp: ip,
                         imageAddress: this.obj.image_addr!,
+                        dockerRegistry: this.obj.docker_registry,
                     });
                     if (err) throw err;
                 }
@@ -40,6 +46,17 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
         }
 
         this.confirming();
+    }
+
+    @Watch("dockerRegistries", { immediate: true })
+    onDockerRegistriesChange(list: string[]) {
+        if (
+            list &&
+            list.length > 0 &&
+            !this.obj.docker_registry
+        ) {
+            this.$set(this.obj, "docker_registry", list[0]);
+        }
     }
 
     @ErrorProxy({ success: i18n.t("changeImage.success"), loading: i18n.t("loading") })
@@ -78,6 +95,42 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
                 {this.obj.image_addr == "[customImage]" && <el-form-item label={this.$t("customImage")} prop="custom_image">
                     <el-input v-model={this.obj.custom_image} />
                 </el-form-item>}
+
+                {this.obj.image_addr != "[customImage]" && (
+                    <el-form-item
+                        label={this.$t("create.docker_registry")}
+                        prop="docker_registry"
+                    >
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <el-select
+                                v-model={this.obj.docker_registry}
+                                placeholder={this.$t("create.select_docker_registry")}
+                                filterable
+                                allow-create
+                                clearable
+                                style="flex: 1;"
+                            >
+                                {this.dockerRegistries.map(registry => (
+                                    <el-option
+                                        key={registry}
+                                        label={registry}
+                                        value={registry}
+                                    />
+                                ))}
+                            </el-select>
+
+                            <el-link
+                                type="primary"
+                                underline={false}
+                                href={`https://download.hexdeep.com/super_sdk/docker_registry.exe?t=${Date.now()}`}
+                                target="_blank"
+                            >
+                                {this.$t("create.download_docker_registry")}
+                            </el-link>
+                        </div>
+                    </el-form-item>
+                )}
+
             </el-form>
         );
     }

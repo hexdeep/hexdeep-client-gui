@@ -1,5 +1,5 @@
 import { CreateParam, ImageInfo } from "@/api/device_define";
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Watch } from "vue-property-decorator";
 import * as tsx from 'vue-tsx-support';
 import { Row } from '../container';
 import "./create_form.less";
@@ -8,10 +8,12 @@ import { ModelSelector } from "./model_selector";
 import { S5FormItems } from "./s5_form_items";
 import { i18n } from "@/i18n/i18n";
 import Vue from 'vue';
+import { deviceApi } from "@/api/device_api";
 
 @Component
 export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
     @Prop({ default: () => { return []; } }) images!: ImageInfo[];
+    @Prop({ default: () => { return []; } }) dockerRegistries!: string[];
     @Prop({ default: () => { return []; } }) validInstance!: number[];
     @Prop({ default: () => { return 0; } }) validIndex!: number;
     @Prop({ default: () => { sandbox_size: 64; } }) data!: CreateParam;
@@ -44,6 +46,17 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
             if (val > max) val = max;
             this.$set(this.data, key, val);
         };
+    }
+
+    @Watch("dockerRegistries", { immediate: true })
+    onDockerRegistriesChange(list: string[]) {
+        if (
+            list &&
+            list.length > 0 &&
+            !this.data.docker_registry
+        ) {
+            this.$set(this.data, "docker_registry", list[0]);
+        }
     }
 
     public render() {
@@ -119,6 +132,41 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                     </el-form-item>
                 )}
 
+                {this.data.image_addr != "[customImage]" && (
+                    <el-form-item
+                        label={this.$t("create.docker_registry")}
+                        prop="docker_registry"
+                    >
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <el-select
+                                v-model={this.data.docker_registry}
+                                placeholder={this.$t("create.select_docker_registry")}
+                                filterable
+                                allow-create
+                                clearable
+                                style="flex: 1;"
+                            >
+                                {this.dockerRegistries.map(registry => (
+                                    <el-option
+                                        key={registry}
+                                        label={registry}
+                                        value={registry}
+                                    />
+                                ))}
+                            </el-select>
+
+                            <el-link
+                                type="primary"
+                                underline={false}
+                                href={`https://download.hexdeep.com/super_sdk/docker_registry.exe?t=${Date.now()}`}
+                                target="_blank"
+                            >
+                                {this.$t("create.download_docker_registry")}
+                            </el-link>
+                        </div>
+                    </el-form-item>
+                )}
+
                 <Row>
                     <el-form-item label={this.$t("create.width")} prop="width">
                         <el-input v-model={this.data.width} onBlur={this.fixNumber("width")} min={600} max={3000} type="number" />
@@ -150,6 +198,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 {/* {!this.isUpdate && <S5FormItems v-model={this.data}></S5FormItems>} */}
             </div>
         );
+
     }
 }
 
@@ -160,7 +209,10 @@ interface IPorps {
     data?: CreateParam;
     needName?: boolean;
     images?: ImageInfo[];
+    dockerRegistries: string[];
     validInstance: number[];
     validIndex: number;
     isUpdate?: boolean;
 }
+
+

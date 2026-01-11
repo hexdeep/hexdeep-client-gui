@@ -60,6 +60,7 @@ export interface CreateParam extends S5setParam, DeviceDetail {
     model_id?: number;  //	机型id:值为0时，随机机型；大于0时，固定机型
     subnet?: string;
     memory?: number; // 内存大小
+    docker_registry?: string;
 
     // s5_domain_mode?: number;//	1,本地域名解析;2,服务端域名解析（默认）
     // s5_ip?: string; //	s5代理ip

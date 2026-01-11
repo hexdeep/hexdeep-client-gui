@@ -13,6 +13,7 @@ import { PullImageDialog } from './pull_image';
 export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     public override width: string = "650px";
     protected images: ImageInfo[] = [];
+    private dockerRegistries: string[] = [];
     private validInstance: number[] = [];
     private validIndex: number = 0;
     private dirty = 0;
@@ -23,6 +24,9 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         this.title = data.isUpdate ? this.$t("menu.updateVm").toString() : this.$t("createVm").toString();
         deviceApi.getImages(this.data.info.hostIp).then((images) => {
             this.images = images;
+        });
+        deviceApi.getDockerRegistries(this.data.info.hostIp).then((list) => {
+            this.dockerRegistries = Array.isArray(list) ? list : [];
         });
         await this.hostIpChange();
         return super.show(data);
@@ -63,6 +67,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                 const err = await this.$dialog(PullImageDialog).show({
                     hostIp: this.data.info.hostIp,
                     imageAddress: image_addr!,
+                    dockerRegistry: this.data.obj.docker_registry,
                 });
                 if (err) throw err;
             }
@@ -135,7 +140,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     protected renderDialog(): VNode {
         return (
             <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="140px" >
-                <CreateForm data={this.data.obj} images={this.images} validInstance={this.validInstance} validIndex={this.validIndex} isUpdate={this.data.isUpdate} ></CreateForm>
+                <CreateForm data={this.data.obj} images={this.images} dockerRegistries={this.dockerRegistries} validInstance={this.validInstance} validIndex={this.validIndex} isUpdate={this.data.isUpdate} ></CreateForm>
             </el-form>
         );
     }
