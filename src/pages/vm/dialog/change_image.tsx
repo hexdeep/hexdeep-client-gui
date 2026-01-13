@@ -96,40 +96,38 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
                     <el-input v-model={this.obj.custom_image} />
                 </el-form-item>}
 
-                {this.obj.image_addr != "[customImage]" && (
-                    <el-form-item
-                        label={this.$t("create.docker_registry")}
-                        prop="docker_registry"
-                    >
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <el-select
-                                v-model={this.obj.docker_registry}
-                                placeholder={this.$t("create.select_docker_registry")}
-                                filterable
-                                allow-create
-                                clearable
-                                style="flex: 1;"
-                            >
-                                {this.dockerRegistries.map(registry => (
-                                    <el-option
-                                        key={registry}
-                                        label={registry}
-                                        value={registry}
-                                    />
-                                ))}
-                            </el-select>
+                <el-form-item
+                    label={this.$t("create.docker_registry")}
+                    prop="docker_registry"
+                >
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <el-select
+                            v-model={this.obj.docker_registry}
+                            placeholder={this.$t("create.select_docker_registry")}
+                            filterable
+                            allow-create
+                            clearable
+                            style="flex: 1;"
+                        >
+                            {this.dockerRegistries.map(registry => (
+                                <el-option
+                                    key={registry}
+                                    label={registry}
+                                    value={registry}
+                                />
+                            ))}
+                        </el-select>
 
-                            <el-link
-                                type="primary"
-                                underline={false}
-                                href={`https://download.hexdeep.com/super_sdk/docker_registry.exe?t=${Date.now()}`}
-                                target="_blank"
-                            >
-                                {this.$t("create.download_docker_registry")}
-                            </el-link>
-                        </div>
-                    </el-form-item>
-                )}
+                        <el-link
+                            type="primary"
+                            underline={false}
+                            href={`https://download.hexdeep.com/super_sdk/docker_registry.exe?t=${Date.now()}`}
+                            target="_blank"
+                        >
+                            {this.$t("create.download_docker_registry")}
+                        </el-link>
+                    </div>
+                </el-form-item>
 
             </el-form>
         );

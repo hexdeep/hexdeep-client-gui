@@ -293,54 +293,13 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
-    public async pullImageProgress(ip: string, addr: string, progressCb: (progress: number) => void) {
+    public async pullImageProgress(ip: string, addr: string, dockerRegistry: string, progressCb: (progress: number) => void) {
         return new Promise<void>((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             const TOTAL_BYTES = 10_000; // 服务端固定推送字节数
 
             // 拼 URL
             const url = new URL(makeVmApiUrl("image_api/pull_progress", ip).toString());
-            url.searchParams.set("address", addr);
-
-            // 进度事件
-            xhr.onprogress = (event) => {
-                if (event.lengthComputable) {
-                    // 如果服务端有 Content-Length，可直接用 event.total
-                    const pct = Math.min((event.loaded / event.total) * 100, 100);
-                    progressCb(pct);
-                } else {
-                    // 如果没有 Content-Length，就用固定的 TOTAL_BYTES
-                    const pct = Math.min((event.loaded / TOTAL_BYTES) * 100, 100);
-                    progressCb(pct);
-                }
-            };
-
-            xhr.onload = () => {
-                progressCb(100);
-                resolve();
-            };
-
-            xhr.onerror = () => {
-                reject(new Error(`下载失败: ${xhr.status} ${xhr.statusText}`));
-            };
-
-            // 打开连接
-            xhr.open("GET", url.toString(), true);
-            // 二进制模式，这里不解析成字符串
-            xhr.responseType = "arraybuffer";
-
-            // 发送请求
-            xhr.send();
-        });
-    }
-
-    public async pullImageFromRegistry(ip: string, addr: string, dockerRegistry: string, progressCb: (progress: number) => void) {
-        return new Promise<void>((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            const TOTAL_BYTES = 10_000; // 服务端固定推送字节数
-
-            // 拼 URL
-            const url = new URL(makeVmApiUrl("image_api/pull_from_registry", ip).toString());
             url.searchParams.set("address", addr);
             url.searchParams.set("registry_ip", dockerRegistry);
 
