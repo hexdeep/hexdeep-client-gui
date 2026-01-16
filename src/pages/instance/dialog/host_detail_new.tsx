@@ -89,7 +89,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                     </div>
                 </el-descriptions-item>
 
-                <el-descriptions-item label={i18n.t("vmDetail.harddisk")}>
+                <el-descriptions-item label={i18n.t("vmDetail.harddisk") + (this.detail.disk ? "(" + this.detail.disk + ")" : "")}>
                     <div alignContent="flex-end" mainAlign="flex-end" crossAlign="end">
                         <el-progress text-inside={true} percentage={this.getPercent(this.detail?.disk_percent)}
                             stroke-width={26} status={this.getStatus(this.detail?.disk_percent)}></el-progress>
@@ -180,7 +180,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         await this.$dialog(SwitchDiskDialog).show(this.data);
     }
 
-    @ErrorProxy({ success: i18n.t("vmDetail.updateFirmwareSuccess"), loading: i18n.t("loading") })
+    @ErrorProxy({ confirm: i18n.t("vmDetail.updateFirmwareConfirm"), success: i18n.t("vmDetail.updateFirmwareSuccess"), loading: i18n.t("loading") })
     private async updateFirmware() {
         await deviceApi.updateFirmware(this.data.address);
         deviceApi.checkFirmware(this.data.address).then(e => this.firmwareIsLatest = e);

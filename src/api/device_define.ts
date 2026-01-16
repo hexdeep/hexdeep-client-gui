@@ -147,6 +147,8 @@ export interface HostDetailInfo {
     swap_total: number,
     temperature: string;
     git_commit_id: string;
+    disk?: string;
+    remark: string;
 }
 
 export interface ImportVmParam {

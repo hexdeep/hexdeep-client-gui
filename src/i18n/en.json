@@ -223,6 +223,7 @@
         "pruneImagesSuccess": "Prune Images Successful",
         "rebootHostConfirm": "Are you sure you want to reboot host?",
         "formatDiskConfirm": "Are you sure you want to format disk?",
+        "updateFirmwareConfirm": "Are you sure you want to update firmware?",
         "formatDiskSuccess": "Disk is being formatted. Please wait 5 seconds",
         "switchDiskConfirm": "Are you sure you want to switch disk?",
         "switchDiskSuccess": "Disk is being switch. Please wait 5 seconds",

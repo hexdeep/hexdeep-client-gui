@@ -13,6 +13,7 @@ import { BatchCreateDialog } from './dialog/batch_create';
 import { CreateDialog } from './dialog/create';
 import { RenameDialog } from './dialog/rename';
 import { RemarkDialog } from './dialog/remark';
+import { HostDetailDialog } from "@/pages/instance/dialog/host_detail_new";
 
 @Component
 export class DevicePicker extends tsx.Component<IProps, IEvents> {
@@ -120,6 +121,10 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         }
     }
 
+    protected showHostDetail(r: HostInfo) {
+        this.$dialog(HostDetailDialog).show(r);
+    }
+
     @ErrorProxy({ confirm: t("confirm.deleteTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
     private async deleteVM(v: DeviceInfo) {
         await deviceApi.delete(v.hostIp, v.name);
@@ -134,7 +139,10 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
             <Row gap={10} crossAlign='center' class="row" style={{ "flex": 1 }} mainAlign='center'>
                 {children && <Row crossAlign='center' mainAlign='space-between' style={{ "flex": 1 }}>
                     <Row gap={5} crossAlign='center'>
-                        <span>{data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
+                        <span onClick={(e) => {
+                            e.stopPropagation();
+                            this.showHostDetail(data.value);
+                        }}>{data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
                         <el-tag type={data.value.has_error ? "danger" : ""}> {data.value.has_error ? <i class="el-icon-warning"></i> : children.length} </el-tag>
                     </Row>
                     <Row>
@@ -151,7 +159,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                 </Row>}
                 {!children && <Row gap={10} style={{ "flex": 1 }} mainAlign='space-between' crossAlign='center' class={data.value.state !== "running" ? s.no_run : ""}>
                     <Row gap={3} style={{ "flex": 1 }} crossAlign='center'>
-                        <span class={s.vmNums}>{data.label}</span>
+                        <span class={s.vmNums}>{data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
                         <span style="font-size:13px" class={s.name_label} title={getSuffixName(data.value.name)}>{getSuffixName(data.value.name)}</span>
                     </Row>
                     <Row>

@@ -1,5 +1,5 @@
 
-import { makeMacvlanVmApiUrl, makeVmApiUrl } from "@/common/common";
+import { makeHostVmApiUrl, makeMacvlanVmApiUrl, makeVmApiUrl } from "@/common/common";
 import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
@@ -362,27 +362,27 @@ class DeviceApi extends ApiBase {
     }
 
     public async rebootHost(ip: string) {
-        const result = await fetch(makeVmApiUrl("host/device/reboot", ip));
+        const result = await fetch(makeHostVmApiUrl("entry/reboot", ip));
         return await this.handleError(result);
     }
 
     public async checkFirmware(ip: string): Promise<boolean> {
-        const result = await fetch(makeVmApiUrl("host/device/check_firmware", ip));
+        const result = await fetch(makeHostVmApiUrl("entry/check_firmware", ip));
         return await this.handleError(result);
     }
 
     public async updateFirmware(ip: string) {
-        const result = await fetch(makeVmApiUrl("host/device/update_firmware", ip));
+        const result = await fetch(makeHostVmApiUrl("entry/update_firmware", ip));
         return await this.handleError(result);
     }
 
     public async formatDisk(ip: string) {
-        const result = await fetch(makeVmApiUrl("host/device/format_disk", ip));
+        const result = await fetch(makeHostVmApiUrl("entry/format_disk", ip));
         return await this.handleError(result);
     }
 
     public async switchDisk(ip: string, disk: string) {
-        const result = await fetch(makeVmApiUrl("host/device/switch_disk", ip) + `?disk=${disk}`);
+        const result = await fetch(makeHostVmApiUrl("entry/switch_disk", ip) + `?disk=${disk}`);
         return await this.handleError(result);
     }
 
@@ -398,7 +398,7 @@ class DeviceApi extends ApiBase {
     }
 
     public async getHostDetail(ip: string): Promise<HostDetailInfo> {
-        const result = await fetch(makeVmApiUrl("host/device/system_info", ip));
+        const result = await fetch(makeHostVmApiUrl("entry/system_info", ip));
         return await this.handleError(result);
     }
 

@@ -3,6 +3,8 @@ import { cloneDeep } from "lodash";
 import moment from "moment";
 import urlJoin from "url-join";
 
+const HOST_API_PORT = 82;
+
 export namespace Tools {
     /**将对象a的成员逐个复制到b */
     export function copyObj(a: any, b: any) {
@@ -155,6 +157,10 @@ export function getPrefixName(e: string) {
 
 export function makeVmApiUrl(...url: string[]) {
     return new URL(urlJoin(url), "http://" + url[1]);
+}
+
+export function makeHostVmApiUrl(...url: string[]) {
+    return new URL(urlJoin(url), "http://" + url[1] + ":" + HOST_API_PORT);
 }
 
 export function makeMacvlanVmApiUrl(...url: string[]) {
