@@ -208,7 +208,18 @@ export default class VMPage extends Vue {
         let arr = this.selectedItems;
         switch (operate) {
             case "start":
-                arr = arr.filter(x => x.state != "running").groupByToMap(t => `${t.hostIp}_${t.index}`).entries().map(([k, v]) => v[0]).toArray();
+                const map = new Map<string, typeof arr[0]>();
+
+                for (const item of arr) {
+                    if (item.state === "running") continue;
+
+                    const key = `${item.hostIp}_${item.index}`;
+                    if (!map.has(key)) {
+                        map.set(key, item);
+                    }
+                }
+
+                arr = Array.from(map.values());
                 break;
             case "reboot":
             case "shutdown":
