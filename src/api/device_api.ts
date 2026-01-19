@@ -4,7 +4,7 @@ import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
-import { CloneVmParam, CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo } from "./device_define";
+import { CloneVmParam, CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
@@ -238,6 +238,27 @@ class DeviceApi extends ApiBase {
     public async getDeviceListByHost(hi: HostInfo): Promise<DeviceInfo[]> {
         return this.getDeviceListByIp(hi.address, hi.device_id);
     }
+
+    public async getGarbageFiles(ip: string): Promise<string[]> {
+        const result = await fetch(makeVmApiUrl("dc_api/get_garbage_files", ip));
+        return await this.handleError(result);
+    }
+
+    public async clearGarbageFiles(ip: string, req: ClearGarbageReq) {
+        const result = await fetch(
+            makeVmApiUrl("dc_api/clear_garbage_files", ip),
+            {
+                method: "POST",
+                body: qs.stringify(req, { arrayFormat: "repeat" }),
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            }
+        );
+
+        return await this.handleError(result);
+    }
+
 
     public async getDeviceListByIp(hostIp: string, hostId: string): Promise<DeviceInfo[]> {
         const url = makeVmApiUrl("dc_api/get", hostIp);

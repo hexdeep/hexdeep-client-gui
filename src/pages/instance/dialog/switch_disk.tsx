@@ -5,6 +5,7 @@ import { deviceApi } from '@/api/device_api';
 import { i18n } from "@/i18n/i18n";
 import { sleep } from "@/common/common";
 import { HostInfo, DiskItem } from "@/api/device_define";
+import { MyButton } from "@/lib/my_button";
 
 
 @Dialog
@@ -61,6 +62,11 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
         };
     }
 
+    @ErrorProxy({ confirm: i18n.t("vmDetail.formatDiskConfirm"), success: i18n.t("vmDetail.formatDiskSuccess"), loading: i18n.t("loading") })
+    private async formatDisk() {
+        await deviceApi.formatDisk(this.data.address);
+    }
+
     protected renderDialog(): VNode {
         return (
             <el-form
@@ -85,6 +91,25 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
                             </el-radio>
                         ))}
                     </el-radio-group>
+                </el-form-item>
+
+                <el-form-item>
+                    <div
+                        style={{
+                            width: "100%",
+                            display: "flex",
+                            justifyContent: "flex-start", // 👉 右对齐
+                        }}
+                    >
+                        <MyButton
+                            type="primary"
+                            size="small"
+                            style={{ whiteSpace: "nowrap" }}
+                            onClick={this.formatDisk}
+                        >
+                            {this.$t("vmDetail.formatDisk")}
+                        </MyButton>
+                    </div>
                 </el-form-item>
             </el-form>
         );

@@ -209,3 +209,7 @@ export interface DiskItem {
     name: string;
     [property: string]: any;
 }
+
+export interface ClearGarbageReq {
+    files: string[];
+}

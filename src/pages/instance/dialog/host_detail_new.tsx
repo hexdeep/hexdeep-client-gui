@@ -12,6 +12,7 @@ import { MyButton } from "@/lib/my_button";
 import { VNode } from "vue";
 import { SwitchSDKDialog } from "./switch_sdk";
 import { SwitchDiskDialog } from "./switch_disk";
+import { CleanGarbageDialog } from "./clean_garbage_dialog";
 
 @Dialog
 export class HostDetailDialog extends CommonDialog<HostInfo, void> {
@@ -129,23 +130,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                             {this.$t("vmDetail.rebootHost")}
                         </MyButton>
 
-                        <MyButton
-                            type="primary"
-                            size="small"
-                            style={{ whiteSpace: "nowrap" }}
-                            onClick={this.pruneImages}
-                        >
-                            {this.$t("vmDetail.pruneImages")}
-                        </MyButton>
 
-                        <MyButton
-                            type="primary"
-                            size="small"
-                            style={{ whiteSpace: "nowrap" }}
-                            onClick={this.formatDisk}
-                        >
-                            {this.$t("vmDetail.formatDisk")}
-                        </MyButton>
 
                         <MyButton
                             type="primary"
@@ -154,6 +139,15 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                             onClick={this.switchDisk}
                         >
                             {this.$t("vmDetail.switchDisk")}
+                        </MyButton>
+
+                        <MyButton
+                            type="primary"
+                            size="small"
+                            style={{ whiteSpace: "nowrap" }}
+                            onClick={this.cleanupGarbage}
+                        >
+                            {this.$t("vmDetail.cleanupGarbage")}
                         </MyButton>
                     </div>
                 </el-descriptions-item>
@@ -171,13 +165,15 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         await deviceApi.rebootHost(this.data.address);
     }
 
-    @ErrorProxy({ confirm: i18n.t("vmDetail.formatDiskConfirm"), success: i18n.t("vmDetail.formatDiskSuccess"), loading: i18n.t("loading") })
-    private async formatDisk() {
-        await deviceApi.formatDisk(this.data.address);
-    }
+
 
     private async switchDisk() {
         await this.$dialog(SwitchDiskDialog).show(this.data);
+    }
+
+    @ErrorProxy({ confirm: i18n.t("vmDetail.cleanGarbageConfirm") })
+    private async cleanupGarbage() {
+        await this.$dialog(CleanGarbageDialog).show(this.data);
     }
 
     @ErrorProxy({ confirm: i18n.t("vmDetail.updateFirmwareConfirm"), success: i18n.t("vmDetail.updateFirmwareSuccess"), loading: i18n.t("loading") })
