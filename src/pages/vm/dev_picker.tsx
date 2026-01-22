@@ -51,7 +51,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         console.log("asdf");
         var std = await orderApi.getRental(h.device_id);
         const showPurchaseConfirm = () => {
-             this.$confirm(
+            this.$confirm(
                 "当前主机无可用实例位，请前往购买",
                 i18n.t("error") as string,
                 {
@@ -61,8 +61,8 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                 }
             ).then(() => {
                 this.$router.push("/instance");
-            }).catch(() => {});
-        }
+            }).catch(() => { });
+        };
 
         if (std.length < 1) {
             showPurchaseConfirm();
@@ -183,8 +183,8 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                             e.stopPropagation();
                             this.showHostDetail(data.value);
                         }}>
-                        {data.value.disk && <Icon icon={this.getDiskIcon(data.value.disk)} style={{ verticalAlign: "middle", fontSize: "16px", marginLeft: "-3px" }} />}
-                        {data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
+                            {data.value.disk && <Icon icon={this.getDiskIcon(data.value.disk)} style={{ verticalAlign: "middle", fontSize: "16px", marginLeft: "-3px" }} />}
+                            {data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
                         <el-tag type={data.value.has_error ? "danger" : ""}> {data.value.has_error ? <i class="el-icon-warning"></i> : children.length} </el-tag>
                     </Row>
                     <Row>
@@ -236,7 +236,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
 
     protected render() {
         return (
-            <Column width={290} class={[s.DevicePicker, "contentBox"]}>
+            <Column width={300} class={[s.DevicePicker, "contentBox"]}>
                 <el-input prefix-icon="el-icon-search" v-model={this.config.filterNameOrIp} placeholder={this.$t("filterNameOrIp", { 0: this.hosts.length }) as string} clearable />
                 <div class={s.treeBox} v-loading={this.loading}>
                     <div class={s.tree}>
