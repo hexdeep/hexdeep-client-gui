@@ -83,13 +83,26 @@ export default class VMPage extends Vue {
         try {
             if (!ip) {
                 this.hosts = await deviceApi.getAllDevices();
+                this.hosts.forEach(h => {
+                    deviceApi.getDisks(h.address).then(res => {
+                        this.$set(h, "disk", res.current_disk);
+                    }).catch(e => console.log(e));
+                });
             } else {
                 curr = this.hosts.find(x => x.address == ip);
                 if (curr) {
                     curr.devices = await deviceApi.getDeviceListByHost(curr);
                     curr.remark = await deviceApi.getHostRemark(curr.address);
+                    deviceApi.getDisks(curr.address).then(res => {
+                        this.$set(curr!, "disk", res.current_disk);
+                    }).catch(e => console.log(e));
                 } else {
                     this.hosts = await deviceApi.getAllDevices();
+                    this.hosts.forEach(h => {
+                        deviceApi.getDisks(h.address).then(res => {
+                            this.$set(h, "disk", res.current_disk);
+                        }).catch(e => console.log(e));
+                    });
                 }
             }
 

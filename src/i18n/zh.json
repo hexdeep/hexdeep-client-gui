@@ -33,7 +33,7 @@
     "invalidPort": "端口格式错误",
     "vmImage": "镜像",
     "customImage": "自定义镜像",
-    "filterNameOrIp": "过滤名称或IP",
+    "filterNameOrIp": "过滤名称或IP，共{0}台",
     "table": {
         "index": "实例位",
         "create": "创建成功",

@@ -14,6 +14,7 @@ import { CreateDialog } from './dialog/create';
 import { RenameDialog } from './dialog/rename';
 import { RemarkDialog } from './dialog/remark';
 import { HostDetailDialog } from "@/pages/instance/dialog/host_detail_new";
+import { Icon } from '@iconify/vue2';
 
 @Component
 export class DevicePicker extends tsx.Component<IProps, IEvents> {
@@ -49,8 +50,22 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
     private async createVms(h: HostInfo) {
         console.log("asdf");
         var std = await orderApi.getRental(h.device_id);
+        const showPurchaseConfirm = () => {
+             this.$confirm(
+                "当前主机无可用实例位，请前往购买",
+                i18n.t("error") as string,
+                {
+                    confirmButtonText: "前往购买",
+                    cancelButtonText: i18n.t("confirm.cancel") as string,
+                    type: "error"
+                }
+            ).then(() => {
+                this.$router.push("/instance");
+            }).catch(() => {});
+        }
+
         if (std.length < 1) {
-            this.$alert(this.$t("create.maxCreate").toString(), this.$t("error").toString(), { type: "error" });
+            showPurchaseConfirm();
             return;
         }
 
@@ -63,7 +78,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         //const createdCount = set.size;
         var maxCanCreate = Math.max(0, rentalIndexSet.length);
         if (maxCanCreate < 1) {
-            this.$alert(this.$t("create.maxCreate").toString(), this.$t("error").toString(), { type: "error" });
+            showPurchaseConfirm();
             return;
         }
         console.log(this.config);
@@ -125,11 +140,36 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         this.$dialog(HostDetailDialog).show(r);
     }
 
-    @ErrorProxy({ confirm: t("confirm.deleteTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
+    private getDiskIcon(disk: string) {
+        if (!disk) return "";
+        const d = disk.toLowerCase();
+        if (d.includes("nvme")) return "material-symbols:hard-disk-rounded";
+        if (d.includes("usb")) return "bi:usb-plug-fill";
+        if (d.includes("emmc")) return "mdi:chip";
+        if (d.includes("iscsi")) return "bi:pci-card";
+        return "mdi:harddisk";
+    }
+
+    @ErrorProxy({ loading: i18n.t("loading") })
     private async deleteVM(v: DeviceInfo) {
+        const n1 = Math.floor(Math.random() * 10) + 1;
+        const n2 = Math.floor(Math.random() * 10) + 1;
+        const confirmText = t("confirm.deleteTitle")(this, v);
+        try {
+            await this.$prompt(`${confirmText}\n请计算 ${n1} + ${n2} = ?`, i18n.t("confirm.title") as string, {
+                confirmButtonText: i18n.t("confirm.ok") as string,
+                cancelButtonText: i18n.t("confirm.cancel") as string,
+                inputPattern: new RegExp(`^${n1 + n2}$`),
+                inputErrorMessage: "计算错误"
+            });
+        } catch (e) {
+            return;
+        }
+
         await deviceApi.delete(v.hostIp, v.name);
         this.treeConfig.removeWhere(x => x.key == v.key);
         this.$emit('changed', v.hostIp);
+        this.$message.success(i18n.t("success") as string);
     }
 
     protected renderContent(obj: ITreeSlotProps<MyTreeNode>) {
@@ -142,7 +182,9 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                         <span onClick={(e) => {
                             e.stopPropagation();
                             this.showHostDetail(data.value);
-                        }}>{data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
+                        }}>
+                        {data.value.disk && <Icon icon={this.getDiskIcon(data.value.disk)} style={{ verticalAlign: "middle", fontSize: "16px", marginLeft: "-3px" }} />}
+                        {data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
                         <el-tag type={data.value.has_error ? "danger" : ""}> {data.value.has_error ? <i class="el-icon-warning"></i> : children.length} </el-tag>
                     </Row>
                     <Row>
@@ -195,7 +237,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
     protected render() {
         return (
             <Column width={290} class={[s.DevicePicker, "contentBox"]}>
-                <el-input prefix-icon="el-icon-search" v-model={this.config.filterNameOrIp} placeholder={this.$t("filterNameOrIp")} clearable />
+                <el-input prefix-icon="el-icon-search" v-model={this.config.filterNameOrIp} placeholder={this.$t("filterNameOrIp", { 0: this.hosts.length }) as string} clearable />
                 <div class={s.treeBox} v-loading={this.loading}>
                     <div class={s.tree}>
                         <MyTree data={this.hostTree} on-change={this.onTreeChange}
@@ -208,8 +250,8 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                 <el-divider />
                 <el-radio-group v-model={this.config.filterState}>
                     <Row mainAlign='space-around'>
-                        <el-radio label="running">{this.$t("filter.running")}</el-radio>
-                        <el-radio label="all">{this.$t("filter.all")}</el-radio>
+                        <el-radio label="running">{this.$t("filter.running")} ({this.hosts.reduce((a, b) => a + b.devices.filter(d => d.state === "running").length, 0)})</el-radio>
+                        <el-radio label="all">{this.$t("filter.all")} ({this.hosts.reduce((a, b) => a + b.devices.length, 0)})</el-radio>
                     </Row>
                 </el-radio-group>
             </Column>

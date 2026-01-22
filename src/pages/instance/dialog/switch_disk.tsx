@@ -6,6 +6,7 @@ import { i18n } from "@/i18n/i18n";
 import { sleep } from "@/common/common";
 import { HostInfo, DiskItem } from "@/api/device_define";
 import { MyButton } from "@/lib/my_button";
+import { Icon } from '@iconify/vue2';
 
 
 @Dialog
@@ -67,6 +68,16 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
         await deviceApi.formatDisk(this.data.address);
     }
 
+    private getDiskIcon(disk: string) {
+        if (!disk) return "";
+        const d = disk.toLowerCase();
+        if (d.includes("nvme")) return "material-symbols:hard-disk-rounded";
+        if (d.includes("usb")) return "bi:usb-plug-fill";
+        if (d.includes("emmc")) return "mdi:chip";
+        if (d.includes("iscsi")) return "bi:pci-card";
+        return "mdi:harddisk";
+    }
+
     protected renderDialog(): VNode {
         return (
             <el-form
@@ -82,6 +93,7 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
                                 label={disk.name}
                                 disabled={!disk.enabled}
                             >
+                                <Icon icon={this.getDiskIcon(disk.name)} style={{ marginRight: "5px", verticalAlign: "middle" }} />
                                 {disk.name}
                                 {disk.name === this.currentDisk ? (
                                     <span style={{ color: "#999", marginLeft: "0px" }}>

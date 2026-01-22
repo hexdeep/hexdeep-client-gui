@@ -25,6 +25,7 @@ export interface HostInfo {
     remark: string;
     devices: DeviceInfo[];
     has_error?: boolean;
+    disk?: string;
 }
 
 export interface MyTreeNode {

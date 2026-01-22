@@ -14,6 +14,7 @@
     "genApi": "openapi-typescript ./api_docs/openapi.json --output ./src/api/schema.ts"
   },
   "dependencies": {
+    "@iconify/vue2": "^2.1.0",
     "animejs": "^4.0.2",
     "axios": "^1.7.7",
     "buffer": "^6.0.3",

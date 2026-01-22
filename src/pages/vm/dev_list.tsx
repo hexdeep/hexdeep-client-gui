@@ -7,7 +7,7 @@ import { Column, Row } from '@/lib/container';
 import { ErrorProxy } from '@/lib/error_handle';
 import { TextButton } from '@/lib/my_button';
 import { ElTable } from 'element-ui/types/table';
-import { Component, InjectReactive, Ref, Watch } from 'vue-property-decorator';
+import { Component, InjectReactive, Prop, Ref, Watch } from 'vue-property-decorator';
 import * as tsx from 'vue-tsx-support';
 import s from './dev_list.module.less';
 import { CloneVmDialog } from './dialog/clone_vm';
@@ -20,6 +20,31 @@ import { S5setDialog } from './dialog/s5set';
 import { UploadFileDialog } from './dialog/upload_file';
 import { VmDetailDialog } from './dialog/vm_detail';
 import { Screenshot } from './screenshot';
+
+@Component
+class OverflowTooltip extends tsx.Component<{ content: string }> {
+    @Prop() private content!: string;
+    private disabled = false;
+
+    private onMouseEnter(e: MouseEvent) {
+        const target = e.target as HTMLElement;
+        if (target.scrollWidth > target.clientWidth) {
+            this.disabled = false;
+        } else {
+            this.disabled = true;
+        }
+    }
+
+    render() {
+        return (
+            <el-tooltip content={this.content} placement="top" enterable={true} disabled={this.disabled}>
+                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" onMouseenter={this.onMouseEnter}>
+                    {this.content}
+                </div>
+            </el-tooltip>
+        );
+    }
+}
 
 @Component
 export class DeviceList extends tsx.Component<IProps, IEvents> {
@@ -149,7 +174,15 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         ref="tb" on-selection-change={this.handleSelectionChange} empty-text={this.$t("table.emptyText")}>
                         <el-table-column type="selection" width="45" reserve-selection={true} />
                         <el-table-column prop="index" label={"No"} width="40" align="center" />
-                        <el-table-column prop="name" label={this.$t("name")} formatter={r => getSuffixName(r.name)} show-overflow-tooltip />
+                        <el-table-column
+                            prop="name"
+                            label={this.$t("name")}
+                            scopedSlots={{
+                                default: ({ row }: { row: DeviceInfo; }) => {
+                                    return <OverflowTooltip content={getSuffixName(row.name)} />;
+                                }
+                            }}
+                        />
                         {/* <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} /> */}
                         {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
                         <el-table-column prop="adb" formatter={(row: DeviceInfo) => this.formatAdb(row.adb)} label="ADB" width="100" show-overflow-tooltip />
