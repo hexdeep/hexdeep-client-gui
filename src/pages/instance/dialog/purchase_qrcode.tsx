@@ -57,7 +57,7 @@ export class PurchaseQrcodeDialog extends CommonDialog<PurchaseResult, boolean> 
                         <div class={s.desc}>{this.$t("instance.purchaseQrcodeDesc").toString()} </div>
                     </Row>
                     <div style={{ "position": "relative" }}>
-                        <QrCode qrData={this.data.url} size={300} />
+                        <QrCode qrData={this.data.url} size={350} />
                         {this.qrcodeExpired && <div class={s.expired}>
                             {this.$t("instance.qrcodeExpired")}
                         </div>}

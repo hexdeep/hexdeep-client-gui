@@ -156,7 +156,8 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         const n2 = Math.floor(Math.random() * 10) + 1;
         const confirmText = t("confirm.deleteTitle")(this, v);
         try {
-            await this.$prompt(`${confirmText}\n请计算 ${n1} + ${n2} = ?`, i18n.t("confirm.title") as string, {
+            await this.$prompt(`<div>${confirmText}</div><div style="color: red; margin-top: 10px; font-weight: bold;">请计算 ${n1} + ${n2} = ?</div>`, i18n.t("confirm.title") as string, {
+                dangerouslyUseHTMLString: true,
                 confirmButtonText: i18n.t("confirm.ok") as string,
                 cancelButtonText: i18n.t("confirm.cancel") as string,
                 inputPattern: new RegExp(`^${n1 + n2}$`),
@@ -183,7 +184,9 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                             e.stopPropagation();
                             this.showHostDetail(data.value);
                         }}>
-                            {data.value.disk && <Icon icon={this.getDiskIcon(data.value.disk)} style={{ verticalAlign: "middle", fontSize: "16px", marginLeft: "-3px" }} />}
+                            {data.value.disk && <el-tooltip content={data.value.disk} placement="top" effect="light" open-delay={0} transition="">
+                                <span><Icon icon={this.getDiskIcon(data.value.disk)} style={{ verticalAlign: "middle", fontSize: "16px", marginLeft: "-3px" }} /></span>
+                            </el-tooltip>}
                             {data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
                         <el-tag type={data.value.has_error ? "danger" : ""}> {data.value.has_error ? <i class="el-icon-warning"></i> : children.length} </el-tag>
                     </Row>
