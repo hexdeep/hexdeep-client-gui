@@ -145,7 +145,9 @@
         "deleteTitle": "Are you sure you want to delete host: {0}, index: {1}, vm: {2}?",
         "startTitle": "Are you sure you want to start host: {0}, index: {1}, vm: {2}?",
         "backupTitle": "Are you sure you want to backup host: {0}, index: {1}, vm: {2}?",
-        "batch": "Batch"
+        "batch": "Batch",
+        "mathQuestion": "Please calculate {0} + {1} = ?",
+        "calcError": "Calculation error"
     },
     "rename": {
         "success": "Name modification successful",

@@ -156,12 +156,12 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         const n2 = Math.floor(Math.random() * 10) + 1;
         const confirmText = t("confirm.deleteTitle")(this, v);
         try {
-            await this.$prompt(`<div>${confirmText}</div><div style="color: red; margin-top: 10px; font-weight: bold;">请计算 ${n1} + ${n2} = ?</div>`, i18n.t("confirm.title") as string, {
+            await this.$prompt(`<div>${confirmText}</div><div style="color: red; margin-top: 10px; font-weight: bold;">${i18n.t("confirm.mathQuestion", [n1, n2])}</div>`, i18n.t("confirm.title") as string, {
                 dangerouslyUseHTMLString: true,
                 confirmButtonText: i18n.t("confirm.ok") as string,
                 cancelButtonText: i18n.t("confirm.cancel") as string,
                 inputPattern: new RegExp(`^${n1 + n2}$`),
-                inputErrorMessage: "计算错误"
+                inputErrorMessage: i18n.t("confirm.calcError") as string
             });
         } catch (e) {
             return;
@@ -180,7 +180,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
             <Row gap={10} crossAlign='center' class="row" style={{ "flex": 1 }} mainAlign='center'>
                 {children && <Row crossAlign='center' mainAlign='space-between' style={{ "flex": 1 }}>
                     <Row gap={5} crossAlign='center'>
-                        <span onClick={(e) => {
+                        <span style={'display: flex; align-items: center'} onClick={(e) => {
                             e.stopPropagation();
                             this.showHostDetail(data.value);
                         }}>

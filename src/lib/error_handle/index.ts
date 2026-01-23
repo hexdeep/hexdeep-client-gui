@@ -25,16 +25,19 @@ export function ErrorProxy<T extends Vue, TArgs extends any[]>(options?: ErrorPr
         propertyDescriptor.value = async function (...args: TArgs) {
             const self = this as T;
             if (options?.confirm) {
-                const ret = await self.$confirm(
-                    typeof options.confirm === "function" ? (options.confirm as any)(self, ...args) : options.confirm.toString(),
-                    i18n.t("confirm.title") as string,
-                    {
-                        confirmButtonText: i18n.t("confirm.ok") as string,
-                        cancelButtonText: i18n.t("confirm.cancel") as string,
-                        type: "warning",
-                    }
-                ).catch(() => "cancel");
-                if (ret != "confirm") return;
+                const msg = typeof options.confirm === "function" ? (options.confirm as any)(self, ...args) : options.confirm.toString();
+                if (msg) {
+                    const ret = await self.$confirm(
+                        msg,
+                        i18n.t("confirm.title") as string,
+                        {
+                            confirmButtonText: i18n.t("confirm.ok") as string,
+                            cancelButtonText: i18n.t("confirm.cancel") as string,
+                            type: "warning",
+                        }
+                    ).catch(() => "cancel");
+                    if (ret != "confirm") return;
+                }
             }
             if (options?.validatForm) {
                 const form = typeof options.validatForm === "function" ? options.validatForm(self) : self.$refs[options.validatForm] as ElForm;

@@ -18,6 +18,7 @@ import { CleanGarbageDialog } from "./clean_garbage_dialog";
 export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected detail: HostDetailInfo = {} as HostDetailInfo;
     protected sdk?: SDKImagesRes;
+    protected model: string = "";
     protected firmwareIsLatest: boolean = false;
     protected timer: any;
     override width: string = "600px";
@@ -25,6 +26,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         this.data = data;
         this.title = this.$t("instance.hostDetail").toString();
         deviceApi.getHostDetail(data.address).then(e => this.detail = e);
+        deviceApi.getWarehousingInfo(data.address).then(e => this.model = e.model).catch(e => console.log(e));
         deviceApi.getSDKImages(data.address).then(e => this.sdk = e);
         deviceApi.checkFirmware(data.address).then(e => this.firmwareIsLatest = e);
         this.timer = setInterval(() => {
@@ -67,9 +69,9 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         </MyButton>
                     </Row>
                 </el-descriptions-item>
-                <el-descriptions-item label={i18n.t("vmDetail.ip")}>
+                <el-descriptions-item label={i18n.t("create.model_id")}>
                     <Row crossAlign="center">
-                        {this.data.address}
+                        {this.model ? `${this.model} (${this.data.address})` : this.data.address}
                     </Row>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.id")}>

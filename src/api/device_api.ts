@@ -423,6 +423,11 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    public async getWarehousingInfo(ip: string): Promise<any> {
+        const result = await fetch(makeHostVmApiUrl("entry/warehousing/get", ip));
+        return await this.handleError(result);
+    }
+
     public async changeModel(ip: string, name: string, model_id: number): Promise<void> {
         const result = await fetch(makeVmApiUrl("and_api/random_devinfo", ip, name) + `?modelid=${model_id}`);
         return await this.handleError(result);

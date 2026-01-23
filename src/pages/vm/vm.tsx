@@ -247,8 +247,33 @@ export default class VMPage extends Vue {
         await this.batchOperateIng(arr, callback);
     }
 
-    @ErrorProxy({ confirm: (self, _1, _2) => self.batchOperateName, success: i18n.t("batch.success"), loading: i18n.t("loading") })
+    @ErrorProxy({
+        confirm: (self, _1, _2) => {
+            if (self.batchOperateName.includes(i18n.t("batch.delete").toString())) {
+                return undefined; // Skip default confirm if it's delete
+            }
+            return self.batchOperateName;
+        },
+        success: i18n.t("batch.success"),
+        loading: i18n.t("loading")
+    })
     protected async batchOperateIng(arr: DeviceInfo[], callback: (data: DeviceInfo) => Promise<void>) {
+        if (this.batchOperateName.includes(i18n.t("batch.delete").toString())) {
+            const n1 = Math.floor(Math.random() * 10) + 1;
+            const n2 = Math.floor(Math.random() * 10) + 1;
+            try {
+                await this.$prompt(`<div>${this.batchOperateName}</div><div style="color: red; margin-top: 10px; font-weight: bold;">${i18n.t("confirm.mathQuestion", [n1, n2])}</div>`, i18n.t("confirm.title") as string, {
+                    dangerouslyUseHTMLString: true,
+                    confirmButtonText: i18n.t("confirm.ok") as string,
+                    cancelButtonText: i18n.t("confirm.cancel") as string,
+                    inputPattern: new RegExp(`^${n1 + n2}$`),
+                    inputErrorMessage: i18n.t("confirm.calcError") as string
+                });
+            } catch (e) {
+                return;
+            }
+        }
+
         let tasks: Promise<void>[] = [];
 
         arr.forEach(e => {
