@@ -270,7 +270,7 @@ export default class VMPage extends Vue {
                     inputErrorMessage: i18n.t("confirm.calcError") as string
                 });
             } catch (e) {
-                return;
+                return false;
             }
         }
 

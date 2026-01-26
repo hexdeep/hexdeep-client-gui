@@ -52,10 +52,11 @@ export function ErrorProxy<T extends Vue, TArgs extends any[]>(options?: ErrorPr
             const l = options?.loading ? self.$loading({ text: options.loading.toString(), lock: true }) : null;
             try {
                 const result = originMethod!.call(self, ...args);
+                let val = result;
                 if (result instanceof Promise) {
-                    await result;
+                    val = await result;
                 }
-                if (options?.success) {
+                if (options?.success && val !== false) {
                     self.$message.success({ message: options.success.toString(), center: false });
                 }
             } catch (error) {

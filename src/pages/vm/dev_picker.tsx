@@ -11,6 +11,7 @@ import * as tsx from 'vue-tsx-support';
 import s from './dev_picker.module.less';
 import { BatchCreateDialog } from './dialog/batch_create';
 import { CreateDialog } from './dialog/create';
+import { DiscoverDialog } from './dialog/discover';
 import { RenameDialog } from './dialog/rename';
 import { RemarkDialog } from './dialog/remark';
 import { HostDetailDialog } from "@/pages/instance/dialog/host_detail_new";
@@ -24,7 +25,6 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
     @InjectReactive() protected config!: MyConfig;
 
     private loading = true;
-
 
     @Watch("config", { deep: true })
     protected filterChange(newValue: string, oldValue: string) {
@@ -104,6 +104,13 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         const re = await this.$dialog(RenameDialog).show(v);
         if (re) {
             v.name = re;
+        }
+    }
+
+    private async showDiscoverDialog() {
+        const result = await this.$dialog(DiscoverDialog).show();
+        if (result) {
+            this.$emit('changed');
         }
     }
 
@@ -240,7 +247,10 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
     protected render() {
         return (
             <Column width={300} class={[s.DevicePicker, "contentBox"]}>
-                <el-input prefix-icon="el-icon-search" v-model={this.config.filterNameOrIp} placeholder={this.$t("filterNameOrIp", { 0: this.hosts.length }) as string} clearable />
+                <el-input prefix-icon="el-icon-search" v-model={this.config.filterNameOrIp} placeholder={this.$t("filterNameOrIp", { 0: this.hosts.length }) as string} clearable>
+                <el-button slot="suffix" icon="el-icon-plus" type="text" onClick={() => this.showDiscoverDialog()}>
+                </el-button>
+                </el-input>
                 <div class={s.treeBox} v-loading={this.loading}>
                     <div class={s.tree}>
                         <MyTree data={this.hostTree} on-change={this.onTreeChange}

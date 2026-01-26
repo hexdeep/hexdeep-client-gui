@@ -348,6 +348,17 @@
         "title": "Downloading image",
         "failed": "Download image failed"
     },
+    "discover": {
+        "title": "Internal Network Discovery Settings",
+        "mode": "Discovery Mode",
+        "auto": "Auto Discovery",
+        "manual": "Manual Add",
+        "ipList": "IP List",
+        "placeholder": "Please enter IP addresses, one per line",
+        "loadError": "Failed to load discover settings",
+        "saveSuccess": "Settings saved",
+        "saveError": "Failed to save settings"
+    },
     "screenMirror": {
         "operate": "Operate",
         "run": "Run Screen Mirror",

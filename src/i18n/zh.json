@@ -350,6 +350,17 @@
         "title": "正在下载镜像",
         "failed": "镜像下载失败"
     },
+    "discover": {
+        "title": "内网发现设置",
+        "mode": "发现模式",
+        "auto": "自动发现",
+        "manual": "手动添加",
+        "ipList": "IP列表",
+        "placeholder": "请输入IP地址，每行一个",
+        "loadError": "加载内网发现设置失败",
+        "saveSuccess": "保存设置成功",
+        "saveError": "保存设置失败"
+    },
     "screenMirror": {
         "operate": "操作",
         "run": "运行投屏",
