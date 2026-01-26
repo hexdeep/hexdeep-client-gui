@@ -407,7 +407,7 @@ class DeviceApi extends ApiBase {
     }
 
     public async getDeviceId(ip: string, timeout: number = 200): Promise<string> {
-        const url = makeHostVmApiUrl("entry/get", ip).toString();
+        const url = makeHostVmApiUrl("entry/get_device_id", ip).toString();
         const result = await axios.get(url, { timeout });
         return await this.handleAxiosError(result);
     }
