@@ -4,7 +4,7 @@ import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
-import { CloneVmParam, CreateParam, DeviceDetail, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq } from "./device_define";
+import { CloneVmParam, CreateParam, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
@@ -236,6 +236,9 @@ class DeviceApi extends ApiBase {
     }
 
     public async getDeviceListByHost(hi: HostInfo): Promise<DeviceInfo[]> {
+        if (!hi.device_id || hi.device_id.trim() === "") {
+            throw new Error(`Host ${hi.address} has no device_id`);
+        }
         return this.getDeviceListByIp(hi.address, hi.device_id);
     }
 
@@ -284,7 +287,7 @@ class DeviceApi extends ApiBase {
     }
 
     public async getHostRemark(ip: string): Promise<string> {
-        const result = await fetch(makeVmApiUrl("/host/device/get_remark", ip));
+        const result = await fetch(makeHostVmApiUrl("entry/get_remark", ip));
         return await this.handleError(result);
     }
 
@@ -299,7 +302,7 @@ class DeviceApi extends ApiBase {
     }
 
     public async getDisks(ip: string): Promise<DiskListInfo> {
-        const result = await fetch(makeVmApiUrl("/host/device/get_disk", ip));
+        const result = await fetch(makeHostVmApiUrl("entry/get_disk", ip));
         return await this.handleError(result);
     }
 
@@ -378,7 +381,39 @@ class DeviceApi extends ApiBase {
     }
 
     public async getHosts(): Promise<HostInfo[]> {
-        const result = await fetch(makeVmApiUrl("host/device/get", Config.host));
+        const result = await fetch(makeHostVmApiUrl("entry/get", Config.host));
+        const hosts: HostInfo[] = await this.handleError(result);
+
+        // 并发补齐 deviceId
+        await Promise.all(
+            hosts.map(async (host) => {
+                if (!host.device_id || host.device_id.trim() === "") {
+                    try {
+                        const detail = await this.getDeviceId(host.address);
+                        if (detail) {
+                            host.device_id = detail;
+                        }
+                    } catch (e) {
+                        console.warn(
+                            `Failed to fetch deviceId for host ${host.address}`,
+                            e
+                        );
+                    }
+                }
+            })
+        );
+
+        return hosts;
+    }
+
+    public async getDeviceId(ip: string, timeout: number = 200): Promise<string> {
+        const url = makeHostVmApiUrl("entry/get", ip).toString();
+        const result = await axios.get(url, { timeout });
+        return await this.handleAxiosError(result);
+    }
+
+    public async setDiscover(ip: string, act: number = 0, auto: boolean = true, host_ips: string = ""): Promise<DiscoverInfo> {
+        const result = await fetch(makeHostVmApiUrl("entry/set_discover", ip) + `?act=${act}&auto=${auto}&host_ips=${host_ips}`);
         return await this.handleError(result);
     }
 

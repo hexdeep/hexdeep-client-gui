@@ -139,6 +139,7 @@ export interface SelectedDevice {
 }
 
 export interface HostDetailInfo {
+    device_id: string,
     cpu: string,
     disk_percent: string,
     disk_total: number,
@@ -213,4 +214,15 @@ export interface DiskItem {
 
 export interface ClearGarbageReq {
     files: string[];
+}
+
+export interface DiscoverInfo {
+    /**
+     * 自动模式，自动模式
+     */
+    auto: boolean;
+    /**
+     * 主机ip列表
+     */
+    host_ips: string[];
 }
