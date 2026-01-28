@@ -506,7 +506,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         return (
             <Row gap={10} crossAlign='center'>
                 {hasBtn && renderBtn()}
-                {row.state !== '' && <el-dropdown>
+                {row.state !== '' && <el-dropdown trigger="click">
 
                     <TextButton text={this.$t("more")} />
                     <el-dropdown-menu slot="dropdown">

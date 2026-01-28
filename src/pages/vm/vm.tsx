@@ -1,5 +1,6 @@
 import { deviceApi } from "@/api/device_api";
 import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from "@/api/device_define";
+import { getSuffixName } from "@/common/common";
 import { Config } from "@/common/Config";
 import { i18n } from "@/i18n/i18n";
 import { Column, Row } from "@/lib/container";
@@ -249,26 +250,47 @@ export default class VMPage extends Vue {
 
     @ErrorProxy({
         confirm: (self, _1, _2) => {
-            if (self.batchOperateName.includes(i18n.t("batch.delete").toString())) {
-                return undefined; // Skip default confirm if it's delete
-            }
-            return self.batchOperateName;
+            return undefined;
         },
         success: i18n.t("batch.success"),
         loading: i18n.t("loading")
     })
     protected async batchOperateIng(arr: DeviceInfo[], callback: (data: DeviceInfo) => Promise<void>) {
-        if (this.batchOperateName.includes(i18n.t("batch.delete").toString())) {
+        const deviceListHtml = arr.map((x, i) => {
+            const str = `${x.hostIp}(${x.index}-${getSuffixName(x.name)})`;
+            const suffix = i < arr.length - 1 ? "," : "";
+            return `<span style="display: inline-block; white-space: nowrap; margin-right: 5px;">${str}${suffix}</span>`;
+        }).join("");
+        const listHtml = `<div style="margin-top: 10px; max-height: 200px; overflow-y: auto;">${deviceListHtml}</div>`;
+
+        if (this.batchOperateName.includes(i18n.t("batch.delete").toString()) || this.batchOperateName.includes(i18n.t("batch.reset").toString())) {
             const n1 = Math.floor(Math.random() * 10) + 1;
             const n2 = Math.floor(Math.random() * 10) + 1;
             try {
-                await this.$prompt(`<div>${this.batchOperateName}</div><div style="color: red; margin-top: 10px; font-weight: bold;">${i18n.t("confirm.mathQuestion", [n1, n2])}</div>`, i18n.t("confirm.title") as string, {
+                await this.$prompt(`<div>${this.batchOperateName}</div>${listHtml}<div style="color: red; margin-top: 10px; font-weight: bold;">${i18n.t("confirm.mathQuestion", [n1, n2])}</div>`, i18n.t("confirm.title") as string, {
                     dangerouslyUseHTMLString: true,
                     confirmButtonText: i18n.t("confirm.ok") as string,
                     cancelButtonText: i18n.t("confirm.cancel") as string,
                     inputPattern: new RegExp(`^${n1 + n2}$`),
-                    inputErrorMessage: i18n.t("confirm.calcError") as string
+                    inputErrorMessage: i18n.t("confirm.calcError") as string,
+                    customClass: 'batch-operate-confirm'
                 });
+            } catch (e) {
+                return false;
+            }
+        } else {
+            try {
+                await this.$confirm(
+                    `<div>${this.batchOperateName}</div>${listHtml}`,
+                    i18n.t("confirm.title") as string,
+                    {
+                        dangerouslyUseHTMLString: true,
+                        confirmButtonText: i18n.t("confirm.ok") as string,
+                        cancelButtonText: i18n.t("confirm.cancel") as string,
+                        type: "warning",
+                        customClass: 'batch-operate-confirm'
+                    }
+                );
             } catch (e) {
                 return false;
             }

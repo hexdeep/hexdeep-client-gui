@@ -42,6 +42,31 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         this.loading = false;
     };
 
+    private get visibleDevices() {
+        if (!this.hostTree) return [];
+        return this.hostTree.flatMap(h => {
+            return h.children ? h.children.filter(c => filterWithConfig(this.config, c.value)) : [];
+        });
+    }
+
+    private get isAllSelected() {
+        const devices = this.visibleDevices;
+        if (devices.length === 0) return false;
+        return devices.every(d => d.selected);
+    }
+
+    private get isIndeterminate() {
+        const devices = this.visibleDevices;
+        if (devices.length === 0) return false;
+        const selectedCount = devices.filter(d => d.selected).length;
+        return selectedCount > 0 && selectedCount < devices.length;
+    }
+
+    private toggleSelectAll(val: boolean) {
+        this.visibleDevices.forEach(d => d.selected = val);
+        this.onTreeChange();
+    }
+
     protected async created() {
         this.loading = true;
     }
@@ -191,7 +216,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                             e.stopPropagation();
                             this.showHostDetail(data.value);
                         }}>
-                            {data.value.disk && <el-tooltip content={data.value.disk} placement="top" effect="light" open-delay={0} transition="">
+                            {data.value.disk && <el-tooltip content={data.value.disk} placement="top" effect="light" open-delay={1000} transition="">
                                 <span><Icon icon={this.getDiskIcon(data.value.disk)} style={{ verticalAlign: "middle", fontSize: "16px", marginLeft: "-3px" }} /></span>
                             </el-tooltip>}
                             {data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
@@ -247,10 +272,12 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
     protected render() {
         return (
             <Column width={300} class={[s.DevicePicker, "contentBox"]}>
-                <el-input prefix-icon="el-icon-search" v-model={this.config.filterNameOrIp} placeholder={this.$t("filterNameOrIp", { 0: this.hosts.length }) as string} clearable>
-                <el-button slot="suffix" icon="el-icon-plus" type="text" onClick={() => this.showDiscoverDialog()}>
-                </el-button>
-                </el-input>
+                <Row gap={5} crossAlign="center" style="margin-bottom: 10px;">
+                    <el-checkbox value={this.isAllSelected} indeterminate={this.isIndeterminate} onChange={this.toggleSelectAll}></el-checkbox>
+                    <el-input style="flex: 1; margin-bottom: 0;" prefix-icon="el-icon-search" v-model={this.config.filterNameOrIp} placeholder={this.$t("filterNameOrIp", { 0: this.hosts.length }) as string} clearable>
+                    </el-input>
+                    <el-button icon="el-icon-plus" type="text" onClick={() => this.showDiscoverDialog()}></el-button>
+                </Row>
                 <div class={s.treeBox} v-loading={this.loading}>
                     <div class={s.tree}>
                         <MyTree data={this.hostTree} on-change={this.onTreeChange}

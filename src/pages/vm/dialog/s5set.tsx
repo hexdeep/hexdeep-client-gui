@@ -25,7 +25,12 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
         deviceApi.queryS5Macvlan(data.first.android_sdk).then(obj => {
             obj.isOpenProxy = obj.engine! > 0;
             //if (!obj.isOpenProxy) obj.protocol_type = 1;
-            this.item = obj;
+            const defaults: S5setParam = {
+                host: "", port: "", username: "", password: "", address: "",
+                engine: 2, protocol_type: 1, dns_mode: 2, udp_over_tcp: 0,
+                isOpenProxy: false
+            };
+            this.item = { ...defaults, ...obj };
         });
 
         return super.show(data);

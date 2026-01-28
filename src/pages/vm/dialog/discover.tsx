@@ -43,13 +43,10 @@ export class DiscoverDialog extends CommonDialog<void, boolean> {
             <div style={{ padding: "20px" }} v-loading={!this.form}>
                 <el-form label-width="120px">
                     <el-form-item label={this.$t("discover.mode") as string}>
-                        <el-switch
-                            v-model={this.form.auto}
-                            active-text={this.$t("discover.auto") as string}
-                            inactive-text={this.$t("discover.manual") as string}
-                            active-value={true}
-                            inactive-value={false}
-                        />
+                        <el-select v-model={this.form.auto}>
+                            <el-option label={this.$t("discover.auto") as string} value={true}></el-option>
+                            <el-option label={this.$t("discover.manual") as string} value={false}></el-option>
+                        </el-select>
                     </el-form-item>
                     {!this.form.auto && (
                         <el-form-item label={this.$t("discover.ipList") as string}>

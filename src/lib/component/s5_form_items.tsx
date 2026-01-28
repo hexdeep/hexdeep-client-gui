@@ -11,10 +11,23 @@ export class S5FormItems extends tsx.Component<IPorps, {}, ISlots> {
     // private isOpen = true;
     // private item: S5setParam = {};
 
+    private fastInputStr = "";
+
     @Watch("value.isOpenProxy")
     private onOpenChange() {
         if (this.value.isOpenProxy && !this.value.engine) {
             this.value.engine = (this.value.protocol_type || 1) > 1 ? 2 : 1;
+        }
+    }
+
+    private onFastInputClick() {
+        const val = this.fastInputStr;
+        const parts = val.trim().split(/[:|]/);
+        if (parts.length >= 2) {
+            this.$set(this.value, 'host', parts[0]);
+            this.$set(this.value, 'port', parts[1]);
+            if (parts.length >= 3) this.$set(this.value, 'username', parts[2]);
+            if (parts.length >= 4) this.$set(this.value, 'password', parts[3]);
         }
     }
 
@@ -27,7 +40,10 @@ export class S5FormItems extends tsx.Component<IPorps, {}, ISlots> {
                 </el-form-item>
 
                 <el-form-item label={this.$t("create.s5_engine")} prop="engine" required={this.value.isOpenProxy}>
-                    <el-switch disabled={!this.value.isOpenProxy} v-model={this.value.engine} active-value={2} active-text={this.$t("create.s5_engine2")} inactive-value={1} inactive-text={this.$t("create.s5_engine1")} />
+                    <el-select disabled={!this.value.isOpenProxy} v-model={this.value.engine} class="w-100">
+                        <el-option label={this.$t("create.s5_engine1")} value={1} />
+                        <el-option label={this.$t("create.s5_engine2")} value={2} />
+                    </el-select>
                 </el-form-item>
 
                 <el-form-item label={this.$t("create.s5_protocol_type")} prop="protocol_type" >
@@ -37,6 +53,11 @@ export class S5FormItems extends tsx.Component<IPorps, {}, ISlots> {
                         })}
                     </el-select>
                 </el-form-item>
+                {this.value.protocol_type == 1 && <el-form-item label="快速填写">
+                    <el-input disabled={!this.value.isOpenProxy} placeholder="ip:port:user:pwd" v-model={this.fastInputStr}>
+                        <el-button slot="append" icon="el-icon-check" onClick={this.onFastInputClick}></el-button>
+                    </el-input>
+                </el-form-item>}
                 {this.value.protocol_type! > 1 && <el-form-item label={this.$t("create.s5_address")} prop="address">
                     <el-input disabled={!this.value.isOpenProxy} v-model={this.value.address} type="textarea" rows={4} />
                 </el-form-item>}
@@ -53,7 +74,10 @@ export class S5FormItems extends tsx.Component<IPorps, {}, ISlots> {
                     <el-input disabled={!this.value.isOpenProxy} v-model={this.value.password} />
                 </el-form-item>}
                 <el-form-item label={this.$t("create.s5_dns_mode")} prop="dns_mode">
-                    <el-switch disabled={!this.value.isOpenProxy} v-model={this.value.dns_mode} active-value={2} active-text={this.$t("create.s5_dns_mode2")} inactive-value={1} inactive-text={this.$t("create.s5_dns_mode1")} />
+                    <el-select disabled={!this.value.isOpenProxy} v-model={this.value.dns_mode} class="w-100">
+                        <el-option label={this.$t("create.s5_dns_mode1")} value={1} />
+                        <el-option label={this.$t("create.s5_dns_mode2")} value={2} />
+                    </el-select>
                 </el-form-item>
                 {this.value.protocol_type == 1 && <el-form-item label={this.$t("create.s5_udp_over_tcp")} prop="udpOverTcp">
                     <el-switch disabled={!this.value.isOpenProxy} v-model={this.value.udp_over_tcp} active-value={1} active-text={this.$t("create.s5_udp_over_tcp1")} inactive-value={0} inactive-text={this.$t("create.s5_udp_over_tcp0")} />
