@@ -89,6 +89,7 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
     protected renderDialog(): VNode {
         return (
             <el-form ref="formRef" label-position="top" props={{ model: this.obj }} rules={this.formRules}>
+                <div style="color: red; margin-bottom: 10px;">{this.$t("changeImage.warning")}</div>
                 <el-form-item label={this.$t("changeImage.label")} prop="image_addr"  >
                     <ImageSelector2 images={this.images} v-model={this.obj.image_addr} />
                 </el-form-item>

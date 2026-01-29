@@ -183,7 +183,8 @@
         "upload": "Upload",
         "filename": "Filename",
         "size": "Size",
-        "nofile": "No file selected"
+        "nofile": "No file selected",
+        "apkInstallTip": "Filenames ending with apk will be installed automatically, which may take some time"
     },
     "batch": {
         "start": "Are you sure you want to batch start VMs?",
@@ -241,7 +242,8 @@
     "changeImage": {
         "title": "Change Image",
         "label": "Image Address",
-        "success": "Image modification successful"
+        "success": "Image modification successful",
+        "warning": "After changing the image, it is not guaranteed that the cloud machine will start normally. Please operate with caution!"
     },
     "instance": {
         "free": "No Instance",

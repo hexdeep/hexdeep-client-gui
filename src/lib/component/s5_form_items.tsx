@@ -28,6 +28,7 @@ export class S5FormItems extends tsx.Component<IPorps, {}, ISlots> {
             this.$set(this.value, 'port', parts[1]);
             if (parts.length >= 3) this.$set(this.value, 'username', parts[2]);
             if (parts.length >= 4) this.$set(this.value, 'password', parts[3]);
+            this.$emit("fastInput");
         }
     }
 
@@ -79,7 +80,7 @@ export class S5FormItems extends tsx.Component<IPorps, {}, ISlots> {
                         <el-option label={this.$t("create.s5_dns_mode2")} value={2} />
                     </el-select>
                 </el-form-item>
-                {this.value.protocol_type == 1 && <el-form-item label={this.$t("create.s5_udp_over_tcp")} prop="udpOverTcp">
+                {this.value.protocol_type == 1 && this.value.engine == 2 && <el-form-item label={this.$t("create.s5_udp_over_tcp")} prop="udpOverTcp">
                     <el-switch disabled={!this.value.isOpenProxy} v-model={this.value.udp_over_tcp} active-value={1} active-text={this.$t("create.s5_udp_over_tcp1")} inactive-value={0} inactive-text={this.$t("create.s5_udp_over_tcp0")} />
                 </el-form-item>}
 

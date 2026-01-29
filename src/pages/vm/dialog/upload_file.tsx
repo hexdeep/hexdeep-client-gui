@@ -6,6 +6,7 @@ import { i18n } from "@/i18n/i18n";
 import { DeviceInfo } from "@/api/device_define";
 import { MyButton } from "@/lib/my_button";
 import { Tool } from "@/common/Tools";
+import { getSuffixName } from '@/common/common';
 import s from './upload_file.module.less';
 import { copyFileSync } from "node:fs";
 
@@ -28,7 +29,11 @@ export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
     public override show(data: DeviceInfo[]) {
         this.ips = data.filter(x => x.state == "running").groupBy(x => x.hostIp);
         this.title = this.$t("upload.title").toString();
-        if (Object.keys(this.ips).length > 1) {
+        if (data.length === 1) {
+            const info = data.first;
+            const vmInfo = `${info.hostIp}(${info.index}-${getSuffixName(info.name)})`;
+            this.title = `${this.title} ${vmInfo}`;
+        } else if (Object.keys(this.ips).length > 1) {
             this.title = `${this.title} (${Object.keys(this.ips).length})`;
         }
         return super.show(data);
@@ -134,6 +139,7 @@ export class UploadFileDialog extends CommonDialog<DeviceInfo[], boolean> {
     protected renderDialog(): VNode {
         return (
             <el-form ref="formRef" props={{ model: this.item }} label-position="top">
+                <div style="margin-bottom: 10px;">{this.$t("upload.apkInstallTip")}</div>
                 <el-form-item label={this.$t("upload.path")} prop="path">
                     <el-input v-model={this.item.path} maxlength={100} />
                 </el-form-item>

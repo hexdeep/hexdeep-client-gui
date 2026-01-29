@@ -1,6 +1,7 @@
 
 
 import { deviceApi, } from '@/api/device_api';
+import { getSuffixName } from '@/common/common';
 import { DeviceInfo, ProxyProtocolTypeOps, S5setParam } from "@/api/device_define";
 import { i18n } from "@/i18n/i18n";
 import { Row } from "@/lib/container";
@@ -19,7 +20,9 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
 
     public override show(data: DeviceInfo[]) {
         this.data = data;
-        this.title = this.$t("s5set.title").toString();
+        const info = data.first;
+        const vmInfo = `${info.hostIp}(${info.index}-${getSuffixName(info.name)})`;
+        this.title = `${this.$t("s5set.title")} ${vmInfo}`;
         this.width = "750px";
 
         deviceApi.queryS5Macvlan(data.first.android_sdk).then(obj => {
@@ -104,7 +107,7 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
         return (
             <div style={{ "padding": "24px" }}>
                 <el-form ref="formRef" props={{ model: this.item }} rules={this.formRules} label-position="left" label-width="150px">
-                    <S5FormItems v-model={this.item}></S5FormItems>
+                    <S5FormItems v-model={this.item} onFastInput={() => (this.$refs.formRef as any).validateField(['host', 'port'])}></S5FormItems>
                     {/* <el-form-item label={this.$t("create.enableS5Proxy")}  >
                         <el-switch v-model={this.isOpen} active-value={true} active-text={this.$t("create.enable")} inactive-value={false} inactive-text={this.$t("create.disable")} />
                     </el-form-item>

@@ -2,6 +2,7 @@ import { deviceApi } from '@/api/device_api';
 import { orderApi } from "@/api/order_api";
 import { CreateParam, DockerEditParam, ImageInfo } from "@/api/device_define";
 import { i18n } from "@/i18n/i18n";
+import { getSuffixName } from '@/common/common';
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
 import { ErrorProxy } from "@/lib/error_handle";
 import { VNode } from "vue";
@@ -21,7 +22,11 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
 
     public override async show(data: DockerEditParam) {
         this.data = data;
-        this.title = data.isUpdate ? this.$t("menu.updateVm").toString() : this.$t("createVm").toString();
+        const vmName = getSuffixName(data.info.name);
+        const vmNo = data.info.index;
+        const ip = data.info.hostIp;
+        const vmInfo = `${ip}(${vmNo}-${vmName})`;
+        this.title = data.isUpdate ? `${this.$t("menu.updateVm")} ${vmInfo}` : `${this.$t("createVm")} ${ip}`;
         deviceApi.getImages(this.data.info.hostIp).then((images) => {
             this.images = images;
         });
@@ -139,7 +144,8 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
 
     protected renderDialog(): VNode {
         return (
-            <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="140px" >
+            <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="100px">
+                {this.data.isUpdate && <div style="color: red; margin-bottom: 10px; margin-left: 140px;">{this.$t("changeImage.warning")}</div>}
                 <CreateForm data={this.data.obj} images={this.images} dockerRegistries={this.dockerRegistries} validInstance={this.validInstance} validIndex={this.validIndex} isUpdate={this.data.isUpdate} ></CreateForm>
             </el-form>
         );

@@ -1,6 +1,6 @@
 import { deviceApi } from '@/api/device_api';
 import { DeviceInfo, FilelistInfo, } from '@/api/device_define';
-import { makeMacvlanVmApiUrl, makeVmApiUrl, Tools } from '@/common/common';
+import { makeMacvlanVmApiUrl, makeVmApiUrl, Tools, getSuffixName } from '@/common/common';
 import { i18n } from '@/i18n/i18n';
 import { Column, Row } from "@/lib/container";
 import { Dialog, DrawerDialog } from "@/lib/dialog/dialog";
@@ -66,7 +66,8 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
     public override show(data: DeviceInfo) {
         this.data = data;
         this.deviceInfo = data; // 初始化deviceInfo
-        this.title = this.$t("upload.fileBrowser").toString();
+        const vmInfo = `${data.hostIp}(${data.index}-${getSuffixName(data.name)})`;
+        this.title = `${this.$t("upload.fileBrowser")} ${vmInfo}`;
         this.ls();
         return super.show(data);
     }
