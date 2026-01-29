@@ -256,12 +256,18 @@ export default class VMPage extends Vue {
         loading: i18n.t("loading")
     })
     protected async batchOperateIng(arr: DeviceInfo[], callback: (data: DeviceInfo) => Promise<void>) {
-        const deviceListHtml = arr.map((x, i) => {
-            const str = `${x.hostIp}(${x.index}-${getSuffixName(x.name)})`;
-            const suffix = i < arr.length - 1 ? "," : "";
-            return `<span style="display: inline-block; white-space: nowrap; margin-right: 5px;">${str}${suffix}</span>`;
+        const map = new Map<string, DeviceInfo[]>();
+        arr.forEach(x => {
+            if (!map.has(x.hostIp)) map.set(x.hostIp, []);
+            map.get(x.hostIp)!.push(x);
+        });
+
+        const deviceListHtml = Array.from(map.entries()).map(([hostIp, devices]) => {
+            devices.sort((a, b) => a.index - b.index);
+            const vms = devices.map(x => `${x.index}-${getSuffixName(x.name)}`).join(", ");
+            return `<li>${hostIp}(${vms})</li>`;
         }).join("");
-        const listHtml = `<div style="margin-top: 10px; max-height: 200px; overflow-y: auto;">${deviceListHtml}</div>`;
+        const listHtml = `<div style="margin-top: 10px; max-height: 200px; overflow-y: auto;"><ul>${deviceListHtml}</ul></div>`;
 
         if (this.batchOperateName.includes(i18n.t("batch.delete").toString()) || this.batchOperateName.includes(i18n.t("batch.reset").toString())) {
             const n1 = Math.floor(Math.random() * 10) + 1;
