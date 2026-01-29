@@ -2,7 +2,7 @@
 
 import { deviceApi, } from '@/api/device_api';
 import { getSuffixName } from '@/common/common';
-import { DeviceInfo, ProxyProtocolTypeOps, S5setParam } from "@/api/device_define";
+import { DeviceInfo, S5setParam } from "@/api/device_define";
 import { i18n } from "@/i18n/i18n";
 import { Row } from "@/lib/container";
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";

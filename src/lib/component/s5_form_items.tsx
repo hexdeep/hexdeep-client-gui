@@ -6,7 +6,7 @@ import { Row } from '../container';
 import "./create_form.less";
 
 @Component
-export class S5FormItems extends tsx.Component<IPorps, {}, ISlots> {
+export class S5FormItems extends tsx.Component<IPorps, IEvents, ISlots> {
     @Prop({ default: () => { } }) value!: S5setParam;
     // private isOpen = true;
     // private item: S5setParam = {};
@@ -88,6 +88,10 @@ export class S5FormItems extends tsx.Component<IPorps, {}, ISlots> {
         );
     }
 
+}
+
+interface IEvents {
+    onFastInput: () => void;
 }
 
 interface ISlots {
