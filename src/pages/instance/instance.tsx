@@ -28,6 +28,10 @@ export default class InstancePage extends Vue {
         this.loading = true;
         try {
             this.data = await deviceApi.getHosts();
+            this.data.forEach(x => {
+                deviceApi.getHostRemark(x.address).then(r => this.$set(x, "remark", r));
+                deviceApi.getWarehousingInfo(x.address).then(w => this.$set(x, "model", w.model)).catch(() => { });
+            });
             this.record = await orderApi.getRental(this.data.map(x => x.device_id).join(",")) || [];
         } catch (error) {
             this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
@@ -114,7 +118,7 @@ export default class InstancePage extends Vue {
                     <Column flex class={"fixTable"}>
                         <el-table data={this.data} width="100%" height="100%" v-loading={this.loading} on-selection-change={this.onSelectionChange}>
                             <el-table-column type="selection" width="45" />
-                            <el-table-column prop="address" label={this.$t("instance.host").toString()} width="115" />
+                            <el-table-column prop="address" label={this.$t("instance.host").toString()} min-width="20" formatter={this.renderHost} />
                             <el-table-column label={this.$t("instance.indexs").toString()} formatter={this.renderVm} />
                             <el-table-column label={this.$t("instance.action").toString()} width={i18n.locale == "zh" ? 200 : 270} formatter={this.renderAction} align="center" />
                         </el-table>
@@ -132,6 +136,17 @@ export default class InstancePage extends Vue {
                 if (!this.checkList.includes(str)) this.checkList.push(str);
             }
         });
+    }
+
+    private renderHost(row: HostInfo) {
+        if (row.remark && row.model) {
+            return `${row.address}(${row.remark}-${row.model})`;
+        } else if (row.remark) {
+            return `${row.address}(${row.remark})`;
+        } else if (row.model) {
+            return `${row.address}(${row.model})`;
+        }
+        return row.address;
     }
 
     private renderVm(row: HostInfo) {
