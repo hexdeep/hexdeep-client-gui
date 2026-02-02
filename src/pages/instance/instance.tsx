@@ -140,7 +140,7 @@ export default class InstancePage extends Vue {
 
     private renderHost(row: HostInfo) {
         if (row.remark && row.model) {
-            return `${row.address}(${row.remark}-${row.model})`;
+            return `${row.address}(${row.model})-${row.remark}`;
         } else if (row.remark) {
             return `${row.address}(${row.remark})`;
         } else if (row.model) {
