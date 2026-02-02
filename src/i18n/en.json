@@ -187,11 +187,11 @@
         "apkInstallTip": "Filenames ending with apk will be installed automatically, which may take some time"
     },
     "batch": {
-        "start": "Are you sure you want to batch start VMs?",
-        "shutdown": "Are you sure you want to batch shutdown VMs?",
-        "reboot": "Are you sure you want to batch reboot VMs?",
-        "delete": "Are you sure you want to batch delete VMs?",
-        "reset": "Are you sure you want to batch reset VMs?",
+        "start": "Are you sure you want to batch start {0} VMs?",
+        "shutdown": "Are you sure you want to batch shutdown {0} VMs?",
+        "reboot": "Are you sure you want to batch reboot {0} VMs?",
+        "delete": "Are you sure you want to batch delete {0} VMs?",
+        "reset": "Are you sure you want to batch reset {0} VMs?",
         "success": "Batch operation successful"
     },
     "vmDetail": {

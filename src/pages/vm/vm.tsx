@@ -218,7 +218,6 @@ export default class VMPage extends Vue {
     }
 
     protected async batchOperate(callback: (data: DeviceInfo) => Promise<any>, operate: string) {
-        this.batchOperateName = i18n.t(`batch.${operate}`).toString();
         let arr = this.selectedItems;
         switch (operate) {
             case "start":
@@ -244,6 +243,7 @@ export default class VMPage extends Vue {
                 //arr = this.selectedDevices;
                 break;
         }
+        this.batchOperateName = i18n.t(`batch.${operate}`, [arr.length]).toString();
 
         await this.batchOperateIng(arr, callback);
     }
