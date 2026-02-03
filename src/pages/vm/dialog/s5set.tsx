@@ -34,6 +34,7 @@ export class S5setDialog extends CommonDialog<DeviceInfo[], boolean> {
                 isOpenProxy: false
             };
             this.item = { ...defaults, ...obj };
+            if (!this.item.dns_mode) this.item.dns_mode = 2;
         });
 
         return super.show(data);

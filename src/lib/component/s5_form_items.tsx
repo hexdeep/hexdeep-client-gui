@@ -75,7 +75,7 @@ export class S5FormItems extends tsx.Component<IPorps, IEvents, ISlots> {
                     <el-input disabled={!this.value.isOpenProxy} v-model={this.value.password} />
                 </el-form-item>}
                 <el-form-item label={this.$t("create.s5_dns_mode")} prop="dns_mode">
-                    <el-select disabled={!this.value.isOpenProxy} v-model={this.value.dns_mode} class="w-100">
+                    <el-select disabled={!this.value.isOpenProxy} v-model={this.value.dns_mode} class="w-100" placeholder={this.$t("create.s5_dns_mode")}>
                         <el-option label={this.$t("create.s5_dns_mode1")} value={1} />
                         <el-option label={this.$t("create.s5_dns_mode2")} value={2} />
                     </el-select>
