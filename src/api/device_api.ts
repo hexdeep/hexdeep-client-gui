@@ -454,7 +454,7 @@ class DeviceApi extends ApiBase {
     }
 
     public async resetHost(ip: string) {
-        const result = await fetch(makeVmApiUrl("host/device/reset", ip));
+        const result = await fetch(makeHostVmApiUrl("entry/reset", ip));
         return await this.handleError(result);
     }
 
