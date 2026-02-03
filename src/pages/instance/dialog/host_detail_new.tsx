@@ -13,6 +13,7 @@ import { VNode } from "vue";
 import { SwitchSDKDialog } from "./switch_sdk";
 import { SwitchDiskDialog } from "./switch_disk";
 import { CleanGarbageDialog } from "./clean_garbage_dialog";
+import { SetSwapDialog } from "./set_swap";
 
 @Dialog
 export class HostDetailDialog extends CommonDialog<HostInfo, void> {
@@ -153,7 +154,16 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         </MyButton>
 
                         <MyButton
-                            type="danger"
+                            type="primary"
+                            size="small"
+                            style={{ whiteSpace: "nowrap" }}
+                            onClick={this.setSwap}
+                        >
+                            {this.$t("vmDetail.setSwap")}
+                        </MyButton>
+
+                        <MyButton
+                            type="primary"
                             size="small"
                             style={{ whiteSpace: "nowrap" }}
                             onClick={this.resetHost}
@@ -185,6 +195,10 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     @ErrorProxy({ confirm: i18n.t("vmDetail.cleanGarbageConfirm") })
     private async cleanupGarbage() {
         await this.$dialog(CleanGarbageDialog).show(this.data);
+    }
+
+    private async setSwap() {
+        await this.$dialog(SetSwapDialog).show(this.data);
     }
 
     @ErrorProxy({ confirm: i18n.t("vmDetail.updateFirmwareConfirm"), success: i18n.t("vmDetail.updateFirmwareSuccess"), loading: i18n.t("loading") })
