@@ -227,3 +227,17 @@ export interface DiscoverInfo {
      */
     host_ips: string[];
 }
+
+/**
+ * SwapInfo
+ */
+export interface SwapInfo {
+    /**
+     * swap是否开启，swap是否开启
+     */
+    on: boolean;
+    /**
+     * swap空间大小(单位:Byte)，swap空间大小(单位:Byte)
+     */
+    size: string;
+}
