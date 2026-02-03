@@ -220,6 +220,7 @@
         "formatDisk": "Format Current Disk",
         "switchDisk": "Switch Disk",
         "cleanupGarbage": "Clean up Garbage",
+        "resetHost": "Reset Host",
         "cleanupGarbageSuccess": "Clean up Garbage Success",
         "currentDisk": "Current Disk",
         "rebootHostSuccess": "Host is restarting...",

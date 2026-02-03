@@ -151,6 +151,15 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         >
                             {this.$t("vmDetail.cleanupGarbage")}
                         </MyButton>
+
+                        <MyButton
+                            type="danger"
+                            size="small"
+                            style={{ whiteSpace: "nowrap" }}
+                            onClick={this.resetHost}
+                        >
+                            {this.$t("vmDetail.resetHost")}
+                        </MyButton>
                     </div>
                 </el-descriptions-item>
             </el-descriptions>
