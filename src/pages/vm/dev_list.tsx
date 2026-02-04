@@ -234,12 +234,22 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                             {
                                 this.data2.map(e => {
                                     return <Column key={`parent_${e.key}`} class={[s.img_box, e.state == "running" ? s.running : s.no_run]}>
-                                        <Screenshot data-key={e.key} key={e.key} device={e} />
+                                        <div style="position: relative; display: inline-block; padding: 0;">
+                                            <Screenshot data-key={e.key} key={e.key} device={e} />
+                                            {e.state !== 'running' &&
+                                                <div class={s.power_overlay}>
+                                                    <el-button type="primary" icon="el-icon-switch-button" circle style="font-size: 24px; padding: 15px;" nativeOnClick={(event: Event) => {
+                                                        event.stopPropagation();
+                                                        this.start(e);
+                                                    }}></el-button>
+                                                </div>
+                                            }
+                                        </div>
                                         <Row mainAlign='space-between' crossAlign='center'>
                                             <el-checkbox class={s.checkbox} label={e.key} onChange={(c, event) => this.checkboxChanged(c, e)} >
                                                 <Row gap={5} flex crossAlign='center'>
                                                     <span>{`${e.index}`}</span>
-                                                    <span class={["ellipsis", s.checkbox_label]}>{`${getSuffixName(e.name)}`}</span>
+                                                    <span class={["ellipsis", s.checkbox_label]} title={`${getSuffixName(e.name)} ${e.hostIp}`}>{`${getSuffixName(e.name)} ${e.hostIp.split('.').slice(-2).join('.')}`}</span>
                                                 </Row>
                                             </el-checkbox>
                                             {this.renderAction(e, false)}
