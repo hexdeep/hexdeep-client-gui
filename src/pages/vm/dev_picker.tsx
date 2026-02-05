@@ -73,7 +73,6 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
 
     @ErrorProxy({ loading: i18n.t("loading") })
     private async createVms(h: HostInfo) {
-        console.log("asdf");
         var std = await orderApi.getRental(h.device_id);
         const showPurchaseConfirm = () => {
             this.$confirm(
