@@ -37,7 +37,7 @@ export default class Nav extends Vue {
     private onCommand(cmd: string) {
         switch (cmd) {
             case 'to_home':
-                window.open("https://www.haoyun.pro", '_blank');
+                window.open("https://www.hexdeep.com", '_blank');
                 break;
             case 'edit_pass':
                 this.$dialog(EditPassDialog).show();
