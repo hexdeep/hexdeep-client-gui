@@ -36,51 +36,51 @@ export class S5FormItems extends tsx.Component<IPorps, IEvents, ISlots> {
     public render() {
         return (
             <div>
-                <el-form-item label={this.$t("create.enableS5Proxy")}  >
+                <el-form-item key="enable" label={this.$t("create.enableS5Proxy")}  >
                     <el-switch v-model={this.value.isOpenProxy} active-value={true} active-text={this.$t("create.enable")} inactive-value={false} inactive-text={this.$t("create.disable")} />
                 </el-form-item>
 
-                <el-form-item label={this.$t("create.s5_engine")} prop="engine" required={this.value.isOpenProxy}>
+                <el-form-item key="engine" label={this.$t("create.s5_engine")} prop="engine" required={this.value.isOpenProxy}>
                     <el-select disabled={!this.value.isOpenProxy} v-model={this.value.engine} class="w-100">
                         <el-option label={this.$t("create.s5_engine1")} value={1} />
                         <el-option label={this.$t("create.s5_engine2")} value={2} />
                     </el-select>
                 </el-form-item>
 
-                <el-form-item label={this.$t("create.s5_protocol_type")} prop="protocol_type" >
+                <el-form-item key="protocol" label={this.$t("create.s5_protocol_type")} prop="protocol_type" >
                     <el-select v-model={this.value.protocol_type} placeholder={this.$t("create.s5_protocol_type")} class="w-100" disabled={!this.value.isOpenProxy}>
                         {Object.entries(ProxyProtocolTypeOps).map(([k, v]) => {
                             return <el-option label={v.label} value={parseInt(k)} disabled={v.engine && v.engine != this.value.engine} />;
                         })}
                     </el-select>
                 </el-form-item>
-                {this.value.protocol_type == 1 && <el-form-item label="快速填写">
+                {this.value.protocol_type == 1 && <el-form-item key="fast" label="快速填写">
                     <el-input disabled={!this.value.isOpenProxy} placeholder="ip:port:user:pwd" v-model={this.fastInputStr}>
                         <el-button slot="append" icon="el-icon-check" onClick={this.onFastInputClick}></el-button>
                     </el-input>
                 </el-form-item>}
-                {this.value.protocol_type! > 1 && <el-form-item label={this.$t("create.s5_address")} prop="address">
+                {this.value.protocol_type! > 1 && <el-form-item key="addr" label={this.$t("create.s5_address")} prop="address">
                     <el-input disabled={!this.value.isOpenProxy} v-model={this.value.address} type="textarea" rows={4} />
                 </el-form-item>}
-                {this.value.protocol_type == 1 && <el-form-item label={this.$t("create.s5_ip")} prop="host">
+                {this.value.protocol_type == 1 && <el-form-item key="host" label={this.$t("create.s5_ip")} prop="host">
                     <el-input disabled={!this.value.isOpenProxy} v-model={this.value.host} />
                 </el-form-item>}
-                {this.value.protocol_type == 1 && <el-form-item label={this.$t("create.s5_port")} prop="port">
+                {this.value.protocol_type == 1 && <el-form-item key="port" label={this.$t("create.s5_port")} prop="port">
                     <el-input disabled={!this.value.isOpenProxy} v-model={this.value.port} type="number" min={1} max={65535} />
                 </el-form-item>}
-                {this.value.protocol_type == 1 && <el-form-item label={this.$t("create.s5_user")} prop="username">
+                {this.value.protocol_type == 1 && <el-form-item key="user" label={this.$t("create.s5_user")} prop="username">
                     <el-input disabled={!this.value.isOpenProxy} v-model={this.value.username} />
                 </el-form-item>}
-                {this.value.protocol_type == 1 && <el-form-item label={this.$t("create.s5_pwd")} prop="password">
+                {this.value.protocol_type == 1 && <el-form-item key="pwd" label={this.$t("create.s5_pwd")} prop="password">
                     <el-input disabled={!this.value.isOpenProxy} v-model={this.value.password} />
                 </el-form-item>}
-                <el-form-item label={this.$t("create.s5_dns_mode")} prop="dns_mode">
+                <el-form-item key="dns" label={this.$t("create.s5_dns_mode")} prop="dns_mode">
                     <el-select disabled={!this.value.isOpenProxy} v-model={this.value.dns_mode} class="w-100" placeholder={this.$t("create.s5_dns_mode")}>
                         <el-option label={this.$t("create.s5_dns_mode1")} value={1} />
                         <el-option label={this.$t("create.s5_dns_mode2")} value={2} />
                     </el-select>
                 </el-form-item>
-                {this.value.protocol_type == 1 && this.value.engine == 2 && <el-form-item label={this.$t("create.s5_udp_over_tcp")} prop="udpOverTcp">
+                {this.value.protocol_type == 1 && this.value.engine == 2 && <el-form-item key="udp" label={this.$t("create.s5_udp_over_tcp")} prop="udpOverTcp">
                     <el-switch disabled={!this.value.isOpenProxy} v-model={this.value.udp_over_tcp} active-value={1} active-text={this.$t("create.s5_udp_over_tcp1")} inactive-value={0} inactive-text={this.$t("create.s5_udp_over_tcp0")} />
                 </el-form-item>}
 
