@@ -25,7 +25,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
 
     public override show(data: DockerBatchCreateParam) {
         this.data = data;
-        this.title = i18n.t("batchCreateVm").toString();
+        this.title = `${i18n.t("batchCreateVm")} ${data.hostIp.join(",")}`;
         deviceApi.getImages(this.data.hostIp.first).then((images) => {
             this.images = images;
         });
@@ -130,7 +130,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
 
     protected renderDialog(): VNode {
         return (
-            <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="140px" class={s.form}>
+            <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="150px" class={s.form}>
                 <div class={s.tip}>{this.$t("create.tip", { 0: this.data.maxNum })}</div>
                 <CreateForm data={this.data.obj} needName={false} images={this.images} dockerRegistries={this.dockerRegistries} validIndex={0} validInstance={[]}>
                     <Row>
