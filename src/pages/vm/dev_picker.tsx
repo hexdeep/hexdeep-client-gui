@@ -177,7 +177,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         if (d.includes("nvme")) return "material-symbols:hard-disk-rounded";
         if (d.includes("usb")) return "bi:usb-plug-fill";
         if (d.includes("emmc")) return "mdi:chip";
-        if (d.includes("iscsi")) return "bi:pci-card";
+        if (d.includes("iscsi")) return "mdi:server-network";
         return "mdi:harddisk";
     }
 

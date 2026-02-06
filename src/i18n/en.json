@@ -242,7 +242,15 @@
         "resetSuccess": "Host is resetting, please wait rebooting...",
         "reset": "Restore factory",
         "apiGitCommitId": "Version",
-        "updateFirmware": "Update firmware"
+        "updateFirmware": "Update firmware",
+        "iscsi": {
+            "ip": "iSCSI IP",
+            "port": "iSCSI Port",
+            "username": "Username",
+            "password": "Password",
+            "target": "Target",
+            "lun": "Lun"
+        }
     },
     "changeImage": {
         "title": "Change Image",

@@ -243,7 +243,15 @@
         "resetSuccess": "主机重置成功，请等待主机重启。",
         "reset": "恢复出厂",
         "apiGitCommitId": "版本号",
-        "updateFirmware": "升级固件"
+        "updateFirmware": "升级固件",
+        "iscsi": {
+            "ip": "iSCSI IP",
+            "port": "iSCSI 端口",
+            "username": "用户名",
+            "password": "密码",
+            "target": "Target",
+            "lun": "Lun"
+        }
     },
     "changeImage": {
         "title": "更换镜像",
