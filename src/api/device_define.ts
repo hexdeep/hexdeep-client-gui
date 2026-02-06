@@ -199,17 +199,46 @@ export interface DiskListInfo {
      */
     list: DiskItem[];
     [property: string]: any;
+
+    iscsi_info?: IscsiInfo;
 }
 
 export interface DiskItem {
     /**
      * 是否可用，是否可用
      */
-    enable: boolean;
+    enabled: boolean;
     /**
      * 磁盘名称，磁盘名称
      */
     name: string;
+}
+
+export interface IscsiInfo {
+    /**
+     * iscsi服务ip
+     */
+    ip: string;
+    /**
+     * iscsi服务target下某个lun
+     */
+    lun: number;
+    /**
+     * iscsi服务登录密码
+     */
+    password: string;
+    /**
+     * iscsi服务端口
+     */
+    port: number;
+    /**
+     * iscsi服务对应的target
+     */
+    target: string;
+    /**
+     * iscsi服务登录用户名
+     */
+    username: string;
     [property: string]: any;
 }
 
