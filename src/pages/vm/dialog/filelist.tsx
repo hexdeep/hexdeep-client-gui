@@ -34,12 +34,10 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
             // 确保files是数组再调用sort方法
             if (files && Array.isArray(files)) {
                 files.sort((f1, f2) => {
-                    if (!f1.flag && f2.flag)
-                        return 1;
-                    else if (f1.flag && !f2.flag)
-                        return -1;
-                    else
-                        return 0;
+                    if (f1.flag !== f2.flag) {
+                        return f2.flag ? 1 : -1;
+                    }
+                    return f1.name.localeCompare(f2.name);
                 });
                 this.files = files;
             } else {
