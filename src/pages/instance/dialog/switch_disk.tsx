@@ -7,6 +7,11 @@ import { sleep } from "@/common/common";
 import { HostInfo, DiskItem, IscsiInfo } from "@/api/device_define";
 import { MyButton } from "@/lib/my_button";
 import { Icon } from '@iconify/vue2';
+import hardDiskRounded from '@iconify-icons/material-symbols/hard-drive';
+import usbPlugFill from '@iconify-icons/bi/usb-plug-fill';
+import chip from '@iconify-icons/mdi/chip';
+import serverNetwork from '@iconify-icons/mdi/server-network';
+import harddisk from '@iconify-icons/mdi/harddisk';
 
 
 @Dialog
@@ -108,11 +113,11 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
     private getDiskIcon(disk: string) {
         if (!disk) return "";
         const d = disk.toLowerCase();
-        if (d.includes("nvme")) return "material-symbols:hard-disk-rounded";
-        if (d.includes("usb")) return "bi:usb-plug-fill";
-        if (d.includes("emmc")) return "mdi:chip";
-        if (d.includes("iscsi")) return "mdi:server-network";
-        return "mdi:harddisk";
+        if (d.includes("nvme")) return hardDiskRounded;
+        if (d.includes("usb")) return usbPlugFill;
+        if (d.includes("emmc")) return chip;
+        if (d.includes("iscsi")) return serverNetwork;
+        return harddisk;
     }
 
     protected renderDialog(): VNode {
