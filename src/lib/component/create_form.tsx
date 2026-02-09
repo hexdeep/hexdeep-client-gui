@@ -110,7 +110,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 )}
 
                 <el-form-item label={this.$t("create.subnet")} prop="subnet" >
-                    <el-input v-model={this.data.subnet} placeholder="172.17.0.0/16" disabled={this.data.mac_vlan == 1} />
+                    <el-input v-model={this.data.subnet} disabled={this.data.mac_vlan == 1} />
                 </el-form-item>
 
                 <Row>
