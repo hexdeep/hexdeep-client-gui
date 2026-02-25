@@ -17,7 +17,7 @@ export class DiscoverDialog extends CommonDialog<void, boolean> {
     private ipListText: string = "";
 
     public override show() {
-        this.title = i18n.t("discover.title").toString();
+        this.title = i18n.t("discover.title").toString() + " " + Config.host;
         return super.show();
     }
 
