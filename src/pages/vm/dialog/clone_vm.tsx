@@ -25,6 +25,7 @@ export class CloneVmDialog extends CommonDialog<DeviceInfo, boolean> {
     public override show(data: DeviceInfo) {
         this.data = data;
         this.title = this.$t("clone.title").toString();
+        this.item.dst_name = getSuffixName(data.name);
         this.hostIpChange();
         return super.show(data);
     }
