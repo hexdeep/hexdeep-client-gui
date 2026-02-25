@@ -20,6 +20,7 @@ export class S5FormItems extends tsx.Component<IPorps, IEvents, ISlots> {
         }
     }
 
+    @Watch("fastInputStr")
     private onFastInputClick() {
         const val = this.fastInputStr;
         const parts = val.trim().split(/[:|]/);
@@ -56,7 +57,6 @@ export class S5FormItems extends tsx.Component<IPorps, IEvents, ISlots> {
                 </el-form-item>
                 {this.value.protocol_type == 1 && <el-form-item key="fast" label="快速填写">
                     <el-input disabled={!this.value.isOpenProxy} placeholder="ip:port:user:pwd" v-model={this.fastInputStr}>
-                        <el-button slot="append" icon="el-icon-check" onClick={this.onFastInputClick}></el-button>
                     </el-input>
                 </el-form-item>}
                 {this.value.protocol_type! > 1 && <el-form-item key="addr" label={this.$t("create.s5_address")} prop="address">
