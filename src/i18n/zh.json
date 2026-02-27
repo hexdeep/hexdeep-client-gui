@@ -291,7 +291,8 @@
         "needSelect": "请选择实例",
         "switchSDK": "切换SDK",
         "switchSDKTitle": "切换SDK",
-        "switchSDKSuccess": "切换SDK成功"
+        "switchSDKSuccess": "切换SDK成功",
+        "nonOfficialDevice": "非官方设备"
     },
     "nav": {
         "vms": "云手机",

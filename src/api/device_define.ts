@@ -27,6 +27,7 @@ export interface HostInfo {
     has_error?: boolean;
     disk?: string;
     model?: string;
+    is_unofficial?: boolean;
 }
 
 export interface MyTreeNode {

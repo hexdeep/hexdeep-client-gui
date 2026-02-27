@@ -30,7 +30,14 @@ export default class InstancePage extends Vue {
             this.data = await deviceApi.getHosts();
             this.data.forEach(x => {
                 deviceApi.getHostRemark(x.address).then(r => this.$set(x, "remark", r));
-                deviceApi.getWarehousingInfo(x.address).then(w => this.$set(x, "model", w.model)).catch(() => { });
+                deviceApi.getWarehousingInfo(x.address).then(w => {
+                if (w.code == 200) {
+                    this.$set(x, "model", w.data.model);
+                    this.$set(x, "is_unofficial", false);
+                } else {
+                    this.$set(x, "is_unofficial", true);
+                }
+            }).catch(() => { });
             });
             this.record = await orderApi.getRental(this.data.map(x => x.device_id).join(",")) || [];
         } catch (error) {
@@ -139,14 +146,23 @@ export default class InstancePage extends Vue {
     }
 
     private renderHost(row: HostInfo) {
+        let text = row.address;
         if (row.remark && row.model) {
-            return `${row.address}(${row.model})-${row.remark}`;
+            text = `${row.address}(${row.model})-${row.remark}`;
         } else if (row.remark) {
-            return `${row.address}(${row.remark})`;
+            text = `${row.address}(${row.remark})`;
         } else if (row.model) {
-            return `${row.address}(${row.model})`;
+            text = `${row.address}(${row.model})`;
         }
-        return row.address;
+        
+        if (row.is_unofficial) {
+            return (
+                <el-tooltip content={this.$t("instance.nonOfficialDevice").toString()} placement="top">
+                    <span style={{ color: "red" }}>{text}</span>
+                </el-tooltip>
+            );
+        }
+        return text;
     }
 
     private renderVm(row: HostInfo) {
