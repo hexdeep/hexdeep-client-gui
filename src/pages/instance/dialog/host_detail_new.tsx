@@ -20,6 +20,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected detail: HostDetailInfo = {} as HostDetailInfo;
     protected sdk?: SDKImagesRes;
     protected model: string = "";
+    protected isOfficialModel: boolean = true;
     protected firmwareIsLatest: boolean = false;
     protected timer: any;
     override width: string = "600px";
@@ -27,7 +28,15 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         this.data = data;
         this.title = this.$t("instance.hostDetail").toString();
         deviceApi.getHostDetail(data.address).then(e => this.detail = e);
-        deviceApi.getWarehousingInfo(data.address).then(e => this.model = e.model).catch(e => console.log(e));
+        deviceApi.getWarehousingInfo(data.address).then(e => {
+            if (e.code !== 200) {
+                this.isOfficialModel = false;
+                this.model = this.$t("vmDetail.unofficialModel").toString();
+            } else {
+                this.isOfficialModel = true;
+                this.model = e.data.model;
+            }
+        }).catch(e => console.log(e));
         deviceApi.getSDKImages(data.address).then(e => this.sdk = e);
         deviceApi.checkFirmware(data.address).then(e => this.firmwareIsLatest = e);
         this.timer = setInterval(() => {
@@ -72,7 +81,9 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("create.model_id")}>
                     <Row crossAlign="center">
-                        {this.model ? `${this.model} (${this.data.address})` : this.data.address}
+                        <span style={{ color: this.isOfficialModel ? "inherit" : "red" }}>
+                            {this.model ? `${this.model}(${this.data.address})` : this.data.address}
+                        </span>
                     </Row>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.id")}>
@@ -93,21 +104,39 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                     </div>
                 </el-descriptions-item>
 
+                <el-descriptions-item>
+                    <template slot="label">
+                        {i18n.t("vmDetail.swap")}
+                        <el-tooltip effect="dark" content={i18n.t("vmDetail.virtualMemTip")} placement="top">
+                            <i class="el-icon-info" style="margin-left: 4px; cursor: pointer;"></i>
+                        </el-tooltip>
+                    </template>
+                    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                            <el-progress text-inside={true} percentage={this.getPercent(this.detail?.swap_percent)} stroke-width={26} status={this.getStatus(this.detail?.swap_percent)}></el-progress>
+                            <div style={{ "text-align": "right" }}>
+                                {Tools.getFileSize((this.detail?.swap_total || 0) * this.getPercent(this.detail?.swap_percent) / 100)} / {Tools.getFileSize(this.detail?.swap_total || 0)}
+                            </div>
+                        </div>
+                        <div style={{ width: "100px", marginLeft: "10px", display: "flex", justifyContent: "flex-end" }}>
+                            <MyButton
+                                type="primary"
+                                size="small"
+                                style={{ whiteSpace: "nowrap" }}
+                                onClick={this.setSwap}
+                            >
+                                {this.$t("vmDetail.set")}
+                            </MyButton>
+                        </div>
+                    </div>
+                </el-descriptions-item>
+
                 <el-descriptions-item label={i18n.t("vmDetail.harddisk") + (this.detail.disk ? "(" + this.detail.disk + ")" : "")}>
                     <div alignContent="flex-end" mainAlign="flex-end" crossAlign="end">
                         <el-progress text-inside={true} percentage={this.getPercent(this.detail?.disk_percent)}
                             stroke-width={26} status={this.getStatus(this.detail?.disk_percent)}></el-progress>
                         <div style={{ "text-align": "right" }}>
                             {Tools.getFileSize((this.detail?.disk_total || 0) * this.getPercent(this.detail?.disk_percent) / 100)} / {Tools.getFileSize(this.detail?.disk_total || 0)}
-                        </div>
-                    </div>
-                </el-descriptions-item>
-
-                <el-descriptions-item label={i18n.t("vmDetail.swap")}>
-                    <div alignContent="flex-end" mainAlign="flex-end" crossAlign="end">
-                        <el-progress text-inside={true} percentage={this.getPercent(this.detail?.swap_percent)} stroke-width={26} status={this.getStatus(this.detail?.swap_percent)}></el-progress>
-                        <div style={{ "text-align": "right" }}>
-                            {Tools.getFileSize((this.detail?.swap_total || 0) * this.getPercent(this.detail?.swap_percent) / 100)} / {Tools.getFileSize(this.detail?.swap_total || 0)}
                         </div>
                     </div>
                 </el-descriptions-item>
@@ -151,15 +180,6 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                             onClick={this.cleanupGarbage}
                         >
                             {this.$t("vmDetail.cleanupGarbage")}
-                        </MyButton>
-
-                        <MyButton
-                            type="primary"
-                            size="small"
-                            style={{ whiteSpace: "nowrap" }}
-                            onClick={this.setSwap}
-                        >
-                            {this.$t("vmDetail.setSwap")}
                         </MyButton>
 
                         <MyButton
