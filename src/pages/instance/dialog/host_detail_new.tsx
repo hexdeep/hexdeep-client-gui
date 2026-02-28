@@ -31,7 +31,10 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         deviceApi.getWarehousingInfo(data.address).then(e => {
             if (e.code !== 200) {
                 this.isOfficialModel = false;
-                this.model = this.$t("vmDetail.unofficialModel").toString();
+                this.model = this.$t("vmDetail.queryModelError").toString();
+            } else if (e.data.model === "非官方设备") {
+                this.isOfficialModel = false;
+                this.model = e.data.model;
             } else {
                 this.isOfficialModel = true;
                 this.model = e.data.model;
