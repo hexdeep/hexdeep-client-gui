@@ -20,6 +20,8 @@ import { S5setDialog } from './dialog/s5set';
 import { UploadFileDialog } from './dialog/upload_file';
 import { VmDetailDialog } from './dialog/vm_detail';
 import { Screenshot } from './screenshot';
+import { Icon } from '@iconify/vue2';
+import moreVert from '@iconify-icons/mdi/more-vert';
 
 @Component
 class OverflowTooltip extends tsx.Component<{ content: string }> {
@@ -233,6 +235,11 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <div class={s[this.config.view]}>
                             {
                                 this.data2.map(e => {
+                                    const name = getSuffixName(e.name);
+                                    const ipFragment = e.hostIp.split('.').slice(-2).join('.');
+                                    const ipParts = ipFragment.split('.');
+                                    const displayIp = (name.length > 8 && ipParts.length > 1) ? ipParts[1] : ipFragment;
+
                                     return <Column key={`parent_${e.key}`} class={[s.img_box, e.state == "running" ? s.running : s.no_run]}>
                                         <div style="position: relative; display: inline-block; padding: 0;">
                                             <Screenshot data-key={e.key} key={e.key} device={e} />
@@ -249,10 +256,13 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                                             <el-checkbox class={s.checkbox} label={e.key} onChange={(c, event) => this.checkboxChanged(c, e)} >
                                                 <Row gap={5} flex crossAlign='center'>
                                                     <span>{`${e.index}`}</span>
-                                                    <span class={["ellipsis", s.checkbox_label]} title={`${getSuffixName(e.name)} ${e.hostIp}`}>{`${getSuffixName(e.name)} ${e.hostIp.split('.').slice(-2).join('.')}`}</span>
+                                                    <span class={["ellipsis", s.checkbox_label]} title={`${name} ${e.hostIp}`}>{name}</span>
                                                 </Row>
                                             </el-checkbox>
-                                            {this.renderAction(e, false)}
+                                            <Row gap={5} crossAlign='center' style={{ flexShrink: 0 }}>
+                                                <span style={{ fontSize: '14px', color: '#606266' }}>{displayIp}</span>
+                                                {this.renderAction(e, false)}
+                                            </Row>
                                         </Row>
                                     </Column>;
                                 })
@@ -518,7 +528,9 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                 {hasBtn && renderBtn()}
                 {row.state !== '' && <el-dropdown trigger="click">
 
-                    <TextButton text={this.$t("more")} />
+                    <div style="cursor: pointer;">
+                        <Icon icon={moreVert} width="16" height="16" />
+                    </div>
                     <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item nativeOnClick={() => this.create(row)}>{this.$t("createVm")}</el-dropdown-item>
                         <el-dropdown-item disabled={row.state == 'running'} nativeOnClick={() => this.start(row)}>{this.$t("menu.start")}</el-dropdown-item>
