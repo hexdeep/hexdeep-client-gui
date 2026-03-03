@@ -97,31 +97,38 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         status={this.getStatus(this.detail?.cpu)}></el-progress>
                 </el-descriptions-item>
 
-                <el-descriptions-item label={i18n.t("vmDetail.mem")}>
-                    <div alignContent="flex-end" mainAlign="flex-end" crossAlign="end">
-                        <el-progress text-inside={true} percentage={this.getPercent(this.detail?.mem_percent)}
-                            stroke-width={26} status={this.getStatus(this.detail?.mem_percent)}></el-progress>
-                        <div style={{ "text-align": "right" }}>
-                            {Tools.getFileSize((this.detail?.mem_total || 0) * this.getPercent(this.detail?.mem_percent) / 100)} / {Tools.getFileSize(this.detail?.mem_total || 0)}
+                <el-descriptions-item label={i18n.t("create.memory")}>
+                    <div style={{ marginBottom: "10px" }}>
+                        <el-progress
+                            text-inside={true}
+                            percentage={this.getPercent(this.detail?.mem_percent)}
+                            stroke-width={26}
+                            status={this.getStatus(this.detail?.mem_percent)}
+                        ></el-progress>
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+                            <span>{this.$t("vmDetail.mem")}</span>
+                            <span>{Tools.getFileSize((this.detail?.mem_total || 0) * this.getPercent(this.detail?.mem_percent) / 100)} / {Tools.getFileSize(this.detail?.mem_total || 0)}</span>
                         </div>
                     </div>
-                </el-descriptions-item>
-
-                <el-descriptions-item>
-                    <template slot="label">
-                        {i18n.t("vmDetail.swap")}
-                        <el-tooltip effect="dark" content={i18n.t("vmDetail.virtualMemTip")} placement="top">
-                            <i class="el-icon-info" style="margin-left: 4px; cursor: pointer;"></i>
-                        </el-tooltip>
-                    </template>
                     <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
                         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                            <el-progress text-inside={true} percentage={this.getPercent(this.detail?.swap_percent)} stroke-width={26} status={this.getStatus(this.detail?.swap_percent)}></el-progress>
-                            <div style={{ "text-align": "right" }}>
-                                {Tools.getFileSize((this.detail?.swap_total || 0) * this.getPercent(this.detail?.swap_percent) / 100)} / {Tools.getFileSize(this.detail?.swap_total || 0)}
+                            <el-progress
+                                text-inside={true}
+                                percentage={this.getPercent(this.detail?.swap_percent)}
+                                stroke-width={26}
+                                status={this.getStatus(this.detail?.swap_percent)}
+                            ></el-progress>
+                            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+                                <div style={{ display: "flex", alignItems: "center" }}>
+                                    <span>{this.$t("vmDetail.swap")}</span>
+                                    <el-tooltip effect="dark" content={i18n.t("vmDetail.virtualMemTip")} placement="top">
+                                        <i class="el-icon-info" style="margin-left: 4px; cursor: pointer;"></i>
+                                    </el-tooltip>
+                                </div>
+                                <span>{Tools.getFileSize((this.detail?.swap_total || 0) * this.getPercent(this.detail?.swap_percent) / 100)} / {Tools.getFileSize(this.detail?.swap_total || 0)}</span>
                             </div>
                         </div>
-                        <div style={{ width: "100px", marginLeft: "10px", display: "flex", justifyContent: "flex-end" }}>
+                        <div style={{ width: "100px", marginLeft: "10px", display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
                             <MyButton
                                 type="primary"
                                 size="small"
