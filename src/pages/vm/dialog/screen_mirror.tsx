@@ -6,6 +6,7 @@ import { DeviceInfo } from "@/api/device_define";
 import { deviceApi } from "@/api/device_api";
 import { Row } from "@/lib/container";
 import { MyButton } from "@/lib/my_button";
+import { getSuffixName } from "@/common/common";
 
 @Dialog
 export class ScreenMirrorDialog extends CommonDialog<DeviceInfo, void> {
@@ -21,7 +22,7 @@ export class ScreenMirrorDialog extends CommonDialog<DeviceInfo, void> {
     public override show(data: DeviceInfo) {
         this.data = data;
         this.deviceInfo = data;
-        this.title = this.$t("menu.screenMirror").toString();
+        this.title = `${this.$t("menu.screenMirror")} ${data.hostIp}(${data.index}-${getSuffixName(data.name)})`;
 
         this.deviceId = i18n.t("loading").toString();
         this.loadDeviceId();
