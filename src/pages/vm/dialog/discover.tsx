@@ -6,7 +6,7 @@ import { Config } from "@/common/Config";
 import { i18n } from "@/i18n/i18n";
 
 @Dialog
-export class DiscoverDialog extends CommonDialog<void, boolean> {
+export class DiscoverDialog extends CommonDialog<string, boolean> {
     public override width = "500px";
 
     protected form: DiscoverInfo = {
@@ -15,16 +15,18 @@ export class DiscoverDialog extends CommonDialog<void, boolean> {
     };
 
     private ipListText: string = "";
+    private targetHost: string = "";
 
-    public override show() {
-        this.title = i18n.t("discover.title").toString() + " " + Config.host;
-        return super.show();
+    public override show(host?: string) {
+        this.targetHost = host || Config.host;
+        this.title = i18n.t("discover.title").toString() + " " + this.targetHost;
+        return super.show(this.targetHost);
     }
 
     protected override async onInit() {
         try {
             console.log("DiscoverDialog onInit");
-            const result = await deviceApi.setDiscover(Config.host, 0);
+            const result = await deviceApi.setDiscover(this.targetHost, 0);
             console.log("setDiscover result:", result);
             if (result) {
                 this.form = result;
@@ -66,7 +68,7 @@ export class DiscoverDialog extends CommonDialog<void, boolean> {
     protected override async onConfirm() {
         try {
             const hostIpsStr = this.ipListText.split('\n').map(x => x.trim()).filter(x => x).join(',');
-            await deviceApi.setDiscover(Config.host, 1, this.form.auto, hostIpsStr);
+            await deviceApi.setDiscover(this.targetHost, 1, this.form.auto, hostIpsStr);
             this.$message.success(this.$t("discover.saveSuccess") as string);
             this.close(true);
         } catch (e) {

@@ -1,6 +1,3 @@
-
-
-
 import { deviceApi } from "@/api/device_api";
 import { HostDetailInfo, HostInfo, SDKImagesRes } from "@/api/device_define";
 import { Tools } from "@/common/common";
@@ -14,6 +11,7 @@ import { SwitchSDKDialog } from "./switch_sdk";
 import { SwitchDiskDialog } from "./switch_disk";
 import { CleanGarbageDialog } from "./clean_garbage_dialog";
 import { SetSwapDialog } from "./set_swap";
+import { DiscoverDialog } from "@/pages/vm/dialog/discover";
 
 @Dialog
 export class HostDetailDialog extends CommonDialog<HostInfo, void> {
@@ -200,6 +198,15 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         >
                             {this.$t("vmDetail.resetHost")}
                         </MyButton>
+
+                        <MyButton
+                            type="primary"
+                            size="small"
+                            style={{ whiteSpace: "nowrap" }}
+                            onClick={this.showDiscover}
+                        >
+                            {this.$t("discover.title")}
+                        </MyButton>
                     </div>
                 </el-descriptions-item>
             </el-descriptions>
@@ -250,6 +257,10 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     private async switchSDK() {
         await this.$dialog(SwitchSDKDialog).show(this.data);
         deviceApi.getSDKImages(this.data.address).then(e => this.sdk = e);
+    }
+
+    private async showDiscover() {
+        await this.$dialog(DiscoverDialog).show(this.data.address);
     }
 
     private getStatus(percent: string | undefined): string | undefined {
