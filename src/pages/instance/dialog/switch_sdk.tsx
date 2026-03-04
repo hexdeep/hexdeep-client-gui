@@ -13,7 +13,7 @@ import { HostInfo } from "@/api/device_define";
 @Dialog
 export class SwitchSDKDialog extends CommonDialog<HostInfo, boolean> {
     public override width: string = "600px";
-    protected obj = { image_addr: "" };
+    protected obj = { image_addr: "", custom_image_addr: "" };
     public override show(data: HostInfo) {
         this.title = this.$t("instance.switchSDKTitle").toString();
         this.data = data;
@@ -23,7 +23,15 @@ export class SwitchSDKDialog extends CommonDialog<HostInfo, boolean> {
 
     @ErrorProxy({ success: i18n.t("instance.switchSDKSuccess"), loading: i18n.t("loading") })
     protected override async onConfirm() {
-        await deviceApi.switchSDKImages(this.data.address, this.obj.image_addr.toLocaleLowerCase());
+        let addr = this.obj.image_addr;
+        if (addr == "[customImage]") {
+            addr = this.obj.custom_image_addr;
+            if (!addr) {
+                this.$message.error(this.$t("notNull").toString());
+                return;
+            }
+        }
+        await deviceApi.switchSDKImages(this.data.address, addr.toLocaleLowerCase());
 
         //检测是否切换成功
         for (var i = 0; i < 5; i++) {
@@ -51,6 +59,11 @@ export class SwitchSDKDialog extends CommonDialog<HostInfo, boolean> {
                 <el-form-item label={this.$t("changeImage.label")} prop="image_addr"  >
                     <SDKImageSelector hostIp={this.data.address} v-model={this.obj.image_addr} />
                 </el-form-item>
+                {this.obj.image_addr == "[customImage]" && (
+                    <el-form-item label={this.$t("customImage")} prop="custom_image_addr">
+                        <el-input v-model={this.obj.custom_image_addr} />
+                    </el-form-item>
+                )}
             </el-form>
         );
     }

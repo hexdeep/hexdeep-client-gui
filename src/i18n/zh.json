@@ -107,7 +107,13 @@
         "downloaded": "已下载",
         "unDownloaded": "未下载",
         "need_update": "有更新",
-        "already_latest": "已是最新"
+        "already_latest": "已是最新",
+        "image_type": "镜像类型",
+        "image_type_all": "全部",
+        "image_type_base": "基础版",
+        "image_type_magisk": "框架版",
+        "image_type_gms": "海外版",
+        "image_type_pine": "Pine版"
     },
     "menu": {
         "start": "开机",
@@ -218,11 +224,11 @@
         "sdkVersion": "SDK版本",
         "rebootSDK": "重启SDK",
         "hostOperate": "主机操作",
-        "rebootHost": "重启主机",
+        "rebootHost": "重启",
         "formatDisk": "格式化当前存储",
         "switchDisk": "切换存储",
         "cleanupGarbage": "清理垃圾",
-        "resetHost": "重置主机",
+        "resetHost": "重置",
         "setSwap": "设置虚拟内存",
         "set": "设置",
         "setSwapSuccess": "虚拟内存设置成功",
@@ -370,7 +376,7 @@
         "failed": "镜像下载失败"
     },
     "discover": {
-        "title": "内网发现设置",
+        "title": "发现模式",
         "mode": "发现模式",
         "auto": "自动发现",
         "manual": "手动添加",

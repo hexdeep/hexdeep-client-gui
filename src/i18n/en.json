@@ -106,7 +106,13 @@
         "downloaded": "Downloaded",
         "unDownloaded": "Not downloaded",
         "need_update": "need to update",
-        "already_latest": "already the latest"
+        "already_latest": "already the latest",
+        "image_type": "Image Type",
+        "image_type_all": "All",
+        "image_type_base": "Base",
+        "image_type_magisk": "Magisk",
+        "image_type_gms": "GMS",
+        "image_type_pine": "Pine"
     },
     "menu": {
         "start": "Start",

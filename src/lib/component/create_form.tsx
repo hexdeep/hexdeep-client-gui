@@ -22,6 +22,15 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
 
     // 将 index 包裹为响应式对象
     private index = Vue.observable({ value: this.validIndex });
+    private filterState = Vue.observable({ imageType: 'all' });
+
+    private get filteredImages() {
+        const type = this.filterState.imageType;
+        if (type === 'all') {
+            return this.images;
+        }
+        return this.images.filter(img => img.name && img.name.includes(`-${type}-`));
+    }
 
     private inputNumber(key: string, min: number, max: number) {
         return (v: string) => {
@@ -123,8 +132,18 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                     </el-form-item>
                 </Row>
 
+                <el-form-item label={this.$t("create.image_type")}>
+                    <el-radio-group v-model={this.filterState.imageType}>
+                        <el-radio label="all">{this.$t("create.image_type_all")}</el-radio>
+                        <el-radio label="base">{this.$t("create.image_type_base")}</el-radio>
+                        <el-radio label="magisk">{this.$t("create.image_type_magisk")}</el-radio>
+                        <el-radio label="gms">{this.$t("create.image_type_gms")}</el-radio>
+                        <el-radio label="pine">{this.$t("create.image_type_pine")}</el-radio>
+                    </el-radio-group>
+                </el-form-item>
+
                 <el-form-item label={this.$t("create.image_addr")} prop="image_addr">
-                    <ImageSelector2 images={this.images} v-model={this.data.image_addr} />
+                    <ImageSelector2 images={this.filteredImages} v-model={this.data.image_addr} />
                 </el-form-item>
                 {this.data.image_addr == "[customImage]" && (
                     <el-form-item label={this.$t("customImage")} prop="custom_image">
