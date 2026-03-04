@@ -146,11 +146,14 @@ export default class Nav extends Vue {
                             <div>Admin</div>
                         </div>
                         <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item command="to_home">{this.$t("officialWebsite")}</el-dropdown-item>
+                            {/* <el-dropdown-item command="to_home">{this.$t("officialWebsite")}</el-dropdown-item> */}
                             {/* <el-dropdown-item command="edit_pass" divided>{this.$t("changePassword")}</el-dropdown-item>
                             <el-dropdown-item command="logout">{this.$t("logout")}</el-dropdown-item> */}
                         </el-dropdown-menu>
                     </el-dropdown>
+                    <a href="https://www.hexdeep.com" target="_blank" style={{ fontSize: "14px", marginLeft: "10px", color: "inherit", textDecoration: "none" }}>
+                        {this.$t("officialWebsite")}
+                    </a>
                 </div>
             </div>
         );
