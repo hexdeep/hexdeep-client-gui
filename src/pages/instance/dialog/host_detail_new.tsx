@@ -140,11 +140,31 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                 </el-descriptions-item>
 
                 <el-descriptions-item label={i18n.t("vmDetail.harddisk") + (this.detail.disk ? "(" + this.detail.disk + ")" : "")}>
-                    <div alignContent="flex-end" mainAlign="flex-end" crossAlign="end">
-                        <el-progress text-inside={true} percentage={this.getPercent(this.detail?.disk_percent)}
-                            stroke-width={26} status={this.getStatus(this.detail?.disk_percent)}></el-progress>
-                        <div style={{ "text-align": "right" }}>
-                            {Tools.getFileSize((this.detail?.disk_total || 0) * this.getPercent(this.detail?.disk_percent) / 100)} / {Tools.getFileSize(this.detail?.disk_total || 0)}
+                    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                            <el-progress text-inside={true} percentage={this.getPercent(this.detail?.disk_percent)}
+                                stroke-width={26} status={this.getStatus(this.detail?.disk_percent)}></el-progress>
+                            <div style={{ "text-align": "right" }}>
+                                {Tools.getFileSize((this.detail?.disk_total || 0) * this.getPercent(this.detail?.disk_percent) / 100)} / {Tools.getFileSize(this.detail?.disk_total || 0)}
+                            </div>
+                        </div>
+                        <div style={{ marginLeft: "10px", display: "flex", gap: "10px" }}>
+                            <MyButton
+                                type="primary"
+                                size="small"
+                                style={{ whiteSpace: "nowrap" }}
+                                onClick={this.switchDisk}
+                            >
+                                {this.$t("vmDetail.switchDisk")}
+                            </MyButton>
+                            <MyButton
+                                type="primary"
+                                size="small"
+                                style={{ whiteSpace: "nowrap" }}
+                                onClick={this.cleanupGarbage}
+                            >
+                                {this.$t("vmDetail.cleanupGarbage")}
+                            </MyButton>
                         </div>
                     </div>
                 </el-descriptions-item>
@@ -168,26 +188,6 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                             onClick={this.rebootHost}
                         >
                             {this.$t("vmDetail.rebootHost")}
-                        </MyButton>
-
-
-
-                        <MyButton
-                            type="primary"
-                            size="small"
-                            style={{ whiteSpace: "nowrap" }}
-                            onClick={this.switchDisk}
-                        >
-                            {this.$t("vmDetail.switchDisk")}
-                        </MyButton>
-
-                        <MyButton
-                            type="primary"
-                            size="small"
-                            style={{ whiteSpace: "nowrap" }}
-                            onClick={this.cleanupGarbage}
-                        >
-                            {this.$t("vmDetail.cleanupGarbage")}
                         </MyButton>
 
                         <MyButton
