@@ -143,7 +143,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 </el-form-item>
 
                 <el-form-item label={this.$t("create.image_addr")} prop="image_addr">
-                    <ImageSelector2 images={this.filteredImages} v-model={this.data.image_addr} />
+                    <ImageSelector2 images={this.filteredImages} v-model={this.data.image_addr} showCustom={this.filterState.imageType === 'all'} />
                 </el-form-item>
                 {this.data.image_addr == "[customImage]" && (
                     <el-form-item label={this.$t("customImage")} prop="custom_image">

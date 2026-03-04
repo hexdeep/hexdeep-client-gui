@@ -9,18 +9,21 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 export class ImageSelector2 extends tsx.Component<IPorps, {}, {}> {
     @Prop({ default: "" }) value!: string;
     @Prop({ default: () => { } }) images!: ImageInfo[];
+    @Prop({ default: true }) showCustom!: boolean;
     @Ref() elSelectRef!: any;
 
     private get list() {
-        return [
-            {
-                name: this.$t("customImage"),
-                address: "[customImage]",
-                android_version: null,
-                download: false,
-            }
-            , ...this.images
-        ];
+        const custom = {
+            name: this.$t("customImage"),
+            address: "[customImage]",
+            android_version: null,
+            download: false,
+        };
+        const list: any[] = [...this.images];
+        if (this.showCustom) {
+            list.unshift(custom);
+        }
+        return list;
     }
 
     protected created() {
@@ -75,4 +78,5 @@ export class ImageSelector2 extends tsx.Component<IPorps, {}, {}> {
 interface IPorps {
     value?: string;
     images?: ImageInfo[];
+    showCustom?: boolean;
 }
