@@ -407,7 +407,8 @@
         "purchaseTitle": "VIP Purchase",
         "selectedHosts": "Selected Hosts",
         "calc": "{0} Hosts × ￥{1}({2})",
-        "expireTime": "Expire Time",
-        "renew": "Renew"
+        "expireTime": "VIP Expires",
+        "renew": "Renew",
+        "tip": "After activating VIP, advanced features are unlimited"
     }
 }

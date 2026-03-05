@@ -118,6 +118,7 @@ export class VipHostSelectDialog extends CommonDialog<VipHostSelectData, boolean
     protected renderDialog(): VNode {
         return (
             <Column gap={20} style={{ padding: "20px", height: "100%" }}>
+                <div style={{ color: "#606266", fontSize: "14px" }}>{this.$t("vip.tip")}</div>
                 <el-table 
                     data={this.hostList} 
                     height="100%" 

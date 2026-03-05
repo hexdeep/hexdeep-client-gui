@@ -296,8 +296,9 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     }
 
     private async onRenewVip() {
+        const allHosts = await deviceApi.getHosts();
         const result = await this.$dialog(VipHostSelectDialog).show({
-            hosts: [this.data]
+            hosts: allHosts
         });
         if (result) {
             // 刷新VIP信息

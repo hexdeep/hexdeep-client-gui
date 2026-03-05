@@ -409,7 +409,8 @@
         "purchaseTitle": "VIP购买",
         "selectedHosts": "已选主机",
         "calc": "{0}台主机 × ￥{1}({2})",
-        "expireTime": "到期时间",
-        "renew": "续费"
+        "expireTime": "VIP到期",
+        "renew": "续费",
+        "tip": "开通VIP后，不限制高级功能使用"
     }
 }
