@@ -15,6 +15,7 @@ import { DiscoverDialog } from './dialog/discover';
 import { RenameDialog } from './dialog/rename';
 import { RemarkDialog } from './dialog/remark';
 import { HostDetailDialog } from "@/pages/instance/dialog/host_detail_new";
+import { VipHostSelectDialog } from './dialog/vip_host_select';
 import { Icon } from '@iconify/vue2';
 import hardDiskRounded from '@iconify-icons/material-symbols/hard-drive';
 import usbPlugFill from '@iconify-icons/bi/usb-plug-fill';
@@ -212,6 +213,11 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
     protected renderContent(obj: ITreeSlotProps<MyTreeNode>) {
         const data = obj.item;
         const children = obj.children;
+        
+        // 检测是否是"开通VIP显示全部"选项
+        const vmName = data.value?.name ? getSuffixName(data.value.name) : "";
+        const isVipUnlockItem = vmName === "开通VIP显示全部";
+        
         return (
             <Row gap={10} crossAlign='center' class="row" style={{ "flex": 1 }} mainAlign='center'>
                 {children && <Row crossAlign='center' mainAlign='space-between' style={{ "flex": 1 }}>
@@ -241,9 +247,23 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                 {!children && <Row gap={10} style={{ "flex": 1 }} mainAlign='space-between' crossAlign='center' class={data.value.state !== "running" ? s.no_run : ""}>
                     <Row gap={3} style={{ "flex": 1 }} crossAlign='center'>
                         <span class={s.vmNums}>{data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
-                        <span style="font-size:13px" class={s.name_label} title={getSuffixName(data.value.name)}>{getSuffixName(data.value.name)}</span>
+                        {isVipUnlockItem ? (
+                            <span 
+                                style="font-size:13px; color: var(--main-color); cursor: pointer; text-decoration: underline;" 
+                                class={s.name_label} 
+                                title={vmName}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    this.showVipDialog();
+                                }}
+                            >
+                                {vmName}
+                            </span>
+                        ) : (
+                            <span style="font-size:13px" class={s.name_label} title={vmName}>{vmName}</span>
+                        )}
                     </Row>
-                    <Row>
+                    {!isVipUnlockItem && <Row>
                         <div class="autohide" onClick={(e) => {
                             this.rename(data.value);
                             e.stopPropagation();
@@ -252,11 +272,20 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                             this.deleteVM(data.value);
                             e.stopPropagation();
                         }}><i class="el-icon-delete"></i></div>
-                    </Row>
+                    </Row>}
                 </Row>
                 }
             </Row>
         );
+    }
+
+    private async showVipDialog() {
+        const result = await this.$dialog(VipHostSelectDialog).show({
+            hosts: this.hosts
+        });
+        if (result) {
+            this.$emit('changed');
+        }
     }
 
 

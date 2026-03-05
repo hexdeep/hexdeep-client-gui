@@ -325,7 +325,9 @@
         "action": "操作",
         "detailTitle": "订单详情",
         "empty": "暂无记录",
-        "copySuccess": "复制成功"
+        "copySuccess": "复制成功",
+        "hostNum": "主机数量",
+        "hostDetail": "主机详情"
     },
     "filter": {
         "running": "运行中云机",
@@ -396,5 +398,18 @@
         "downloadClient": "下载（运行App，点击右上角加号，输入设备ID）",
         "runSuccess": "投屏运行成功，设备id已复制到剪贴板，请前往投屏客户端添加",
         "regenerateSuccess": "重新生成id成功，id已复制到剪贴板，请前往投屏客户端添加"
+    },
+    "vip": {
+        "unlockAll": "开通VIP显示全部",
+        "selectHostTitle": "开通VIP - 选择主机",
+        "hostInfo": "主机信息",
+        "expireStatus": "到期情况",
+        "expired": "已到期",
+        "purchase": "购买",
+        "purchaseTitle": "VIP购买",
+        "selectedHosts": "已选主机",
+        "calc": "{0}台主机 × ￥{1}({2})",
+        "expireTime": "到期时间",
+        "renew": "续费"
     }
 }

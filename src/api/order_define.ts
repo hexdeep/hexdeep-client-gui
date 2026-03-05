@@ -6,6 +6,7 @@ export interface OrderInfo {
     payment_amount: number;
     created_at: string;
     updated_at: string;
+    order_type?: number; // 0: 实例位, 1: 实例数量(VIP)
     //detail: string;
     detail: OrderDetail;
 }
@@ -56,4 +57,27 @@ export interface PurchaseResult {
     order_id: string;
     current_time: string;
     expire_time: string;
+}
+
+// VIP实例数量租赁相关
+export interface InstanceQuantityInfo {
+    id: string;
+    rental_start_time: string;
+    rental_end_time: string;
+    current_time: string;
+}
+
+export interface InstanceQuantityPackage {
+    id: number;
+    name: string;
+    english_name: string;
+    price: number;
+    rental_hour: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface VipPurchaseInfo {
+    package_id: number;
+    device_ids: string[];  // device_id 数组
 }

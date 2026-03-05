@@ -1,0 +1,86 @@
+.package {
+    padding: 15px 10px;
+    flex: 1;
+    border-right: 1px solid #eee;
+    text-align: center;
+    height: 80px;
+    position: relative;
+    font-size: 18px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+
+    .price {
+        font-size: 12px;
+        font-weight: normal;
+        color: red;
+    }
+
+    &:hover {
+        opacity: 0.8;
+    }
+
+    &.active {
+        background-color: var(--main-color);
+        color: #fff;
+
+        .price {
+            color: #fff;
+        }
+    }
+
+    &:last-child {
+        border-right: none;
+    }
+}
+
+.hostList {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    :global {
+        .el-card__body {
+            flex: 1;
+            height: 0;
+            overflow-y: auto;
+        }
+    }
+}
+
+.hostItems {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.hostItem {
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.VipPurchaseDialog {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    height: 60px;
+    background: #fafafa;
+    padding: 5px 20px;
+}
+
+.amount {
+    color: red;
+    font-size: 16px;
+}
+
+.calc {
+    color: var(--main-color);
+}

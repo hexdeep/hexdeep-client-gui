@@ -1,6 +1,6 @@
 import { deviceApi } from "@/api/device_api";
 import { HostDetailInfo, HostInfo, SDKImagesRes } from "@/api/device_define";
-import { Tools } from "@/common/common";
+import { Tools, timeDiff } from "@/common/common";
 import { i18n } from "@/i18n/i18n";
 import { Row } from "@/lib/container";
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
@@ -12,6 +12,9 @@ import { SwitchDiskDialog } from "./switch_disk";
 import { CleanGarbageDialog } from "./clean_garbage_dialog";
 import { SetSwapDialog } from "./set_swap";
 import { DiscoverDialog } from "@/pages/vm/dialog/discover";
+import { VipHostSelectDialog } from "@/pages/vm/dialog/vip_host_select";
+import { orderApi } from "@/api/order_api";
+import { InstanceQuantityInfo } from "@/api/order_define";
 
 @Dialog
 export class HostDetailDialog extends CommonDialog<HostInfo, void> {
@@ -21,6 +24,8 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected isOfficialModel: boolean = true;
     protected firmwareIsLatest: boolean = false;
     protected timer: any;
+    protected vipInfo?: InstanceQuantityInfo;
+    protected vipExpired: boolean = true;
     override width: string = "600px";
     public override async show(data: HostInfo) {
         this.data = data;
@@ -40,10 +45,27 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         }).catch(e => console.log(e));
         deviceApi.getSDKImages(data.address).then(e => this.sdk = e);
         deviceApi.checkFirmware(data.address).then(e => this.firmwareIsLatest = e);
+        // 获取VIP信息
+        this.loadVipInfo();
         this.timer = setInterval(() => {
             deviceApi.getHostDetail(data.address).then(e => this.detail = e);
         }, 1000);
         return super.show(data);
+    }
+
+    private async loadVipInfo() {
+        try {
+            const vipInfos = await orderApi.getInstanceQuantity(this.data.device_id);
+            if (vipInfos && vipInfos.length > 0) {
+                this.vipInfo = vipInfos[0];
+                this.vipExpired = timeDiff(this.vipInfo.rental_end_time, this.vipInfo.current_time, "second") <= 0;
+            } else {
+                this.vipExpired = true;
+            }
+        } catch (e) {
+            console.warn(e);
+            this.vipExpired = true;
+        }
     }
 
     protected destroyed() {
@@ -81,10 +103,20 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                     </Row>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("create.model_id")}>
-                    <Row crossAlign="center">
+                    <Row crossAlign="center" mainAlign="space-between">
                         <span style={{ color: this.isOfficialModel ? "inherit" : "red" }}>
                             {this.model ? `${this.model}(${this.data.address})` : this.data.address}
                         </span>
+                        {!this.vipExpired && this.vipInfo && (
+                            <Row crossAlign="center" gap={10}>
+                                <span style={{ color: "green", fontSize: "12px" }}>
+                                    {this.$t("vip.expireTime")}: {this.vipInfo.rental_end_time}
+                                </span>
+                                <MyButton type="primary" size="small" onClick={this.onRenewVip}>
+                                    {this.$t("vip.renew")}
+                                </MyButton>
+                            </Row>
+                        )}
                     </Row>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.id")}>
@@ -261,6 +293,16 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
 
     private async showDiscover() {
         await this.$dialog(DiscoverDialog).show(this.data.address);
+    }
+
+    private async onRenewVip() {
+        const result = await this.$dialog(VipHostSelectDialog).show({
+            hosts: [this.data]
+        });
+        if (result) {
+            // 刷新VIP信息
+            this.loadVipInfo();
+        }
     }
 
     private getStatus(percent: string | undefined): string | undefined {

@@ -1,6 +1,6 @@
 import { deviceApi } from "@/api/device_api";
 import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from "@/api/device_define";
-import { getSuffixName } from "@/common/common";
+import { getSuffixName, sortDevices } from "@/common/common";
 import { Config } from "@/common/Config";
 import { i18n } from "@/i18n/i18n";
 import { Column, Row } from "@/lib/container";
@@ -16,7 +16,6 @@ import { ImportVmDialog } from "./dialog/import_vm";
 import { UploadFileDialog } from "./dialog/upload_file";
 import { Screenshot } from "./screenshot";
 import s from './vm.module.less';
-
 
 @Component
 export default class VMPage extends Vue {
@@ -174,7 +173,13 @@ export default class VMPage extends Vue {
                 }
                 if (ctc) child.selected = ctc.selected;
             });
-            node.children?.sort((a, b) => a.value.index - b.value.index);
+            // 使用新的排序算法：先按index排序，再按创建时间降序排序
+            const sortedChildren = sortDevices(node.children!.map(c => c.value));
+            node.children!.sort((a, b) => {
+                const indexA = sortedChildren.findIndex(d => d.key === a.key);
+                const indexB = sortedChildren.findIndex(d => d.key === b.key);
+                return indexA - indexB;
+            });
         });
     }
 

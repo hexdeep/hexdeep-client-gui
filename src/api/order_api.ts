@@ -2,7 +2,7 @@ import { makeVmApiUrl, timeDiff } from "@/common/common";
 import { ApiBase } from "./api_base";
 import qs from 'qs';
 import { Config } from "@/common/Config";
-import { OrderDetail, OrderInfo, RentalInfo, RentalRecord } from "./order_define";
+import { OrderDetail, OrderInfo, RentalInfo, RentalRecord, InstanceQuantityInfo, InstanceQuantityPackage } from "./order_define";
 
 
 class OrderApi extends ApiBase {
@@ -46,6 +46,29 @@ class OrderApi extends ApiBase {
         var formData = new FormData();
         formData.append('rental_config_id', package_id.toString());
         formData.append('device_indexes', device_ids);
+        const result = await fetch(makeVmApiUrl("server/order/add", Config.host), {
+            method: 'POST',
+            body: formData
+        });
+        return await this.handleError(result);
+    }
+
+    // VIP实例数量相关API
+    public async getInstanceQuantity(device_ids: string): Promise<InstanceQuantityInfo[]> {
+        const result = await fetch(makeVmApiUrl("server/device_instance_quantity/get", Config.host) + `?device_ids=${device_ids}`);
+        return await this.handleError(result) ?? [];
+    }
+
+    public async getInstanceQuantityPackages(): Promise<InstanceQuantityPackage[]> {
+        const result = await fetch(makeVmApiUrl("server/instance_quantity_lease_period_config/get", Config.host));
+        return await this.handleError(result) ?? [];
+    }
+
+    public async purchaseInstanceQuantity(package_id: number, device_ids: string) {
+        var formData = new FormData();
+        formData.append('rental_config_id', package_id.toString());
+        formData.append('device_indexes', device_ids);
+        formData.append('rental_type', '1'); // 1是买实例数量
         const result = await fetch(makeVmApiUrl("server/order/add", Config.host), {
             method: 'POST',
             body: formData

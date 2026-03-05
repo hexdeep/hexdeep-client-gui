@@ -21,6 +21,11 @@ export class OrderDetailDialog extends CommonDialog<OrderInfo, void> {
         // ignore
     }
 
+    // 判断是否是VIP订单(实例数量)
+    private get isVipOrder(): boolean {
+        return this.data.order_type === 1;
+    }
+
     protected renderDialog(): VNode {
         return (
             <el-descriptions size="medium" column={1} border labelStyle={{ "width": "150px" }} style={{ padding: "20px" }}>
@@ -33,14 +38,20 @@ export class OrderDetailDialog extends CommonDialog<OrderInfo, void> {
                 <el-descriptions-item label={i18n.t("order.status")}>
                     {this.data.status ? <el-tag type="success">{this.$t("order.paid")}</el-tag> : <el-tag type="info">{this.$t("order.unpaid")}</el-tag>}
                 </el-descriptions-item>
-                <el-descriptions-item label={i18n.t("order.instanceNum")}>
+                <el-descriptions-item label={this.isVipOrder ? i18n.t("order.hostNum") : i18n.t("order.instanceNum")}>
                     {this.data.detail.device_ids.split(",").length}
                 </el-descriptions-item>
-                <el-descriptions-item label={i18n.t("order.instances")}>
+                <el-descriptions-item label={this.isVipOrder ? i18n.t("order.hostDetail") : i18n.t("order.instances")}>
                     <Column gap={5}>
                         {this.data.detail.device_ids.split(",").map(e => {
-                            var tmp = e.split("_");
-                            return <el-tag>{`${tmp[0]} - ${this.$t("order.instance")}${tmp[1]}`}</el-tag>;
+                            if (this.isVipOrder) {
+                                // VIP订单：只显示device_id
+                                return <el-tag>{e}</el-tag>;
+                            } else {
+                                // 实例位订单：显示 device_id - 实例X
+                                var tmp = e.split("_");
+                                return <el-tag>{`${tmp[0]} - ${this.$t("order.instance")}${tmp[1]}`}</el-tag>;
+                            }
                         })}
                     </Column>
                 </el-descriptions-item>

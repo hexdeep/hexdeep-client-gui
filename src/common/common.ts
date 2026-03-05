@@ -172,3 +172,21 @@ export function filterWithConfig(config: MyConfig, item: DeviceInfo) {
     const filterStateAllow = item.state == config.filterState || config.filterState == "all";
     return filterStateAllow && filterAllow;
 }
+
+/**
+ * 云机排序算法：
+ * 1. 先根据 No(index) 排序，1在前12在后
+ * 2. 对于同一个 index 的云机，按创建时间降序排序（时间最晚的在前）
+ */
+export function sortDevices<T extends { index: number; created_at?: string }>(devices: T[]): T[] {
+    return [...devices].sort((a, b) => {
+        // 首先按 index 升序排序
+        if (a.index !== b.index) {
+            return a.index - b.index;
+        }
+        // 同一个 index，按创建时间降序排序（时间最晚的在前）
+        const timeA = a.created_at || "";
+        const timeB = b.created_at || "";
+        return timeB.localeCompare(timeA);
+    });
+}
