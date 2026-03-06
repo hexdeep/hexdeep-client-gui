@@ -190,3 +190,50 @@ export function sortDevices<T extends { index: number; created_at?: string }>(de
         return timeB.localeCompare(timeA);
     });
 }
+
+/**
+ * 解析IP地址并返回可用于数值比较的数字
+ * 例如: "192.168.1.123" => [192, 168, 1, 123]
+ */
+function parseIp(ip: string): number[] {
+    return ip.split('.').map(part => parseInt(part, 10) || 0);
+}
+
+/**
+ * 比较两个IP地址
+ * 返回负数表示a < b，正数表示a > b，0表示相等
+ */
+function compareIp(ipA: string, ipB: string): number {
+    const partsA = parseIp(ipA);
+    const partsB = parseIp(ipB);
+    for (let i = 0; i < 4; i++) {
+        if (partsA[i] !== partsB[i]) {
+            return partsA[i] - partsB[i];
+        }
+    }
+    return 0;
+}
+
+/**
+ * 云机表格排序算法（用于跨主机的云机列表）：
+ * 1. 先根据主机IP排序（小IP号在前，大IP号在后）
+ * 2. 再根据 No(index) 排序，1在前12在后
+ * 3. 对于同一个 index 的云机，按创建时间降序排序（时间最晚的在前）
+ */
+export function sortDevicesByHostIp<T extends { hostIp: string; index: number; created_at?: string }>(devices: T[]): T[] {
+    return [...devices].sort((a, b) => {
+        // 首先按主机IP排序
+        const ipCompare = compareIp(a.hostIp, b.hostIp);
+        if (ipCompare !== 0) {
+            return ipCompare;
+        }
+        // 然后按 index 升序排序
+        if (a.index !== b.index) {
+            return a.index - b.index;
+        }
+        // 同一个 index，按创建时间降序排序（时间最晚的在前）
+        const timeA = a.created_at || "";
+        const timeB = b.created_at || "";
+        return timeB.localeCompare(timeA);
+    });
+}

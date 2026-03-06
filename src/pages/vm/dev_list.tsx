@@ -1,6 +1,6 @@
 import { deviceApi } from '@/api/device_api';
 import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from '@/api/device_define';
-import { filterWithConfig, getPrefixName, getSuffixName, makeVmApiUrl, sleep, sortDevices } from '@/common/common';
+import { filterWithConfig, getPrefixName, getSuffixName, makeVmApiUrl, sleep, sortDevicesByHostIp } from '@/common/common';
 import { i18n } from '@/i18n/i18n';
 import { ModelSelectotDialog } from '@/lib/component/model_selector';
 import { Column, Row } from '@/lib/container';
@@ -63,8 +63,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         var re = this.hostTree.flatMap(x => x.children?.filter(y => {
             return y.selected && filterWithConfig(this.config, y.value);
         }) || []).map(t => t.value);
-        // 应用排序算法：先按index排序，再按创建时间降序排序
-        re = sortDevices(re);
+        // 应用排序算法：先按主机IP排序，再按index排序，最后按创建时间降序排序
+        re = sortDevicesByHostIp(re);
         this.fillGitCommitId(re);
         return re;
     }
