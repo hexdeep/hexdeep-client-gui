@@ -104,7 +104,7 @@ class DeviceApi extends ApiBase {
     }
 
     public async rebootSDK(ip: string) {
-        const result = await fetch(makeVmApiUrl("super_sdk_api/restart", ip));
+        const result = await fetch(makeHostVmApiUrl("super_sdk/restart", ip));
         return await this.handleError(result);
     }
 
