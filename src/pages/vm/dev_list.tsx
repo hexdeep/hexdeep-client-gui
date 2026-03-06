@@ -19,6 +19,7 @@ import { RenameDialog } from './dialog/rename';
 import { S5setDialog } from './dialog/s5set';
 import { UploadFileDialog } from './dialog/upload_file';
 import { VmDetailDialog } from './dialog/vm_detail';
+import { VipHostSelectDialog } from './dialog/vip_host_select';
 import { Screenshot } from './screenshot';
 import { Icon } from '@iconify/vue2';
 import moreVert from '@iconify-icons/mdi/more-vert';
@@ -183,7 +184,15 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                             label={this.$t("name")}
                             scopedSlots={{
                                 default: ({ row }: { row: DeviceInfo; }) => {
-                                    return <OverflowTooltip content={getSuffixName(row.name)} />;
+                                    const name = getSuffixName(row.name);
+                                    if (name === "开通VIP显示全部") {
+                                        return <OverflowTooltip 
+                                            content={name} 
+                                            style="color: var(--main-color); cursor: pointer; text-decoration: underline;"
+                                            nativeOnClick={() => this.showVipDialog()}
+                                        />;
+                                    }
+                                    return <OverflowTooltip content={name} />;
                                 }
                             }}
                         />
@@ -258,7 +267,20 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                                             <el-checkbox class={s.checkbox} label={e.key} onChange={(c, event) => this.checkboxChanged(c, e)} >
                                                 <Row gap={5} flex crossAlign='center'>
                                                     <span>{`${e.index}`}</span>
-                                                    <span class={["ellipsis", s.checkbox_label]} title={`${name} ${e.hostIp}`}>{name}</span>
+                                                    {name === "开通VIP显示全部" ? (
+                                                        <span 
+                                                            class={["ellipsis", s.checkbox_label]} 
+                                                            style="color: var(--main-color); cursor: pointer; text-decoration: underline;"
+                                                            title={`${name} ${e.hostIp}`}
+                                                            onClick={(event: Event) => {
+                                                                event.stopPropagation();
+                                                                event.preventDefault();
+                                                                this.showVipDialog();
+                                                            }}
+                                                        >{name}</span>
+                                                    ) : (
+                                                        <span class={["ellipsis", s.checkbox_label]} title={`${name} ${e.hostIp}`}>{name}</span>
+                                                    )}
                                                 </Row>
                                             </el-checkbox>
                                             <Row gap={5} crossAlign='center' style={{ flexShrink: 0 }}>
@@ -473,6 +495,15 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
     private async hostDetails(data: DeviceInfo) {
         await this.$dialog(VmDetailDialog).show(data);
+    }
+
+    private async showVipDialog() {
+        const result = await this.$dialog(VipHostSelectDialog).show({
+            hosts: this.hosts
+        });
+        if (result) {
+            this.$emit('changed');
+        }
     }
 
     @ErrorProxy({ confirm: t("confirm.backupTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
