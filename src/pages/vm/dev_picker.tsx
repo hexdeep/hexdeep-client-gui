@@ -115,6 +115,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         this.$dialog(BatchCreateDialog).show({
             maxNum: maxCanCreate,
             hostIp: [h.address],
+            hostId: [h.device_id],
             obj: {
                 name: "", num: 1,
                 sandbox: 1,

@@ -1,7 +1,7 @@
 
 
 import { deviceApi } from '@/api/device_api';
-import { DockerBatchCreateParam, ImageInfo, MyConfig } from "@/api/device_define";
+import { DockerBatchCreateParam, HostInfo, ImageInfo, MyConfig } from "@/api/device_define";
 import { i18n } from "@/i18n/i18n";
 import { Row } from "@/lib/container";
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
@@ -13,6 +13,9 @@ import s from './batch_create.module.less';
 import { CheckS5Dialog } from "./check_s5";
 import { InjectReactive } from 'vue-property-decorator';
 import { PullImageDialog } from './pull_image';
+import { VipHostSelectDialog } from "./vip_host_select";
+import { orderApi } from "@/api/order_api";
+import { timeDiff } from "@/common/common";
 
 
 @Dialog
@@ -22,6 +25,8 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     protected images: ImageInfo[] = [];
     private dockerRegistries: string[] = [];
     public override allowEscape: boolean = false;
+    protected hasVip = false; // 当前主机是否已开通VIP
+    protected allHosts: HostInfo[] = []; // 所有主机列表
 
     public override show(data: DockerBatchCreateParam) {
         this.data = data;
@@ -32,7 +37,48 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         deviceApi.getDockerRegistries(this.data.hostIp.first).then((list) => {
             this.dockerRegistries = Array.isArray(list) ? list : [];
         });
+        // 检查当前主机VIP状态
+        this.checkVipStatus();
+        // 获取所有主机列表（用于打开VIP选择弹框）
+        deviceApi.getHosts().then(hosts => {
+            this.allHosts = hosts;
+        });
         return super.show(data);
+    }
+
+    private async checkVipStatus() {
+        try {
+            const hostId = this.data.hostId?.first;
+            if (hostId) {
+                const vipInfos = await orderApi.getDeviceVip(hostId);
+                const vipInfo = vipInfos.find(v => v.id === hostId);
+                if (vipInfo && vipInfo.rental_end_time) {
+                    this.hasVip = timeDiff(vipInfo.rental_end_time, vipInfo.current_time, "second") > 0;
+                } else {
+                    this.hasVip = false;
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to check VIP status:", e);
+            this.hasVip = false;
+        }
+    }
+
+    private async onVipRequired() {
+        // 打开VIP选择弹框
+        if (this.allHosts.length === 0) {
+            this.allHosts = await deviceApi.getHosts();
+        }
+        // 找到当前主机
+        const currentHost = this.allHosts.find(h => h.device_id === this.data.hostId?.first);
+        const result = await this.$dialog(VipHostSelectDialog).show({
+            hosts: this.allHosts,
+            currentHost: currentHost
+        });
+        if (result) {
+            // 用户完成了购买或试用，重新检查VIP状态
+            await this.checkVipStatus();
+        }
     }
 
     @ErrorProxy({ validatForm: "formRef" })
@@ -132,7 +178,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         return (
             <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="150px" class={s.form}>
                 <div class={s.tip}>{this.$t("create.tip", { 0: this.data.maxNum })}</div>
-                <CreateForm data={this.data.obj} needName={false} images={this.images} dockerRegistries={this.dockerRegistries} validIndex={0} validInstance={[]}>
+                <CreateForm data={this.data.obj} needName={false} images={this.images} dockerRegistries={this.dockerRegistries} validIndex={0} validInstance={[]} hasVip={this.hasVip} on={{ "vip-required": () => this.onVipRequired() }}>
                     <Row>
                         <el-form-item label={this.$t("batchCreate.num")} prop="num" style={{ "width": "100%" }}>
                             <el-input v-model={this.data.obj.num} min={1} max={this.data.maxNum} type="number" />

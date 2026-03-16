@@ -122,6 +122,7 @@ export interface DockerEditParam {
 export interface DockerBatchCreateParam {
     maxNum: number;
     hostIp: string[];
+    hostId?: string[]; // 主机设备ID，用于检查VIP状态
     obj: CreateParam;
 }
 

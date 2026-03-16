@@ -14,7 +14,7 @@ import { SetSwapDialog } from "./set_swap";
 import { DiscoverDialog } from "@/pages/vm/dialog/discover";
 import { VipHostSelectDialog } from "@/pages/vm/dialog/vip_host_select";
 import { orderApi } from "@/api/order_api";
-import { InstanceQuantityInfo } from "@/api/order_define";
+import { DeviceVipInfo } from "@/api/order_define";
 
 @Dialog
 export class HostDetailDialog extends CommonDialog<HostInfo, void> {
@@ -24,7 +24,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected isOfficialModel: boolean = true;
     protected firmwareIsLatest: boolean = false;
     protected timer: any;
-    protected vipInfo?: InstanceQuantityInfo;
+    protected vipInfo?: DeviceVipInfo;
     protected vipExpired: boolean = true;
     override width: string = "600px";
     public override async show(data: HostInfo) {
@@ -55,7 +55,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
 
     private async loadVipInfo() {
         try {
-            const vipInfos = await orderApi.getInstanceQuantity(this.data.device_id);
+            const vipInfos = await orderApi.getDeviceVip(this.data.device_id);
             if (vipInfos && vipInfos.length > 0) {
                 this.vipInfo = vipInfos[0];
                 this.vipExpired = timeDiff(this.vipInfo.rental_end_time, this.vipInfo.current_time, "second") <= 0;
