@@ -81,6 +81,7 @@ export interface ImageInfo {
     id: string;
     created_at: string;
     updated_at: string;
+    is_vip?: boolean;
 }
 
 export interface SDKImageInfo {

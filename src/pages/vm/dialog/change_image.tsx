@@ -1,7 +1,7 @@
 
 
 import { deviceApi } from '@/api/device_api';
-import { DeviceInfo, ImageInfo } from "@/api/device_define";
+import { DeviceInfo, HostInfo, ImageInfo } from "@/api/device_define";
 import { i18n } from "@/i18n/i18n";
 import { ImageSelector2 } from "@/lib/component/image_selector2";
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
@@ -9,12 +9,18 @@ import { ErrorProxy } from "@/lib/error_handle";
 import { VNode } from "vue";
 import { PullImageDialog } from "./pull_image";
 import { Watch } from 'vue-property-decorator';
+import { VipHostSelectDialog } from "./vip_host_select";
+import { orderApi } from "@/api/order_api";
+import { timeDiff } from "@/common/common";
 
 @Dialog
 export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
     protected images: ImageInfo[] = [];
     protected dockerRegistries: string[] = [];
     protected obj = { image_addr: "", custom_image: "", docker_registry: "" };
+    protected hasVip = false; // 当前主机是否已开通VIP
+    protected allHosts: HostInfo[] = []; // 所有主机列表
+    
     public override show(data: DeviceInfo[]) {
         this.title = this.$t("changeImage.title").toString();
         this.data = data;
@@ -24,7 +30,48 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
         deviceApi.getDockerRegistries(this.data.first.hostIp).then((list) => {
             this.dockerRegistries = Array.isArray(list) ? list : [];
         });
+        // 检查当前主机VIP状态
+        this.checkVipStatus();
+        // 获取所有主机列表（用于打开VIP选择弹框）
+        deviceApi.getHosts().then(hosts => {
+            this.allHosts = hosts;
+        });
         return super.show(data);
+    }
+
+    private async checkVipStatus() {
+        try {
+            const hostId = this.data.first.hostId;
+            if (hostId) {
+                const vipInfos = await orderApi.getDeviceVip(hostId);
+                const vipInfo = vipInfos.find(v => v.id === hostId);
+                if (vipInfo && vipInfo.rental_end_time) {
+                    this.hasVip = timeDiff(vipInfo.rental_end_time, vipInfo.current_time, "second") > 0;
+                } else {
+                    this.hasVip = false;
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to check VIP status:", e);
+            this.hasVip = false;
+        }
+    }
+
+    private async onVipRequired() {
+        // 打开VIP选择弹框
+        if (this.allHosts.length === 0) {
+            this.allHosts = await deviceApi.getHosts();
+        }
+        // 找到当前主机
+        const currentHost = this.allHosts.find(h => h.device_id === this.data.first.hostId);
+        const result = await this.$dialog(VipHostSelectDialog).show({
+            hosts: this.allHosts,
+            currentHost: currentHost
+        });
+        if (result) {
+            // 用户完成了购买，重新检查VIP状态
+            await this.checkVipStatus();
+        }
     }
 
     @ErrorProxy({ validatForm: "formRef" })
@@ -91,7 +138,12 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
             <el-form ref="formRef" label-position="top" props={{ model: this.obj }} rules={this.formRules}>
                 <div style="color: red; margin-bottom: 10px;">{this.$t("changeImage.warning")}</div>
                 <el-form-item label={this.$t("changeImage.label")} prop="image_addr"  >
-                    <ImageSelector2 images={this.images} v-model={this.obj.image_addr} />
+                    <ImageSelector2 
+                        images={this.images} 
+                        v-model={this.obj.image_addr} 
+                        hasVip={this.hasVip}
+                        on={{ "vip-required": () => this.onVipRequired() }}
+                    />
                 </el-form-item>
                 {this.obj.image_addr == "[customImage]" && <el-form-item label={this.$t("customImage")} prop="custom_image">
                     <el-input v-model={this.obj.custom_image} />

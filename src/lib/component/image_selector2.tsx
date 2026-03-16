@@ -2,14 +2,15 @@
 import { deviceApi } from '@/api/device_api';
 import { ImageInfo } from "@/api/device_define";
 import * as tsx from 'vue-tsx-support';
-import { Component, Prop, Ref } from "vue-property-decorator";
+import { Component, Prop, Ref, Emit } from "vue-property-decorator";
 
 
 @Component
-export class ImageSelector2 extends tsx.Component<IPorps, {}, {}> {
+export class ImageSelector2 extends tsx.Component<IPorps, IEvents, {}> {
     @Prop({ default: "" }) value!: string;
-    @Prop({ default: () => { } }) images!: ImageInfo[];
+    @Prop({ default: () => [] }) images!: ImageInfo[];
     @Prop({ default: true }) showCustom!: boolean;
+    @Prop({ default: false }) hasVip!: boolean; // 当前主机是否已开通VIP
     @Ref() elSelectRef!: any;
 
     private get list() {
@@ -18,6 +19,7 @@ export class ImageSelector2 extends tsx.Component<IPorps, {}, {}> {
             address: "[customImage]",
             android_version: null,
             download: false,
+            is_vip: false,
         };
         const list: any[] = [...this.images];
         if (this.showCustom) {
@@ -36,7 +38,15 @@ export class ImageSelector2 extends tsx.Component<IPorps, {}, {}> {
         }, 500);
     }
 
-    protected onInput(e) {
+    protected onInput(e: string) {
+        // 检查是否选择了VIP镜像
+        const selectedImage = this.list.find(img => img.address === e);
+        if (selectedImage?.is_vip && !this.hasVip) {
+            // 选择了VIP镜像但未开通VIP，触发事件
+            this.$emit("vip-required");
+            // 不更新值，阻止选择
+            return;
+        }
         this.$emit("input", e);
     }
 
@@ -48,9 +58,9 @@ export class ImageSelector2 extends tsx.Component<IPorps, {}, {}> {
                 onInput={this.onInput}>
                 {this.list.map((e) => <el-option
                     key={e.address}
-                    label={(e.android_version ? "[" + e.android_version + "] " : "") + e.name}
+                    label={(e.android_version ? "[" + e.android_version + "] " : "") + e.name + (e.is_vip ? " [VIP]" : "")}
                     value={e.address}                    >
-                    <div>
+                    <div style={{ display: "flex", alignItems: "center" }}>
                         {e.android_version && <span
                             style={{
                                 lineHeight: "20px",
@@ -68,6 +78,17 @@ export class ImageSelector2 extends tsx.Component<IPorps, {}, {}> {
                         </span>}
                         {e.android_version && <span>[{e.android_version}] {e.name}</span>}
                         {!e.android_version && <span>{e.name}</span>}
+                        {e.is_vip && <el-tag 
+                            size="mini" 
+                            effect="dark"
+                            style={{ 
+                                marginLeft: "8px", 
+                                background: "linear-gradient(135deg, #f5af19 0%, #f12711 100%)",
+                                border: "none",
+                                color: "#fff",
+                                fontWeight: "bold"
+                            }}
+                        >{this.$t("vip.vipImage")}</el-tag>}
                     </div>;
                 </el-option>)}
             </el-select>
@@ -79,4 +100,10 @@ interface IPorps {
     value?: string;
     images?: ImageInfo[];
     showCustom?: boolean;
+    hasVip?: boolean;
+}
+
+interface IEvents {
+    onInput: (value: string) => void;
+    onVipRequired: () => void;
 }

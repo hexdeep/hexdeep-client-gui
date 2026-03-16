@@ -409,6 +409,13 @@
         "calc": "{0} Hosts × ￥{1}({2})",
         "expireTime": "VIP Expires",
         "renew": "Renew",
-        "tip": "After activating VIP, advanced features are unlimited"
+        "tip": "After activating VIP, you can use VIP exclusive images",
+        "trial": "Trial",
+        "trialSuccess": "Trial activated successfully",
+        "trialUsed": "Already trialed this month",
+        "vipImage": "VIP",
+        "vipRequired": "This image requires VIP to use",
+        "back": "Back",
+        "operation": "Operation"
     }
 }

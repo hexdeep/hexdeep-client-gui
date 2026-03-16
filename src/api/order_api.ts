@@ -2,7 +2,7 @@ import { makeVmApiUrl, timeDiff } from "@/common/common";
 import { ApiBase } from "./api_base";
 import qs from 'qs';
 import { Config } from "@/common/Config";
-import { OrderDetail, OrderInfo, RentalInfo, RentalRecord, InstanceQuantityInfo, InstanceQuantityPackage } from "./order_define";
+import { OrderDetail, OrderInfo, RentalInfo, RentalRecord, InstanceQuantityInfo, InstanceQuantityPackage, DeviceVipInfo } from "./order_define";
 
 
 class OrderApi extends ApiBase {
@@ -60,7 +60,7 @@ class OrderApi extends ApiBase {
     }
 
     public async getInstanceQuantityPackages(): Promise<InstanceQuantityPackage[]> {
-        const result = await fetch(makeVmApiUrl("server/instance_quantity_lease_period_config/get", Config.host));
+        const result = await fetch(makeVmApiUrl("server/vip_rental_config/get", Config.host));
         return await this.handleError(result) ?? [];
     }
 
@@ -73,6 +73,17 @@ class OrderApi extends ApiBase {
             method: 'POST',
             body: formData
         });
+        return await this.handleError(result);
+    }
+
+    // 设备VIP相关API
+    public async getDeviceVip(device_ids: string): Promise<DeviceVipInfo[]> {
+        const result = await fetch(makeVmApiUrl("server/device_vip/get", Config.host) + `?device_ids=${device_ids}`);
+        return await this.handleError(result) ?? [];
+    }
+
+    public async trialDeviceVip(device_id: string): Promise<string> {
+        const result = await fetch(makeVmApiUrl("server/device_vip/trial", Config.host) + `?device_id=${device_id}`);
         return await this.handleError(result);
     }
 }

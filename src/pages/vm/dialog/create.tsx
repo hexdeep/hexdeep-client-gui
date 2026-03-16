@@ -1,14 +1,15 @@
 import { deviceApi } from '@/api/device_api';
 import { orderApi } from "@/api/order_api";
-import { CreateParam, DockerEditParam, ImageInfo } from "@/api/device_define";
+import { CreateParam, DockerEditParam, HostInfo, ImageInfo } from "@/api/device_define";
 import { i18n } from "@/i18n/i18n";
-import { getSuffixName } from '@/common/common';
+import { getSuffixName, timeDiff } from '@/common/common';
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
 import { ErrorProxy } from "@/lib/error_handle";
 import { VNode } from "vue";
 import { Watch } from "vue-property-decorator";
 import { CreateForm } from "../../../lib/component/create_form";
 import { PullImageDialog } from './pull_image';
+import { VipHostSelectDialog } from "./vip_host_select";
 
 @Dialog
 export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
@@ -19,6 +20,8 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     private validIndex: number = 0;
     private dirty = 0;
     public override allowEscape: boolean = false;
+    private hasVip = false;
+    private allHosts: HostInfo[] = [];
 
     public override async show(data: DockerEditParam) {
         this.data = data;
@@ -34,7 +37,45 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             this.dockerRegistries = Array.isArray(list) ? list : [];
         });
         await this.hostIpChange();
+        // 检查VIP状态
+        this.checkVipStatus();
+        // 获取所有主机列表
+        deviceApi.getHosts().then(hosts => {
+            this.allHosts = hosts;
+        });
         return super.show(data);
+    }
+
+    private async checkVipStatus() {
+        try {
+            const hostId = this.data.hostId;
+            if (hostId) {
+                const vipInfos = await orderApi.getDeviceVip(hostId);
+                const vipInfo = vipInfos.find(v => v.id === hostId);
+                if (vipInfo && vipInfo.rental_end_time) {
+                    this.hasVip = timeDiff(vipInfo.rental_end_time, vipInfo.current_time, "second") > 0;
+                } else {
+                    this.hasVip = false;
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to check VIP status:", e);
+            this.hasVip = false;
+        }
+    }
+
+    private async onVipRequired() {
+        if (this.allHosts.length === 0) {
+            this.allHosts = await deviceApi.getHosts();
+        }
+        const currentHost = this.allHosts.find(h => h.device_id === this.data.hostId);
+        const result = await this.$dialog(VipHostSelectDialog).show({
+            hosts: this.allHosts,
+            currentHost: currentHost
+        });
+        if (result) {
+            await this.checkVipStatus();
+        }
     }
 
     @Watch("data", { deep: true })
@@ -146,7 +187,16 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         return (
             <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="150px">
                 {this.data.isUpdate && <div style="color: red; margin-bottom: 10px; margin-left: 140px;">{this.$t("changeImage.warning")}</div>}
-                <CreateForm data={this.data.obj} images={this.images} dockerRegistries={this.dockerRegistries} validInstance={this.validInstance} validIndex={this.validIndex} isUpdate={this.data.isUpdate} ></CreateForm>
+                <CreateForm 
+                    data={this.data.obj} 
+                    images={this.images} 
+                    dockerRegistries={this.dockerRegistries} 
+                    validInstance={this.validInstance} 
+                    validIndex={this.validIndex} 
+                    isUpdate={this.data.isUpdate}
+                    hasVip={this.hasVip}
+                    on={{ "vip-required": () => this.onVipRequired() }}
+                ></CreateForm>
             </el-form>
         );
     }

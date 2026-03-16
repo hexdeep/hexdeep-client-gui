@@ -67,6 +67,15 @@ export interface InstanceQuantityInfo {
     current_time: string;
 }
 
+// 设备VIP租期信息
+export interface DeviceVipInfo {
+    id: string;
+    trial_time: string;
+    rental_start_time: string;
+    rental_end_time: string;
+    current_time: string;
+}
+
 export interface InstanceQuantityPackage {
     id: number;
     name: string;

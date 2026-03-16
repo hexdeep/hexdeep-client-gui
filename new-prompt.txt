@@ -1,0 +1,101 @@
+prompt.txt里面的提示词是上一次废弃的方案，但里面设计的部分UI和逻辑可以复用，需要开发新方案。
+
+http://192.168.31.54/image_api/get/192.168.31.54这个接口的data对象数组加了一个字段`is_vip`。
+代表这是VIP专属安卓镜像。
+
+给定新接口，响应体：
+```json
+{
+  "code": 200,
+  "err": "",
+  "data": [
+    {
+      "device_id": "480076a1e79bbac87a05b7fc53e71320cb8f662c",
+      // 如果未开通就是空字符串，代表购买的开始时间
+      "rental_start_time": "2025-06-25 04:12:23", 
+      // 如果未开通就是空字符串
+      // 包括试用的和购买的
+      "rental_end_time": "2025-09-23 04:12:23",
+      // 这个是试用的开始时间，结束时间是rental_end_time，如果未领取就是空字符串
+      // 如果上个月领了，那么trial_time依然可能有值，因此，应该从客户端取
+      "trial_time": "2025-06-26 15:29:39",
+      // 不要用前端系统时间，用传来的时间
+      "current_time": "2025-06-26 15:29:39"
+    }
+  ]
+}
+```
+
+主机（Linux）开通了VIP以后，云机（Docker容器）（安卓实例）才能使用VIP专属镜像。
+每一个主机需要单独开通VIP。
+
+我们在安卓镜像内核里面做了充分的授权校验，因此web界面不需要做充分安全验证。
+web界面的验证仅仅用于引导用户去付费，而非真正的安全验证。
+
+`src/pages/vm/dialog/`里面的`vip_host_select.tsx`和`vip_purchase.tsx`依然可以复用。
+
+用户给某个安卓容器刷写系统的时候，在更新实例界面里面，选择镜像的时候，如果是VIP专属镜像，那么
+我们在el-option里面的文字后面加一个金灿灿有尊贵感的VIP标识el-tag，如果用户开了VIP，
+那么不干扰用户的选择，如果没开，那么就打开`vip_host_select.tsx`，同时将当前安卓容器所在的主机传递给
+`vip_host_select.tsx`
+在`vip_host_select.tsx`里面，如果没有开VIP，同时本月没有领取试用，每一项主机右边有一个试用按钮，
+点击以后，发送试用请求，然后前端立即重新获取数据，此时用户可以点击下方的返回，
+回到更新实例界面，此时用户就可以选择VIP专属镜像了，所以更新实例界面不能销毁。
+如果用户要开VIP，那么需要先在`vip_host_select.tsx`里面选择主机，之后点击下方的购买
+此时会打开`vip_purchase.tsx`，并将之前的选择带过去。
+如果用户在`vip_host_select.tsx`里面完成了试用，那么只发送使用请求并更新这个界面，用户依然需要手动回到更新实例界面。
+如果用户是付费购买了，那么在购买完成以后，就直接回到更新实例界面。
+
+关于相关的API:
+试用设备vip: get /server/device_vip/trial/{ip}
+PATH PARAMETERS ip: 主机IP地址，代表由集群里面的哪个主机去处理这个http请求。
+QUERY-STRING PARAMETERS `device_id`，设备ID，试用VIP的设备ID
+响应
+```json
+{
+  "code": 200,
+  "err": "",
+  "data": "ok"
+}
+```
+获取实例VIP租期：get /server/device_vip/get/{ip}
+这个IP大概是当前后端服务器的IP，在他们的架构设计里面，有很多的接口都有ip这个路径参数，你可以看看已有的代码是如何实现的。确认仍然使用之前的接口。另
+PATH PARAMETERS ip: 主机IP地址，代表由集群里面的哪个主机去处理这个http请求。
+QUERY-STRING PARAMETERS `device_ids`，设备ID列表，逗号分隔，获取这些设备的VIP租期
+响应
+```json
+{
+  "code": 200,
+  "err": "",
+  "data": [
+    {
+      "id": "480076a1e79bbac87a05b7fc53e71320cb8f662c",
+      "trial_time": "",
+      "rental_start_time": "2026-03-13 17:02:44",
+      "rental_end_time": "2026-04-12 17:02:44",
+      "current_time": "2026-03-13 17:06:15"
+    }
+  ]
+}
+```
+至于给主机开通VIP的接口，依然复用之前废弃方案的接口。
+我们给获取服务器镜像列表的接口加一个字段`is_vip`，如果是VIP专属镜像，那么这个字段就是true，否则就是false。
+```json
+{
+  "code": 200,
+  "err": "",
+  "data": [
+    {
+      "android_version": 12,
+      "name": "android12-base-v2.3",
+      "address": "docker.hexdeep.com/docker:hexdeep-3588-android12-base-oppo",
+      "model": "H49",
+      "is_vip": false,
+      "git_id": "",
+      "created_at": "2026-03-08 13:38:16",
+      "updated_at": "2026-03-08 13:38:16"
+    }
+  ]
+}
+```
+

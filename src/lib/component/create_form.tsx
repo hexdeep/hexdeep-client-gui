@@ -11,7 +11,7 @@ import Vue from 'vue';
 import { deviceApi } from "@/api/device_api";
 
 @Component
-export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
+export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     @Prop({ default: () => { return []; } }) images!: ImageInfo[];
     @Prop({ default: () => { return []; } }) dockerRegistries!: string[];
     @Prop({ default: () => { return []; } }) validInstance!: number[];
@@ -19,6 +19,7 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
     @Prop({ default: () => { sandbox_size: 64; } }) data!: CreateParam;
     @Prop({ default: true }) needName!: boolean;
     @Prop({ default: false }) isUpdate!: boolean;
+    @Prop({ default: false }) hasVip!: boolean;
 
     // 将 index 包裹为响应式对象
     private index = Vue.observable({ value: this.validIndex });
@@ -143,7 +144,13 @@ export class CreateForm extends tsx.Component<IPorps, {}, ISlots> {
                 </el-form-item>
 
                 <el-form-item label={this.$t("create.image_addr")} prop="image_addr">
-                    <ImageSelector2 images={this.filteredImages} v-model={this.data.image_addr} showCustom={this.filterState.imageType === 'all'} />
+                    <ImageSelector2 
+                        images={this.filteredImages} 
+                        v-model={this.data.image_addr} 
+                        showCustom={this.filterState.imageType === 'all'}
+                        hasVip={this.hasVip}
+                        on={{ "vip-required": () => this.$emit("vip-required") }}
+                    />
                 </el-form-item>
                 {this.data.image_addr == "[customImage]" && (
                     <el-form-item label={this.$t("customImage")} prop="custom_image">
@@ -230,6 +237,11 @@ interface IPorps {
     validInstance: number[];
     validIndex: number;
     isUpdate?: boolean;
+    hasVip?: boolean;
+}
+
+interface IEvents {
+    onVipRequired: () => void;
 }
 
 
