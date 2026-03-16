@@ -156,6 +156,15 @@ export class VipHostSelectDialog extends CommonDialog<VipHostSelectData, boolean
         }
     }
 
+    protected override renderHeader() {
+        return (
+            <div class="dialog-header">
+                <div class="dialog-title">{this.title}</div>
+                <div class="dialog-close el-icon-close" onClick={() => this.close(this.vipChanged)} />
+            </div>
+        );
+    }
+
     protected override renderFooter() {
         return (
             <div class="dialog-footer">
