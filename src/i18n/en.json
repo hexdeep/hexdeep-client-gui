@@ -416,6 +416,7 @@
         "vipImage": "VIP",
         "vipRequired": "This image requires VIP to use",
         "back": "Back",
-        "operation": "Operation"
+        "operation": "Operation",
+        "goToPurchase": "Go to Purchase"
     }
 }

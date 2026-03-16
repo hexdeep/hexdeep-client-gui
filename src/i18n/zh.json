@@ -418,6 +418,7 @@
         "vipImage": "VIP",
         "vipRequired": "该镜像需要开通VIP才能使用",
         "back": "返回",
-        "operation": "操作"
+        "operation": "操作",
+        "goToPurchase": "去开通"
     }
 }

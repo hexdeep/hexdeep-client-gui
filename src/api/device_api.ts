@@ -8,6 +8,14 @@ import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverI
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
+// VIP镜像受限错误
+export class VipImageRestrictedError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'VipImageRestrictedError';
+    }
+}
+
 class DeviceApi extends ApiBase {
     private fileListInfo!: FilelistInfo;
     public async queryS5(hostIp: string, name: string) {
@@ -537,6 +545,9 @@ class DeviceApi extends ApiBase {
             return j.err;
         } else if (j.code == 200) {
             return;
+        } else if (j.code == 1) {
+            // VIP镜像受限
+            throw new VipImageRestrictedError(j.err);
         } else {
             throw j.err;
         }

@@ -1,4 +1,4 @@
-import { deviceApi } from '@/api/device_api';
+import { deviceApi, VipImageRestrictedError } from '@/api/device_api';
 import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from '@/api/device_define';
 import { filterWithConfig, getPrefixName, getSuffixName, makeVmApiUrl, sleep, sortDevicesByHostIp } from '@/common/common';
 import { i18n } from '@/i18n/i18n';
@@ -426,17 +426,36 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             lock: true,
             text: i18n.t("loading").toString(),
         });
-        const imageAddress = await deviceApi.start(data.hostIp, data.name).finally(() => {
-            l.close();
-        });
-        if (imageAddress) {
-            await this.$dialog(PullImageDialog).show({
-                hostIp: data.hostIp,
-                imageAddress: imageAddress,
+        try {
+            const imageAddress = await deviceApi.start(data.hostIp, data.name).finally(() => {
+                l.close();
             });
-            await deviceApi.start(data.hostIp, data.name);
+            if (imageAddress) {
+                await this.$dialog(PullImageDialog).show({
+                    hostIp: data.hostIp,
+                    imageAddress: imageAddress,
+                });
+                await deviceApi.start(data.hostIp, data.name);
+            }
+            this.$emit("changed", data.hostIp);
+        } catch (e) {
+            if (e instanceof VipImageRestrictedError) {
+                // VIP镜像受限，弹出确认框引导用户开通VIP
+                await this.$confirm(e.message, this.$t("tip").toString(), {
+                    confirmButtonText: this.$t("vip.goToPurchase").toString(),
+                    cancelButtonText: this.$t("confirm.cancel").toString(),
+                    type: 'warning'
+                }).then(async () => {
+                    await this.showVipDialog();
+                }).catch(() => {
+                    // 用户取消
+                });
+                // 返回 false 阻止 ErrorProxy 显示成功消息
+                return false;
+            } else {
+                throw e;
+            }
         }
-        this.$emit("changed", data.hostIp);
     }
 
     @ErrorProxy({ confirm: t("confirm.deleteTitle"), success: i18n.t("success"), loading: i18n.t("loading") })
