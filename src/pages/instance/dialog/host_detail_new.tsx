@@ -80,11 +80,17 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         return (
             <el-descriptions size="medium" column={1} border labelStyle={{ "width": "120px" }} style={{ padding: "20px" }}>
                 <el-descriptions-item label={i18n.t("vmDetail.sdkVersion")}>
-                    <Row crossAlign="center">
-                        <div style={{ "flex": 1 }}>{this.sdk?.current_version}</div>
-                        <Row gap={10}>
-                            <MyButton type="primary" size="small" onClick={this.rebootSDK}>{this.$t("vmDetail.rebootSDK")}</MyButton>
-                            <MyButton type="primary" size="small" onClick={this.switchSDK}>{this.$t("instance.switchSDK")}</MyButton>
+                    <Row crossAlign="center" class="flex gap-4">
+                        <el-tooltip effect="dark" content={this.sdk?.current_version} placement="top">
+                          <div class="grow min-w-0 truncate">{this.sdk?.current_version}</div>
+                        </el-tooltip>
+                        <Row gap={10} class="shrink-0">
+                            <MyButton type="primary" size="small" onClick={this.rebootSDK}>
+                              {this.$t("vmDetail.rebootSDK")}
+                            </MyButton>
+                            <MyButton type="primary" size="small" onClick={this.switchSDK}>
+                              {this.$t("instance.switchSDK")}
+                            </MyButton>
                         </Row>
                     </Row>
                 </el-descriptions-item>
