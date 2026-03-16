@@ -9,6 +9,7 @@ import './install_eleui';
 import { DialogPlugin } from "./lib/dialog/dialog";
 import { router } from "./routes/router";
 import { UIRoot } from "./ui_root";
+import "@/tailwind.css";
 
 
 if (process.env.NODE_ENV == "development") {
