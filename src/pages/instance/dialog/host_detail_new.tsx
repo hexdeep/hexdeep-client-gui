@@ -96,6 +96,14 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                 <el-descriptions-item label={i18n.t("vmDetail.apiGitCommitId")}>
                     <Row crossAlign="center">
                         <div style={{ "flex": 1 }}>{this.detail?.git_commit_id}/{this.sdk?.git_commit_id}</div>
+                        <a
+                            href="https://docs.hexdeep.com/h1/firmware.html"
+                            target="_blank"
+                            class="hover:underline"
+                            style={{ marginRight: "10px", color: "#409EFF" }}
+                        >
+                            获取现刷包
+                        </a>
                         <MyButton
                             type="primary"
                             size="small"
