@@ -102,7 +102,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                             class="hover:underline"
                             style={{ marginRight: "10px", color: "#409EFF" }}
                         >
-                            获取现刷包
+                            获取线刷包
                         </a>
                         <MyButton
                             type="primary"
