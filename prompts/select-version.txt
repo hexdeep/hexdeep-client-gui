@@ -1,0 +1,45 @@
+提示词：
+你需要修改的界面是src/pages/instance/dialog/host_detail_new.tsx
+请你改一改这个代码的前端，要求，以前是有一个自动更新到最新版本的按钮，
+将目标从`更新到最新版本`变成`更新版本`
+点击以后出现一个新的dialog， 里面有 el-select/el-option 组件，用户可以手动选择更新到哪个版本。
+底部有确认和取消按钮。
+接口封装在src/api/里面，你看看已有的接口，然后模仿它们的做法。
+获取版本列表的接口是`https://download.hexdeep.com/hexos/h1/cfg.txt`，
+虽说扩展名是txt，但返回的是一个格式为json的文本数据。
+```json
+[
+  {
+    "version": "20251218",
+    "time": "2026-03-16 17:52:08",
+    "download_url": "https://download.hexdeep.com/hexos/h1/20251218.zip"
+  },
+  {
+    "version": "20251219",
+    "time": "2026-03-16 17:52:08",
+    "download_url": "https://download.hexdeep.com/hexos/h1/20251219.zip"
+  }
+]
+```
+按时间排序，显示version作为label。
+切换固件版本的接口是`get /entry/switch_firmware/{ip}`
+使用的是82端口，端口在src/common/common.ts里面封装了，你要检查已有的实现。
+
+QUERY-STRING PARAMETERS
+
+* act
+integer
+0
+Allowed: 0 ┃ 1
+操作:0,查询;1,切换版本
+
+* version
+string
+固件版本
+
+对于`get /entry/switch_firmware/{ip}`接口，act=0的时候可能返回空字符串。
+代表当前版本未知，如果不是空，就是当前版本号，在select/option里面标注当前版本。
+
+对于act=1，需要提示，切换版本需要重启设备，是否继续？
+如果用户点击确定，就调用接口切换版本，并且提示用户正在切换版本，请稍后重启设备。
+

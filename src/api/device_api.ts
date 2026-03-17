@@ -4,7 +4,7 @@ import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
-import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq } from "./device_define";
+import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
@@ -642,6 +642,21 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    public async getFirmwareVersionList(): Promise<FirmwareVersionInfo[]> {
+        const result = await fetch("https://download.hexdeep.com/hexos/h1/cfg.txt");
+        const json = await result.json();
+        return json;
+    }
+
+    public async getCurrentFirmwareVersion(ip: string): Promise<string> {
+        const result = await fetch(makeHostVmApiUrl("entry/switch_firmware", ip) + `?act=0`);
+        return await this.handleError(result);
+    }
+
+    public async switchFirmwareVersion(ip: string, version: string): Promise<void> {
+        const result = await fetch(makeHostVmApiUrl("entry/switch_firmware", ip) + `?act=1&version=${version}`);
+        return await this.handleError(result);
+    }
 
 }
 

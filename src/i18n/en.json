@@ -251,6 +251,13 @@
         "reset": "Restore factory",
         "apiGitCommitId": "Version",
         "updateFirmware": "Update firmware",
+        "switchFirmware": "Switch Version",
+        "switchFirmwareTitle": "Switch Firmware Version",
+        "switchFirmwareSuccess": "Switching firmware version, please restart device later",
+        "switchFirmwareRebootConfirm": "Switching version requires restarting the device, continue?",
+        "currentFirmwareVersion": "Current Version",
+        "selectFirmwareVersion": "Select Version",
+        "currentVersion": "Current",
         "unofficialModel": "Unofficial Model",
         "iscsi": {
             "ip": "iSCSI IP",

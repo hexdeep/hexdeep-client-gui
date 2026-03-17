@@ -15,6 +15,7 @@ import { DiscoverDialog } from "@/pages/vm/dialog/discover";
 import { VipHostSelectDialog } from "@/pages/vm/dialog/vip_host_select";
 import { orderApi } from "@/api/order_api";
 import { DeviceVipInfo } from "@/api/order_define";
+import { SwitchFirmwareDialog } from "./switch_firmware";
 
 @Dialog
 export class HostDetailDialog extends CommonDialog<HostInfo, void> {
@@ -22,7 +23,6 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected sdk?: SDKImagesRes;
     protected model: string = "";
     protected isOfficialModel: boolean = true;
-    protected firmwareIsLatest: boolean = false;
     protected timer: any;
     protected vipInfo?: DeviceVipInfo;
     protected vipExpired: boolean = true;
@@ -44,7 +44,6 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
             }
         }).catch(e => console.log(e));
         deviceApi.getSDKImages(data.address).then(e => this.sdk = e);
-        deviceApi.checkFirmware(data.address).then(e => this.firmwareIsLatest = e);
         // 获取VIP信息
         this.loadVipInfo();
         this.timer = setInterval(() => {
@@ -100,11 +99,9 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         <MyButton
                             type="primary"
                             size="small"
-                            onClick={this.updateFirmware}
-                            disabled={this.firmwareIsLatest}
+                            onClick={this.switchFirmware}
                         >
-                            {this.$t("vmDetail.updateFirmware")}
-                            {"(" + (this.firmwareIsLatest ? this.$t("create.already_latest") : this.$t("create.need_update")) + ")"}
+                            {this.$t("vmDetail.switchFirmware")}
                         </MyButton>
                     </Row>
                 </el-descriptions-item>
@@ -276,12 +273,6 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         await this.$dialog(SetSwapDialog).show(this.data);
     }
 
-    @ErrorProxy({ confirm: i18n.t("vmDetail.updateFirmwareConfirm"), success: i18n.t("vmDetail.updateFirmwareSuccess"), loading: i18n.t("loading") })
-    private async updateFirmware() {
-        await deviceApi.updateFirmware(this.data.address);
-        deviceApi.checkFirmware(this.data.address).then(e => this.firmwareIsLatest = e);
-    }
-
     @ErrorProxy({ success: i18n.t("vmDetail.pruneImagesSuccess"), loading: i18n.t("loading") })
     private async pruneImages() {
         await deviceApi.pruneImages(this.data.address);
@@ -295,6 +286,10 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     private async switchSDK() {
         await this.$dialog(SwitchSDKDialog).show(this.data);
         deviceApi.getSDKImages(this.data.address).then(e => this.sdk = e);
+    }
+
+    private async switchFirmware() {
+        await this.$dialog(SwitchFirmwareDialog).show(this.data);
     }
 
     private async showDiscover() {

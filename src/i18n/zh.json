@@ -252,6 +252,13 @@
         "reset": "恢复出厂",
         "apiGitCommitId": "版本号",
         "updateFirmware": "升级固件",
+        "switchFirmware": "切换版本",
+        "switchFirmwareTitle": "切换固件版本",
+        "switchFirmwareSuccess": "正在切换固件版本，请稍后重启设备",
+        "switchFirmwareRebootConfirm": "切换版本需要重启设备，是否继续？",
+        "currentFirmwareVersion": "当前版本",
+        "selectFirmwareVersion": "选择版本",
+        "currentVersion": "当前版本",
         "unofficialModel": "非官方型号",
         "iscsi": {
             "ip": "iSCSI IP",
