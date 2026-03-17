@@ -43,6 +43,8 @@
     "random": "Random",
     "noRun": "Not Running",
     "invalidIp": "Invalid IP Address",
+    "invalidSubnet": "Invalid subnet format, e.g., 200.100.10.0/24",
+    "invalidDnsUrls": "Invalid DNS format, e.g., 8.8.8.8,1.1.1.1",
     "invalidPort": "Invalid Port",
     "vmImage": "VM Image",
     "customImage": "Custom image",

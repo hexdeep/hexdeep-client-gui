@@ -30,6 +30,8 @@
     "starting": "启动中",
     "noRun": "未运行",
     "invalidIp": "IP地址格式错误",
+    "invalidSubnet": "子网格式错误，示例：200.100.10.0/24",
+    "invalidDnsUrls": "DNS地址格式错误，示例：8.8.8.8,1.1.1.1",
     "invalidPort": "端口格式错误",
     "vmImage": "镜像",
     "customImage": "自定义镜像",
