@@ -81,7 +81,7 @@ export class SwitchFirmwareDialog extends CommonDialog<HostInfo, boolean> {
                         <span>{this.currentVersion}</span>
                     </el-form-item>
                 )}
-                <el-form-item required>
+                <el-form-item>
                     <div slot="label" class="flex items-center gap-4">
                         <span>{this.$t("vmDetail.selectFirmwareVersion")}</span>
                         <a
