@@ -77,7 +77,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
 
     protected renderDialog(): VNode {
         return (
-            <el-descriptions size="medium" column={1} border labelStyle={{ "width": "120px" }} style={{ padding: "20px" }}>
+            <el-descriptions size="medium" column={1} border labelStyle={{ "width": "100px" }} style={{ padding: "20px" }}>
                 <el-descriptions-item label={i18n.t("vmDetail.sdkVersion")}>
                     <Row crossAlign="center" class="flex gap-4">
                         <el-tooltip
@@ -86,9 +86,9 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                           placement="top"
                           disabled={this.sdk?.current_version && this.sdk.current_version.length <= 20}
                         >
-                          <div class="grow min-w-0 truncate">{this.sdk?.current_version}</div>
+                          <div class="w-64 truncate">{this.sdk?.current_version}</div>
                         </el-tooltip>
-                        <Row gap={10} class="shrink-0">
+                        <Row gap={10} class="shrink-0 ms-auto">
                             <MyButton type="primary" size="small" onClick={this.rebootSDK}>
                               {this.$t("vmDetail.rebootSDK")}
                             </MyButton>
