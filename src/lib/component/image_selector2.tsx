@@ -58,7 +58,7 @@ export class ImageSelector2 extends tsx.Component<IPorps, IEvents, {}> {
                 onInput={this.onInput}>
                 {this.list.map((e) => <el-option
                     key={e.address}
-                    label={(e.android_version ? "[" + e.android_version + "] " : "") + e.name + (e.is_vip ? " [VIP]" : "")}
+                    label={(e.android_version ? "[" + e.android_version + "] " : "") + e.name + (e.is_vip ? " [Beta]" : "")}
                     value={e.address}                    >
                     <div style={{ display: "flex", alignItems: "center" }}>
                         {e.android_version && <span
