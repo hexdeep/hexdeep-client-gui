@@ -205,6 +205,7 @@
     },
     "vmDetail": {
         "title": "实例详情",
+        "getFirmwarePackage": "获取固件包",
         "name": "名称",
         "index": "实例位",
         "ip": "IP",
@@ -420,7 +421,7 @@
         "calc": "{0}台主机 × ￥{1}({2})",
         "expireTime": "VIP到期",
         "renew": "续费",
-        "tip": "开通VIP后，可使用VIP专属镜像",
+        "tip": "目前beta版本仅供主机VIP使用，beta版本为非正式版本，可以体验最新功能。后续将以正式版本发布。",
         "trial": "试用",
         "trialSuccess": "试用成功",
         "trialUsed": "本月已试用",

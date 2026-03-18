@@ -81,7 +81,18 @@ export class SwitchFirmwareDialog extends CommonDialog<HostInfo, boolean> {
                         <span>{this.currentVersion}</span>
                     </el-form-item>
                 )}
-                <el-form-item label={this.$t("vmDetail.selectFirmwareVersion")} required>
+                <el-form-item required>
+                    <div slot="label" class="flex items-center gap-4">
+                        <span>{this.$t("vmDetail.selectFirmwareVersion")}</span>
+                        <a
+                            href="https://docs.hexdeep.com/h1/firmware.html"
+                            target="_blank"
+                            class="hover:underline"
+                            style={{ marginRight: "10px", color: "#409EFF" }}
+                        >
+                            {this.$t("vmDetail.getFirmwarePackage")}
+                        </a>
+                    </div>
                     <el-select
                         v-model={this.selectedVersion}
                         placeholder={this.$t("vmDetail.selectFirmwareVersion")}
