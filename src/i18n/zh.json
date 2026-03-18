@@ -206,6 +206,7 @@
     "vmDetail": {
         "title": "实例详情",
         "getFirmwarePackage": "获取固件包",
+        "getFirmwarePackageTooltip": "只有在主机无法开机，需手动刷机",
         "name": "名称",
         "index": "实例位",
         "ip": "IP",
