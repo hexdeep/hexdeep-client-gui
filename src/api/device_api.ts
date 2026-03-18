@@ -643,7 +643,7 @@ class DeviceApi extends ApiBase {
     }
 
     public async getFirmwareVersionList(): Promise<FirmwareVersionInfo[]> {
-        const result = await fetch("https://download.hexdeep.com/hexos/3588-node/h1/cfg.txt");
+        const result = await fetch("https://download.hexdeep.com/hexos/3588-node/hot/cfg.txt");
         const json = await result.json();
         return json;
     }

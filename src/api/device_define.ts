@@ -278,4 +278,5 @@ export interface FirmwareVersionInfo {
     version: string;
     time: string;
     download_url: string;
+    description: string;
 }

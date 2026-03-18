@@ -18,21 +18,29 @@ export class SwitchFirmwareDialog extends CommonDialog<HostInfo, boolean> {
         this.data = data;
         this.loading = true;
 
-        // 并发获取版本列表和当前版本
-        const [versionList, currentVersion] = await Promise.all([
-            deviceApi.getFirmwareVersionList(),
-            deviceApi.getCurrentFirmwareVersion(data.address).catch(() => "")
-        ]);
+        // 先打开对话框，再异步加载数据
+        const result = super.show(data);
+        this.loadData(data);
+        return result;
+    }
 
-        // 按时间降序排序
-        this.versionList = versionList.sort((a, b) => {
-            return new Date(b.time).getTime() - new Date(a.time).getTime();
-        });
+    private async loadData(data: HostInfo) {
+        try {
+            // 并发获取版本列表和当前版本
+            const [versionList, currentVersion] = await Promise.all([
+                deviceApi.getFirmwareVersionList(),
+                deviceApi.getCurrentFirmwareVersion(data.address).catch(() => "")
+            ]);
 
-        this.currentVersion = currentVersion;
-        this.loading = false;
+            // 按时间降序排序
+            this.versionList = versionList.sort((a, b) => {
+                return new Date(b.time).getTime() - new Date(a.time).getTime();
+            });
 
-        return super.show(data);
+            this.currentVersion = currentVersion;
+        } finally {
+            this.loading = false;
+        }
     }
 
     protected override async onConfirm() {
@@ -101,13 +109,14 @@ export class SwitchFirmwareDialog extends CommonDialog<HostInfo, boolean> {
                         style={{ width: "100%" }}
                     >
                         {this.versionList.map(item => (
-                            <el-option
-                                key={item.version}
-                                label={this.currentVersion === item.version
-                                    ? `${item.version} (${this.$t("vmDetail.currentVersion")})`
-                                    : item.version}
-                                value={item.version}
-                            />
+                            <el-option key={item.version} value={item.version}>
+                            <el-tooltip content={item.description} placement="top" disabled={item.description.length <= 30}>
+                                <span class="block w-full">
+                                    {item.version} {item.description ? '-' : ''} {item.description.length > 30 ? item.description.slice(0, 30) + "..." : item.description}
+                                    {this.currentVersion === item.version && ` (${this.$t("vmDetail.currentVersion")})`}
+                                </span>
+                            </el-tooltip>
+                            </el-option>
                         ))}
                     </el-select>
                 </el-form-item>
