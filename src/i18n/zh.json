@@ -213,7 +213,7 @@
         "data": "数据位置",
         "imageAddr": "镜像地址",
         "containerGitCommitId": "版本号",
-        "adb": "ADB",
+        "adb": "ADB 端口",
         "android_sdk": "Android SDK",
         "state": "状态",
         "createdAt": "创建时间",

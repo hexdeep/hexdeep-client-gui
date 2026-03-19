@@ -198,7 +198,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         />
                         {/* <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} /> */}
                         {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
-                        <el-table-column prop="adb" formatter={(row: DeviceInfo) => this.formatAdb(row.adb)} label="ADB" width="140" show-overflow-tooltip class-name="text-green-600" />
+                        <el-table-column prop="adb" formatter={(row: DeviceInfo) => this.formatAdb(row.adb)} label={this.$t("vmDetail.adb")} width="140" show-overflow-tooltip class-name="text-green-600" />
                         <el-table-column prop="created_at" formatter={(row: DeviceInfo) => this.formatCreatedAt(row.created_at)} label={this.$t("createdAt")} width="90" />
                         <el-table-column prop="git_commit_id" label={this.$t("vmDetail.containerGitCommitId")} width="110" show-overflow-tooltip />
                         <el-table-column
