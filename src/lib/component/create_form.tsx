@@ -23,7 +23,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
 
     // 将 index 包裹为响应式对象
     private index = Vue.observable({ value: this.validIndex });
-    private filterState = Vue.observable({ imageType: 'all' });
+    private filterState = Vue.observable({ imageType: 'base' });
 
     private get filteredImages() {
         const type = this.filterState.imageType;
@@ -135,7 +135,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
 
                 <el-form-item label={this.$t("create.image_type")}>
                     <el-radio-group v-model={this.filterState.imageType}>
-                        <el-radio label="all">{this.$t("create.image_type_all")}</el-radio>
+                        {/*<el-radio label="all">{this.$t("create.image_type_all")}</el-radio>*/}
                         <el-radio label="base">{this.$t("create.image_type_base")}</el-radio>
                         <el-radio label="magisk">{this.$t("create.image_type_magisk")}</el-radio>
                         <el-radio label="gms">{this.$t("create.image_type_gms")}</el-radio>
@@ -147,7 +147,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     <ImageSelector2 
                         images={this.filteredImages} 
                         v-model={this.data.image_addr} 
-                        showCustom={this.filterState.imageType === 'all'}
+                        showCustom={this.filterState.imageType === 'base'}
                         hasVip={this.hasVip}
                         on={{ "vip-required": () => this.$emit("vip-required") }}
                     />

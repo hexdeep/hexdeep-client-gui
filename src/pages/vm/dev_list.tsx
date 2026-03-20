@@ -69,6 +69,22 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         return re;
     }
 
+    // 计算主机IP到颜色索引的映射，同一主机颜色相同，不同主机交替颜色
+    private get hostColorMap(): Map<string, number> {
+        const map = new Map<string, number>();
+        let colorIndex = 0;
+        for (const device of this.data2) {
+            if (!map.has(device.hostIp)) {
+                map.set(device.hostIp, colorIndex++);
+            }
+        }
+        return map;
+    }
+
+    private getHostColorIndex(hostIp: string): number {
+        return this.hostColorMap.get(hostIp) || 0;
+    }
+
     protected async created() {
     }
 
@@ -198,7 +214,15 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         />
                         {/* <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} /> */}
                         {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
-                        <el-table-column prop="adb" formatter={(row: DeviceInfo) => this.formatAdb(row.adb)} label={this.$t("vmDetail.adb")} width="140" show-overflow-tooltip class-name="text-green-600" />
+                        <el-table-column prop="adb" label={this.$t("vmDetail.adb")} width="140" show-overflow-tooltip
+                            scopedSlots={{
+                                default: ({ row }: { row: DeviceInfo; }) => {
+                                    const colorIndex = this.getHostColorIndex(row.hostIp);
+                                    const colorClass = colorIndex % 2 === 0 ? 'text-green-600' : 'text-blue-600';
+                                    return <span class={colorClass}>{this.formatAdb(row.adb)}</span>;
+                                }
+                            }}
+                        />
                         <el-table-column prop="created_at" formatter={(row: DeviceInfo) => this.formatCreatedAt(row.created_at)} label={this.$t("createdAt")} width="90" />
                         <el-table-column prop="git_commit_id" label={this.$t("vmDetail.containerGitCommitId")} width="110" show-overflow-tooltip />
                         <el-table-column
