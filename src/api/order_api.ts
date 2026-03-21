@@ -11,7 +11,11 @@ class OrderApi extends ApiBase {
         return await this.handleError(result);
     }
     public async getRental(device_ids: string) {
-        const result = await fetch(makeVmApiUrl("server/device/get", Config.host) + `?device_ids=${device_ids}`);
+        return this.getRentalWithHost(Config.host, device_ids);
+    }
+
+    public async getRentalWithHost(hostIp: string, device_ids: string) {
+        const result = await fetch(makeVmApiUrl("server/device/get", hostIp) + `?device_ids=${device_ids}`);
         var re: RentalRecord[] = await this.handleError(result) ?? [];
         re.forEach(item => {
             item.device_indexes.forEach(x => {
@@ -27,6 +31,7 @@ class OrderApi extends ApiBase {
         });
         return re;
     }
+
     public async queryOrder(device_ids: string) {
         const result = await fetch(makeVmApiUrl("server/order/get", Config.host) + `?device_ids=${device_ids}`);
         var re: OrderInfo[] = await this.handleError(result);

@@ -31,15 +31,29 @@ export default class InstancePage extends Vue {
             this.data.forEach(x => {
                 deviceApi.getHostRemark(x.address).then(r => this.$set(x, "remark", r));
                 deviceApi.getWarehousingInfo(x.address).then(w => {
-                if (w.code == 200) {
-                    this.$set(x, "model", w.data.model);
-                    this.$set(x, "is_unofficial", false);
-                } else {
-                    this.$set(x, "is_unofficial", true);
-                }
-            }).catch(() => { });
+                    if (w.code == 200) {
+                        this.$set(x, "model", w.data.model);
+                        this.$set(x, "is_unofficial", false);
+                    } else {
+                        this.$set(x, "is_unofficial", true);
+                    }
+                }).catch(() => { });
             });
-            this.record = await orderApi.getRental(this.data.map(x => x.device_id).join(",")) || [];
+            // 每个主机单独请求 getRental
+            const rentalList = await Promise.all(
+                this.data.map(async x => {
+                    try {
+                        const res = await orderApi.getRentalWithHost(x.address, x.device_id);
+                        return res || [];
+                    } catch (e) {
+                        console.error(`getRental failed: ${x.address}`, e);
+                        return [];
+                    }
+                })
+            );
+
+            // 合并所有主机返回结果
+            this.record = rentalList.flat();
         } catch (error) {
             this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
         }
@@ -154,7 +168,7 @@ export default class InstancePage extends Vue {
         } else if (row.model) {
             text = `${row.address}(${row.model})`;
         }
-        
+
         if (row.is_unofficial) {
             return (
                 <el-tooltip content={this.$t("instance.nonOfficialDevice").toString()} placement="top">
