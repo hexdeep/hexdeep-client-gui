@@ -83,7 +83,11 @@ class OrderApi extends ApiBase {
 
     // 设备VIP相关API
     public async getDeviceVip(device_ids: string): Promise<DeviceVipInfo[]> {
-        const result = await fetch(makeVmApiUrl("server/device_vip/get", Config.host) + `?device_ids=${device_ids}`);
+        return this.getDeviceVipWithHost(Config.host, device_ids);
+    }
+
+    public async getDeviceVipWithHost(hostIp: string, device_ids: string): Promise<DeviceVipInfo[]> {
+        const result = await fetch(makeVmApiUrl("server/device_vip/get", hostIp) + `?device_ids=${device_ids}`);
         return await this.handleError(result) ?? [];
     }
 

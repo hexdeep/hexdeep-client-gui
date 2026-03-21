@@ -44,40 +44,48 @@ export class VipHostSelectDialog extends CommonDialog<VipHostSelectData, boolean
     private async loadHostsVipInfo() {
         this.loading = true;
         try {
-            // 获取VIP信息（单独请求，不阻塞）
-            const deviceIds = this.hostList.map(h => h.device_id).join(",");
-            if (deviceIds) {
-                orderApi.getDeviceVip(deviceIds).then(vipInfos => {
-                    this.hostList.forEach(h => {
-                        const info = vipInfos.find(v => v.id === h.device_id);
+            // 每个主机单独请求 + 使用对应 hostIp
+            this.hostList.forEach(h => {
+                orderApi.getDeviceVipWithHost(h.address, h.device_id)
+                    .then(vipInfos => {
+                        const info = vipInfos?.[0];
+
                         if (info) {
                             this.$set(h, 'vipInfo', info);
-                            // 判断是否过期：rental_end_time为空或已过期
-                            const isExpired = !info.rental_end_time || timeDiff(info.rental_end_time, info.current_time, "second") <= 0;
+
+                            const isExpired =
+                                !info.rental_end_time ||
+                                timeDiff(info.rental_end_time, info.current_time, "second") <= 0;
+
                             this.$set(h, 'isExpired', isExpired);
-                            // 判断本月是否已试用：从客户端取当前时间判断
                             this.$set(h, 'isTrialedThisMonth', this.checkTrialedThisMonth(info.trial_time));
                         } else {
                             this.$set(h, 'isExpired', true);
                             this.$set(h, 'isTrialedThisMonth', false);
                         }
+                    })
+                    .catch(e => {
+                        console.warn("getDeviceVipWithHost error:", h.address, e);
+                        this.$set(h, 'isExpired', true);
+                        this.$set(h, 'isTrialedThisMonth', false);
                     });
-                }).catch(e => console.warn(e));
-            }
-
-            // 并发获取型号信息，每个请求独立完成后立即更新UI
-            this.hostList.forEach(h => {
-                deviceApi.getWarehousingInfo(h.address).then(w => {
-                    if (w.code === 200) {
-                        this.$set(h, 'model', w.data.model);
-                    }
-                }).catch(e => {
-                    // ignore
-                });
             });
+
+            // 型号信息（保持不变）
+            this.hostList.forEach(h => {
+                deviceApi.getWarehousingInfo(h.address)
+                    .then(w => {
+                        if (w.code === 200) {
+                            this.$set(h, 'model', w.data.model);
+                        }
+                    })
+                    .catch(() => { });
+            });
+
         } catch (error) {
             this.$message.error(`${error}`);
         }
+
         this.loading = false;
     }
 
@@ -130,9 +138,9 @@ export class VipHostSelectDialog extends CommonDialog<VipHostSelectData, boolean
         }
         // 可以试用
         return (
-            <el-button 
-                type="warning" 
-                size="mini" 
+            <el-button
+                type="warning"
+                size="mini"
                 loading={host.trialLoading}
                 onClick={() => this.onTrial(host)}
             >
@@ -168,11 +176,11 @@ export class VipHostSelectDialog extends CommonDialog<VipHostSelectData, boolean
     protected override renderFooter() {
         return (
             <div class="dialog-footer">
-                <MyButton 
-                    type="primary" 
-                    text={this.$t("vip.purchase")} 
+                <MyButton
+                    type="primary"
+                    text={this.$t("vip.purchase")}
                     disabled={this.selectedIds.length === 0}
-                    onClick={this.onPurchase} 
+                    onClick={this.onPurchase}
                 />
                 <MyButton text={this.$t("vip.back")} onClick={() => this.close(this.vipChanged)} />
             </div>
@@ -193,35 +201,35 @@ export class VipHostSelectDialog extends CommonDialog<VipHostSelectData, boolean
         return (
             <Column gap={20} style={{ padding: "20px", height: "100%" }}>
                 <div style={{ color: "#606266", fontSize: "14px" }}>{this.$t("vip.tip")}</div>
-                <el-table 
-                    data={this.hostList} 
-                    height="100%" 
+                <el-table
+                    data={this.hostList}
+                    height="100%"
                     v-loading={this.loading}
                     on-selection-change={this.onSelectionChange}
                 >
                     <el-table-column type="selection" width="55" />
-                    <el-table-column 
-                        label={this.$t("vip.hostInfo")} 
+                    <el-table-column
+                        label={this.$t("vip.hostInfo")}
                         scopedSlots={{
-                            default: ({ row }: { row: HostWithVip }) => {
+                            default: ({ row }: { row: HostWithVip; }) => {
                                 return <span>{this.formatHostDisplay(row)}</span>;
                             }
                         }}
                     />
-                    <el-table-column 
-                        label={this.$t("vip.expireStatus")} 
+                    <el-table-column
+                        label={this.$t("vip.expireStatus")}
                         width="180"
                         scopedSlots={{
-                            default: ({ row }: { row: HostWithVip }) => {
+                            default: ({ row }: { row: HostWithVip; }) => {
                                 return this.renderExpireStatus(row);
                             }
                         }}
                     />
-                    <el-table-column 
-                        label={this.$t("vip.operation")} 
+                    <el-table-column
+                        label={this.$t("vip.operation")}
                         width="120"
                         scopedSlots={{
-                            default: ({ row }: { row: HostWithVip }) => {
+                            default: ({ row }: { row: HostWithVip; }) => {
                                 return this.renderTrialButton(row);
                             }
                         }}
