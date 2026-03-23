@@ -226,7 +226,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <el-table-column prop="created_at" formatter={(row: DeviceInfo) => this.formatCreatedAt(row.created_at)} label={this.$t("createdAt")} width="90" />
                         <el-table-column prop="git_commit_id" label={this.$t("vmDetail.containerGitCommitId")} width="110" show-overflow-tooltip />
                         <el-table-column
-                            width="230"
+                            width="180"
                             show-overflow-tooltip
                             label={this.$t("vmImage")}
                             // prop="image_addr" label={this.$t("vmImage")} show-overflow-tooltip formatter={(r) => {
