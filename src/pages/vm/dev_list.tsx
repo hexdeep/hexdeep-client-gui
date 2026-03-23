@@ -590,6 +590,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
 
     private renderAction(row: DeviceInfo, hasBtn: boolean = true) {
+        const isListView = this.config.view === 'list';
         const renderBtn = () => {
             switch (row.state) {
                 case 'running':
@@ -604,13 +605,14 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         return (
             <Row gap={10} crossAlign='center'>
                 {hasBtn && renderBtn()}
-                <TextButton text={this.$t("menu.create")} onClick={() => this.create(row)} />
+                {isListView && <TextButton text={this.$t("menu.create")} onClick={() => this.create(row)} />}
                 {row.state !== '' && <el-dropdown trigger="click">
 
                     <div style="cursor: pointer;">
                         <Icon icon={moreVert} width="16" height="16" />
                     </div>
                     <el-dropdown-menu slot="dropdown">
+                        {!isListView && <el-dropdown-item nativeOnClick={() => this.create(row)}>{this.$t("createVm")}</el-dropdown-item>}
                         <el-dropdown-item disabled={row.state == 'running'} nativeOnClick={() => this.start(row)}>{this.$t("menu.start")}</el-dropdown-item>
                         <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.shutdown(row)}>{this.$t("menu.shutdown")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.reboot(row)}>{this.$t("menu.reboot")}</el-dropdown-item>

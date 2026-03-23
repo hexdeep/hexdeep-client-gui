@@ -118,6 +118,7 @@
     },
     "menu": {
         "start": "Start",
+        "create": "Create",
         "stop": "Stop",
         "reset": "Reset",
         "reboot": "Reboot",

@@ -119,6 +119,7 @@
     },
     "menu": {
         "start": "开机",
+        "create": "创建",
         "stop": "停止",
         "reset": "重置",
         "reboot": "重启",

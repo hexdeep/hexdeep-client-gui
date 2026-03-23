@@ -29,7 +29,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     override width: string = "600px";
     public override async show(data: HostInfo) {
         this.data = data;
-        this.title = this.$t("instance.hostDetail").toString();
+        this.title = this.$t("instance.hostDetail").toString() + ` (${data.address})`;
         deviceApi.getHostDetail(data.address).then(e => this.detail = e);
         deviceApi.getWarehousingInfo(data.address).then(e => {
             if (e.code !== 200) {
