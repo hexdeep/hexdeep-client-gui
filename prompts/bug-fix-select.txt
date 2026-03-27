@@ -1,0 +1,58 @@
+提示词：修复批量操作的BUG
+在这个代码里面，在`/vm`界面里面，右上方有一个横栏，里面有一个“批量操作”按钮。
+里面有下拉菜单，包括开机、关机、重启、重置、删除。
+点击以后会出现一个对话框，里面会显示待操作的云机列表。
+里面的对话框显式的云机列表有时是错误的，尤其是在选择以后再执行搜索再去选择的时候。
+请你检查原因，然后不要修复BUG，只做预检，然后写在下方：
+
+
+## 预检结果
+
+### 问题根因分析
+
+**核心问题：`selectedItems` 和 `rightChecked` 的数据不同步**
+
+在 `vm.tsx` 第 211-219 行，`selectedItems` 的计算逻辑如下：
+```typescript
+private get selectedItems(): DeviceInfo[] {
+    let arr: DeviceInfo[] = [];
+    this.hosts.forEach(x => {
+        x.devices.forEach(y => {
+            if (this.rightChecked.find(a => a == y.key) != null) arr.push(y);
+        });
+    });
+    return arr;
+}
+```
+
+这个逻辑遍历的是 `this.hosts`（所有主机的设备列表），而不是当前经过过滤/搜索后显示的设备列表 `data2`。
+
+### BUG 复现场景
+
+1. 用户在列表中选择了若干云机（这些选中的 key 被存入 `rightChecked`）
+2. 用户执行搜索过滤（例如按名称或状态过滤）
+3. 过滤后显示的设备列表 `data2` 变化了，但 `rightChecked` 仍然保留着之前选中的 key
+4. 用户再次选择一些设备
+5. 此时 `rightChecked` 包含了：
+   - 旧的选中项（可能已被过滤掉、不在当前视图中显示）
+   - 新的选中项
+6. 当用户点击批量操作时，`selectedItems` 从 `this.hosts` 中查找所有匹配 `rightChecked` 的设备
+7. 这会返回包括被过滤掉的旧设备，导致对话框显示的云机列表与用户预期不符
+
+### 相关代码位置
+
+| 文件 | 行号 | 描述 |
+|------|------|------|
+| `vm.tsx` | 24 | `rightChecked` 定义 |
+| `vm.tsx` | 211-219 | `selectedItems` getter，从 `hosts` 而非 `data2` 获取设备 |
+| `dev_list.tsx` | 62-70 | `data2` 是经过过滤的当前显示列表 |
+| `dev_list.tsx` | 130-150 | `toggleRowSelection` 函数会清理不在 `data2` 中的 `rightChecked`，但只在视图切换时调用 |
+| `dev_list.tsx` | 152-155 | `@Watch("data2")` 监听器调用 `toggleRowSelection`，但可能存在时机问题 |
+
+### 修复建议
+
+方案一（推荐）：修改 `selectedItems` getter，只返回同时存在于当前过滤视图和 `rightChecked` 中的设备
+
+方案二：在搜索过滤条件变化时，主动清除或重新同步 `rightChecked`
+
+方案三：在 `batchOperate` 方法中，过滤掉不在当前视图中的设备

@@ -1,6 +1,6 @@
 import { deviceApi } from "@/api/device_api";
 import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from "@/api/device_define";
-import { getSuffixName, sortDevices } from "@/common/common";
+import { filterWithConfig, getSuffixName, sortDevices } from "@/common/common";
 import { Config } from "@/common/Config";
 import { i18n } from "@/i18n/i18n";
 import { Column, Row } from "@/lib/container";
@@ -209,13 +209,10 @@ export default class VMPage extends Vue {
     }
 
     private get selectedItems(): DeviceInfo[] {
-        let arr: DeviceInfo[] = [];
-        this.hosts.forEach(x => {
-            x.devices.forEach(y => {
-                if (this.rightChecked.find(a => a == y.key) != null) arr.push(y);
-            });
-        });
-        return arr;
+        // 只返回当前过滤视图中且被选中的设备，避免搜索后选中项不同步的问题
+        return this.hostTree.flatMap(x => x.children?.filter(y => {
+            return y.selected && filterWithConfig(this.config, y.value) && this.rightChecked.includes(y.key);
+        }) || []).map(t => t.value);
     }
 
     private selectAll() {
