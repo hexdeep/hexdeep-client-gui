@@ -100,9 +100,21 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
         if (
             list &&
             list.length > 0 &&
-            !this.obj.docker_registry
+            !this.obj.docker_registry &&
+            this.obj.image_addr !== "[customImage]"
         ) {
             this.$set(this.obj, "docker_registry", list[0]);
+        }
+    }
+
+    @Watch("obj.image_addr")
+    onImageAddrChange(newVal: string) {
+        if (newVal === "[customImage]") {
+            // 选择自定义镜像时，清空镜像加速
+            this.$set(this.obj, "docker_registry", "");
+        } else if (!this.obj.docker_registry && this.dockerRegistries.length > 0) {
+            // 切换回官方镜像且当前为空时，恢复默认值
+            this.$set(this.obj, "docker_registry", this.dockerRegistries[0]);
         }
     }
 

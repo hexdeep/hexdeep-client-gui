@@ -63,9 +63,21 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         if (
             list &&
             list.length > 0 &&
-            !this.data.docker_registry
+            !this.data.docker_registry &&
+            this.data.image_addr !== "[customImage]"
         ) {
             this.$set(this.data, "docker_registry", list[0]);
+        }
+    }
+
+    @Watch("data.image_addr")
+    onImageAddrChange(newVal: string) {
+        if (newVal === "[customImage]") {
+            // 选择自定义镜像时，清空镜像加速
+            this.$set(this.data, "docker_registry", "");
+        } else if (!this.data.docker_registry && this.dockerRegistries.length > 0) {
+            // 切换回官方镜像且当前为空时，恢复默认值
+            this.$set(this.data, "docker_registry", this.dockerRegistries[0]);
         }
     }
 
