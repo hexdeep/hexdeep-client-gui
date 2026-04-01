@@ -72,6 +72,7 @@
         "docker_registry": "镜像加速",
         "select_docker_registry": "使用镜像加速会更快",
         "download_docker_registry": "下载镜像加速服务",
+        "custom_image_no_registry": "自定义镜像不支持镜像加速",
         "width": "宽度",
         "height": "高度",
         "dpi": "DPI",

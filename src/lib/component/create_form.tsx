@@ -169,6 +169,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                             filterable
                             allow-create
                             clearable
+                            disabled={this.data.image_addr === "[customImage]"}
                             style="flex: 1;"
                         >
                             {this.dockerRegistries.map(registry => (
@@ -189,6 +190,11 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                             {this.$t("create.download_docker_registry")}
                         </el-link>
                     </div>
+                    {this.data.image_addr === "[customImage]" && (
+                        <div style="color: #909399; font-size: 12px; margin-top: 4px;">
+                            {this.$t("create.custom_image_no_registry")}
+                        </div>
+                    )}
                 </el-form-item>
 
                 <Row>

@@ -70,6 +70,7 @@
         "docker_registry": "Image Acceleration",
         "select_docker_registry": "Using mirror acceleration will be faster",
         "download_docker_registry": "Download docker registry service",
+        "custom_image_no_registry": "Custom images do not support image acceleration",
         "width": "Width",
         "height": "Height",
         "dpi": "DPI",

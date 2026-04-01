@@ -160,6 +160,7 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
                             filterable
                             allow-create
                             clearable
+                            disabled={this.obj.image_addr === "[customImage]"}
                             style="flex: 1;"
                         >
                             {this.dockerRegistries.map(registry => (
@@ -180,6 +181,11 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
                             {this.$t("create.download_docker_registry")}
                         </el-link>
                     </div>
+                    {this.obj.image_addr === "[customImage]" && (
+                        <div style="color: #909399; font-size: 12px; margin-top: 4px;">
+                            {this.$t("create.custom_image_no_registry")}
+                        </div>
+                    )}
                 </el-form-item>
 
             </el-form>
