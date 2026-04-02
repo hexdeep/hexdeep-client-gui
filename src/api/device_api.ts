@@ -4,7 +4,7 @@ import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
-import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo } from "./device_define";
+import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
@@ -214,7 +214,7 @@ class DeviceApi extends ApiBase {
         });
     }
 
-    public async batchCreate(hostIp: string, num: number, pre_name: string, param: CreateParam) {
+    public async batchCreate(hostIp: string, num: number, pre_name: string, param: CreateParam): Promise<BatchCreateResponse> {
         var formData = qs.stringify(param);
         const result = await fetch(makeVmApiUrl("dc_api/batch_create", hostIp, num.toString(), pre_name), {
             method: "POST",
@@ -223,7 +223,16 @@ class DeviceApi extends ApiBase {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
         });
-        return await this.handleError(result);
+        const text = await result.text();
+        try {
+            const json = JSON.parse(text) as BatchCreateResponse;
+            if (json.code !== 200) {
+                throw new Error((json as any).err ?? text ?? "unknown error");
+            }
+            return json;
+        } catch (e: any) {
+            throw new Error(e.message ?? text ?? "unknown error");
+        }
     }
 
     public async reboot(ip: string, name: string): Promise<string | undefined> {

@@ -167,7 +167,7 @@ export default class VMPage extends Vue {
                         value: y,
                         key: y.key!,
                         opened: false,
-                        selected: true,
+                        selected: ctc ? ctc.selected : false,
                     };
                     node!.children!.push(child);
                 }

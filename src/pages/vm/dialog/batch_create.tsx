@@ -1,7 +1,7 @@
 
 
 import { deviceApi } from '@/api/device_api';
-import { DockerBatchCreateParam, HostInfo, ImageInfo, MyConfig } from "@/api/device_define";
+import { DockerBatchCreateParam, HostInfo, ImageInfo, MyConfig, TreeConfig, CreatedVmInfo } from "@/api/device_define";
 import { i18n } from "@/i18n/i18n";
 import { Row } from "@/lib/container";
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
@@ -119,8 +119,9 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
 
     @ErrorProxy({ success: i18n.t("batchCreate.success"), loading: i18n.t("loading") })
     protected async confirming() {
-        var tasks: Promise<void>[] = [];
-        this.data.hostIp.forEach(ip => {
+        const createdVms: CreatedVmInfo[] = [];
+        
+        for (const ip of this.data.hostIp) {
             const obj = Object.assign({}, this.data.obj);
             if (obj.image_addr === "[customImage]") {
                 obj.image_addr = obj.custom_image;
@@ -128,16 +129,56 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
             } else {
                 delete obj.custom_image;
             }
-            tasks.push(deviceApi.batchCreate(ip, this.data.obj.num!, this.data.obj.suffix_name!, obj));
-        });
-        if (tasks.length == 1) {
-            await tasks[0];
-        } else {
-            await Promise.allSettled(tasks).catch(e => {
+            try {
+                const result = await deviceApi.batchCreate(ip, this.data.obj.num!, this.data.obj.suffix_name!, obj);
+                // 收集创建成功的云机信息
+                if (result.created && result.created.length > 0) {
+                    result.created.forEach(vm => {
+                        createdVms.push({
+                            index: vm.index,
+                            name: vm.name,
+                        });
+                    });
+                }
+            } catch (e) {
                 console.log(e);
-            });
+            }
         }
+        
+        // 将新创建的云机加入 TreeConfig 并设为选中
+        if (createdVms.length > 0) {
+            this.addCreatedVmsToTreeConfig(createdVms);
+        }
+        
         this.close(true);
+    }
+
+    // 将新创建的云机加入 TreeConfig
+    private addCreatedVmsToTreeConfig(createdVms: CreatedVmInfo[]) {
+        try {
+            const str = localStorage.getItem("TreeConfig") || "[]";
+            const treeConfig: TreeConfig[] = JSON.parse(str);
+            
+            // 为每个新创建的云机生成 key 并添加到配置
+            // key 格式: ${hostIp}-${index}-${name}
+            createdVms.forEach(vm => {
+                const hostIp = this.data.hostIp[0]; // 批量创建时只有一个 hostIp
+                const key = `${hostIp}-${vm.index}-${vm.name}`;
+                
+                // 检查是否已存在，避免重复
+                if (!treeConfig.find(t => t.key === key)) {
+                    treeConfig.push({
+                        key: key,
+                        selected: true,
+                        opened: false,
+                    });
+                }
+            });
+            
+            localStorage.setItem("TreeConfig", JSON.stringify(treeConfig));
+        } catch (e) {
+            console.warn("Failed to update TreeConfig:", e);
+        }
     }
 
     protected get formRules() {

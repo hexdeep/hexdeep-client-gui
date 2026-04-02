@@ -280,3 +280,16 @@ export interface FirmwareVersionInfo {
     download_url: string;
     description: string;
 }
+
+// 批量创建云机响应中的云机信息
+export interface CreatedVmInfo {
+    index: number;
+    name: string;
+}
+
+// 批量创建云机的响应
+export interface BatchCreateResponse {
+    code: number;
+    data: string;
+    created?: CreatedVmInfo[];
+}
