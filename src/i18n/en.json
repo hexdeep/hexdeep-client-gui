@@ -138,7 +138,8 @@
         "backup": "Backup",
         "clone": "Move",
         "screenMirror": "Screen Mirror",
-        "androidSdkApi": "Android Sdk Api"
+        "androidSdkApi": "Android Sdk Api",
+        "switchFirmware": "Switch Firmware"
     },
     "batchCreate": {
         "num": "Number",
@@ -202,7 +203,11 @@
         "reboot": "Are you sure you want to batch reboot {0} VMs?",
         "delete": "Are you sure you want to batch delete {0} VMs?",
         "reset": "Are you sure you want to batch reset {0} VMs?",
-        "success": "Batch operation successful"
+        "success": "Batch operation successful",
+        "switchFirmwareTitle": "Batch Switch Firmware",
+        "switchFirmwareConfirm": "Are you sure you want to switch firmware for {0} hosts? Hosts will restart after switching.",
+        "switchFirmwareSuccess": "Batch firmware switch successful, hosts are restarting...",
+        "affectedHosts": "Affected Hosts"
     },
     "vmDetail": {
         "title": "VM Detail",

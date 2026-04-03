@@ -139,7 +139,8 @@
         "backup": "备份",
         "clone": "移动",
         "screenMirror": "手机端🔥",
-        "androidSdkApi": "安卓SdkApi"
+        "androidSdkApi": "安卓SdkApi",
+        "switchFirmware": "切换固件"
     },
     "batchCreate": {
         "num": "数量",
@@ -203,7 +204,11 @@
         "reboot": "您确定要批量重启 {0} 台云机吗？",
         "delete": "您确定要批量删除 {0} 台云机吗？",
         "reset": "您确定要批量重置 {0} 台云机吗？",
-        "success": "批量操作成功"
+        "success": "批量操作成功",
+        "switchFirmwareTitle": "批量切换固件",
+        "switchFirmwareConfirm": "确定要为 {0} 台主机切换固件版本吗？切换后主机将重启。",
+        "switchFirmwareSuccess": "批量切换固件成功，主机正在重启...",
+        "affectedHosts": "涉及主机"
     },
     "vmDetail": {
         "title": "实例详情",

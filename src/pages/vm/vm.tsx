@@ -14,6 +14,7 @@ import { DevicePicker } from "./dev_picker";
 import { ChangeImageDialog } from "./dialog/change_image";
 import { ImportVmDialog } from "./dialog/import_vm";
 import { UploadFileDialog } from "./dialog/upload_file";
+import { BatchSwitchFirmwareDialog } from "./dialog/batch_switch_firmware";
 import { Screenshot } from "./screenshot";
 import s from './vm.module.less';
 
@@ -325,6 +326,11 @@ export default class VMPage extends Vue {
         if (re) this.refreshHost();
     }
 
+    private async batchSwitchFirmware() {
+        let re = await this.$dialog(BatchSwitchFirmwareDialog).show(this.selectedItems);
+        if (re) this.refreshHost();
+    }
+
     // private async batchCreate() {
     //     await this.$dialog(BatchCreateDialog).show({
     //         num: 12,
@@ -363,6 +369,7 @@ export default class VMPage extends Vue {
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(row => deviceApi.delete(row.hostIp, row.name), "delete")}>{this.$t("menu.delete")}</el-dropdown-item>
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={this.batchChangeImage}>{this.$t("menu.changeImage")}</el-dropdown-item>
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={this.batchUpload}>{this.$t("menu.upload")}</el-dropdown-item>
+                                    <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={this.batchSwitchFirmware}>{this.$t("menu.switchFirmware")}</el-dropdown-item>
                                 </el-dropdown-menu>
                             </el-dropdown>
                             <el-radio-group v-model={this.config.view}>
