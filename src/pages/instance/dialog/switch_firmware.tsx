@@ -5,39 +5,34 @@ import { deviceApi } from '@/api/device_api';
 import { i18n } from "@/i18n/i18n";
 import { HostInfo, FirmwareVersionInfo } from "@/api/device_define";
 
+export interface SwitchFirmwareData {
+    host: HostInfo;
+    firmwareList: FirmwareVersionInfo[];
+}
+
 @Dialog
-export class SwitchFirmwareDialog extends CommonDialog<HostInfo, boolean> {
+export class SwitchFirmwareDialog extends CommonDialog<SwitchFirmwareData, boolean> {
     public override width: string = "500px";
     protected versionList: FirmwareVersionInfo[] = [];
     protected selectedVersion: string = "";
     protected currentVersion: string = "";
     protected loading: boolean = true;
 
-    public override async show(data: HostInfo) {
+    public override async show(data: SwitchFirmwareData) {
         this.title = this.$t("vmDetail.switchFirmwareTitle").toString();
         this.data = data;
         this.loading = true;
+        this.versionList = data.firmwareList;
 
-        // 先打开对话框，再异步加载数据
+        // 先打开对话框，再异步加载当前版本
         const result = super.show(data);
-        this.loadData(data);
+        this.loadCurrentVersion(data.host);
         return result;
     }
 
-    private async loadData(data: HostInfo) {
+    private async loadCurrentVersion(host: HostInfo) {
         try {
-            // 并发获取版本列表和当前版本
-            const [versionList, currentVersion] = await Promise.all([
-                deviceApi.getFirmwareVersionList(),
-                deviceApi.getCurrentFirmwareVersion(data.address).catch(() => "")
-            ]);
-
-            // 按时间降序排序
-            this.versionList = versionList.sort((a, b) => {
-                return new Date(b.time).getTime() - new Date(a.time).getTime();
-            });
-
-            this.currentVersion = currentVersion;
+            this.currentVersion = await deviceApi.getCurrentFirmwareVersion(host.address).catch(() => "");
         } finally {
             this.loading = false;
         }
@@ -69,7 +64,7 @@ export class SwitchFirmwareDialog extends CommonDialog<HostInfo, boolean> {
 
     @ErrorProxy({ success: i18n.t("vmDetail.switchFirmwareSuccess"), loading: i18n.t("loading") })
     private async doSwitchFirmware() {
-        await deviceApi.switchFirmwareVersion(this.data.address, this.selectedVersion);
+        await deviceApi.switchFirmwareVersion(this.data.host.address, this.selectedVersion);
         this.close(true);
     }
 

@@ -1,5 +1,5 @@
 import { deviceApi } from "@/api/device_api";
-import { HostDetailInfo, HostInfo, SDKImagesRes } from "@/api/device_define";
+import { HostDetailInfo, HostInfo, SDKImagesRes, FirmwareVersionInfo } from "@/api/device_define";
 import { Tools, timeDiff } from "@/common/common";
 import { i18n } from "@/i18n/i18n";
 import { Row } from "@/lib/container";
@@ -17,6 +17,8 @@ import { orderApi } from "@/api/order_api";
 import { DeviceVipInfo } from "@/api/order_define";
 import { SwitchFirmwareDialog } from "./switch_firmware";
 
+const FIRMWARE_STORAGE_KEY = "firmware_version_list";
+
 @Dialog
 export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected detail: HostDetailInfo = {} as HostDetailInfo;
@@ -26,6 +28,8 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected timer: any;
     protected vipInfo?: DeviceVipInfo;
     protected vipExpired: boolean = true;
+    protected firmwareList: FirmwareVersionInfo[] = [];
+    protected firmwareUpdated: boolean = false;
     override width: string = "600px";
     public override async show(data: HostInfo) {
         this.data = data;
@@ -46,6 +50,8 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         deviceApi.getSDKImages(data.address).then(e => this.sdk = e);
         // 获取VIP信息
         this.loadVipInfo();
+        // 获取固件列表
+        this.loadFirmwareList();
         this.timer = setInterval(() => {
             deviceApi.getHostDetail(data.address).then(e => this.detail = e);
         }, 1000);
@@ -101,14 +107,15 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                 <el-descriptions-item label={i18n.t("vmDetail.apiGitCommitId")}>
                     <Row crossAlign="center">
                         <div class="grow min-w-0">{this.detail?.git_commit_id}/{this.sdk?.git_commit_id}</div>
-                        <MyButton
-                            type="primary"
-                            size="small"
-                            class="ms-auto shrink-0"
-                            onClick={this.switchFirmware}
-                        >
-                            {this.$t("vmDetail.switchFirmware")}
-                        </MyButton>
+                        <el-badge is-dot={true} hidden={!this.firmwareUpdated} class="ms-auto shrink-0">
+                            <MyButton
+                                type="primary"
+                                size="small"
+                                onClick={this.switchFirmware}
+                            >
+                                {this.$t("vmDetail.switchFirmware")}
+                            </MyButton>
+                        </el-badge>
                     </Row>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("create.model_id")}>
@@ -294,8 +301,31 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         deviceApi.getSDKImages(this.data.address).then(e => this.sdk = e);
     }
 
+    private async loadFirmwareList() {
+        try {
+            const list = await deviceApi.getFirmwareVersionList();
+            this.firmwareList = list.sort((a, b) =>
+                new Date(b.time).getTime() - new Date(a.time).getTime()
+            );
+            // 检查是否有更新：只有之前查看过才算有更新
+            const stored = localStorage.getItem(FIRMWARE_STORAGE_KEY);
+            if (stored) {
+                const oldVersions = (JSON.parse(stored) as FirmwareVersionInfo[]).map(v => v.version).sort();
+                const newVersions = this.firmwareList.map(v => v.version).sort();
+                this.firmwareUpdated = JSON.stringify(oldVersions) !== JSON.stringify(newVersions);
+            } else {
+                this.firmwareUpdated = false;
+            }
+        } catch (e) {
+            console.warn(e);
+        }
+    }
+
     private async switchFirmware() {
-        await this.$dialog(SwitchFirmwareDialog).show(this.data);
+        // 打开对话框时，将当前固件列表存入localStorage，标记为已查看
+        localStorage.setItem(FIRMWARE_STORAGE_KEY, JSON.stringify(this.firmwareList));
+        this.firmwareUpdated = false;
+        await this.$dialog(SwitchFirmwareDialog).show({ host: this.data, firmwareList: this.firmwareList });
     }
 
     private async showDiscover() {
