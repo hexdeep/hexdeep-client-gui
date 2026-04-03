@@ -270,6 +270,7 @@
         "currentFirmwareVersion": "当前版本",
         "selectFirmwareVersion": "选择版本",
         "currentVersion": "当前版本",
+        "firmwareUpdateAvailable": "有新版本",
         "unofficialModel": "非官方型号",
         "iscsi": {
             "ip": "iSCSI IP",

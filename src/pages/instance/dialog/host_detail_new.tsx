@@ -107,7 +107,10 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                 <el-descriptions-item label={i18n.t("vmDetail.apiGitCommitId")}>
                     <Row crossAlign="center">
                         <div class="grow min-w-0">{this.detail?.git_commit_id}/{this.sdk?.git_commit_id}</div>
-                        <el-badge is-dot={true} hidden={!this.firmwareUpdated} class="ms-auto shrink-0">
+                        <Row crossAlign="center" gap={8} class="ms-auto shrink-0">
+                            {this.firmwareUpdated && (
+                                <span style={{ color: "#F56C6C", fontSize: "12px" }}>{this.$t("vmDetail.firmwareUpdateAvailable")}</span>
+                            )}
                             <MyButton
                                 type="primary"
                                 size="small"
@@ -115,7 +118,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                             >
                                 {this.$t("vmDetail.switchFirmware")}
                             </MyButton>
-                        </el-badge>
+                        </Row>
                     </Row>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("create.model_id")}>

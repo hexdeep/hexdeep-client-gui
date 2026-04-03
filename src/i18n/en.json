@@ -267,6 +267,7 @@
         "currentFirmwareVersion": "Current Version",
         "selectFirmwareVersion": "Select Version",
         "currentVersion": "Current",
+        "firmwareUpdateAvailable": "New version",
         "unofficialModel": "Unofficial Model",
         "iscsi": {
             "ip": "iSCSI IP",
