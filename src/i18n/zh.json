@@ -348,6 +348,9 @@
         "hostNum": "主机数量",
         "hostDetail": "主机详情"
     },
+    "tree": {
+        "loading": "加载中"
+    },
     "filter": {
         "running": "运行中云机",
         "all": "所有云机"

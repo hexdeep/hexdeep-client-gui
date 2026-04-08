@@ -83,10 +83,32 @@ export default class VMPage extends Vue {
         let curr: HostInfo | undefined;
         try {
             if (!ip) {
-                this.hosts = await deviceApi.getAllDevices();
-                this.hosts.forEach(h => {
+                const hosts = await deviceApi.getHosts();
+                this.hosts = hosts;
+                this.FillTree();
+
+                hosts.forEach(h => {
+                    deviceApi.getDeviceListByHost(h).then(devices => {
+                        h.devices = (devices ?? []).map(e => {
+                            e.hostIp = h.address;
+                            e.hostId = h.device_id;
+                            e.key = `${h.address}-${e.index}-${e.name}`;
+                            return e;
+                        });
+                        this.FillTree(h);
+                    }).catch(e => {
+                        console.log(e);
+                        h.has_error = true;
+                        h.devices = [];
+                        this.FillTree(h);
+                    });
+
                     deviceApi.getDisks(h.address).then(res => {
                         this.$set(h, "disk", res.current_disk);
+                    }).catch(e => console.log(e));
+
+                    deviceApi.getHostRemark(h.address).then(e => {
+                        this.$set(h, "remark", e);
                     }).catch(e => console.log(e));
                 });
             } else {
@@ -97,18 +119,11 @@ export default class VMPage extends Vue {
                     deviceApi.getDisks(curr.address).then(res => {
                         this.$set(curr!, "disk", res.current_disk);
                     }).catch(e => console.log(e));
+                    this.FillTree(curr);
                 } else {
-                    this.hosts = await deviceApi.getAllDevices();
-                    this.hosts.forEach(h => {
-                        deviceApi.getDisks(h.address).then(res => {
-                            this.$set(h, "disk", res.current_disk);
-                        }).catch(e => console.log(e));
-                    });
+                    return this.refreshHost();
                 }
             }
-
-            this.FillTree(curr);
-
         } catch (error) {
             this.$message.error(`${error}`);
             this.hosts = [];
@@ -156,7 +171,8 @@ export default class VMPage extends Vue {
                 node.opened = tc.opened;
                 node.selected = tc.selected;
             }
-            node.children!.removeWhere(a => !x.devices.contains(t => t.key == a.key));
+            if (!x.devices) return;
+            node.children!.removeWhere(a => !x.devices!.contains(t => t.key == a.key));
             x.devices.forEach(y => {
                 let child = node!.children!.find(t => t.key == y.key);
                 let ctc = this.treeConfig.find(t => t.key == y.key);

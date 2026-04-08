@@ -23,7 +23,7 @@ export interface HostInfo {
     address: string;
     device_id: string;
     remark: string;
-    devices: DeviceInfo[];
+    devices?: DeviceInfo[];
     has_error?: boolean;
     disk?: string;
     model?: string;

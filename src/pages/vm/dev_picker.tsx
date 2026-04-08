@@ -101,7 +101,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
 
         var rentalIndexSet = std.first.device_indexes.filter(x => x.state != "expired").map(x => x.index);
         var set = new Set(
-            h.devices
+            (h.devices ?? [])
                 .filter(e => rentalIndexSet.includes(e.index))  // O(1) 判断
                 .map(e => e.index)
         );
@@ -231,7 +231,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                                 <span><Icon icon={this.getDiskIcon(data.value.disk)} style={{ verticalAlign: "middle", fontSize: "16px", marginLeft: "-3px" }} /></span>
                             </el-tooltip>}
                             {data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
-                        <el-tag type={data.value.has_error ? "danger" : ""}> {data.value.has_error ? <i class="el-icon-warning"></i> : children.length} </el-tag>
+                        <el-tag type={data.value.has_error ? "danger" : ""}> {data.value.has_error ? <i class="el-icon-warning"></i> : (data.value.devices === undefined ? this.$t("tree.loading") : children.length)} </el-tag>
                     </Row>
                     <Row>
                         <div class="autohide" onClick={(e) => {
@@ -324,8 +324,8 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                 <el-divider />
                 <el-radio-group v-model={this.config.filterState}>
                     <Row mainAlign='space-around'>
-                        <el-radio label="running">{this.$t("filter.running")} ({this.hosts.reduce((a, b) => a + b.devices.filter(d => d.state === "running").length, 0)})</el-radio>
-                        <el-radio label="all">{this.$t("filter.all")} ({this.hosts.reduce((a, b) => a + b.devices.length, 0)})</el-radio>
+                        <el-radio label="running">{this.$t("filter.running")} ({this.hosts.reduce((a, b) => a + (b.devices?.filter(d => d.state === "running").length ?? 0), 0)})</el-radio>
+                        <el-radio label="all">{this.$t("filter.all")} ({this.hosts.reduce((a, b) => a + (b.devices?.length ?? 0), 0)})</el-radio>
                     </Row>
                 </el-radio-group>
             </Column>

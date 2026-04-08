@@ -344,6 +344,9 @@
         "hostNum": "Host Number",
         "hostDetail": "Host Detail"
     },
+    "tree": {
+        "loading": "Loading"
+    },
     "filter": {
         "running": "Running",
         "all": "All"
