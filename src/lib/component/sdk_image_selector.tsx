@@ -38,7 +38,7 @@ export class SDKImageSelector extends tsx.Component<IPorps, {}, {}> {
     render() {
         return (
             <el-select ref="elSelectRef" filterable value={this.value} style={{ width: "100%" }} onInput={this.onInput}>
-                <el-option label={this.$t("customImage")} value="[customImage]" />
+                <el-option label={this.$t("customSdk")} value="[customImage]" />
                 {this.images.map((e) => <el-option key={e.address} label={"[" + e.version + "] " + e.address} value={e.address} />)}
             </el-select>
         );

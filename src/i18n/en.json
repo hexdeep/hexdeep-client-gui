@@ -284,6 +284,10 @@
         "success": "Image modification successful",
         "warning": "After changing the image, it is not guaranteed that the cloud machine will start normally. Please operate with caution!"
     },
+    "changeSdk": {
+      "label": "SDK Version"
+    },
+    "customSdk": "Custom SDK",
     "instance": {
         "free": "No Instance",
         "normal": "Normal",

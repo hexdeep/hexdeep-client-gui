@@ -287,6 +287,10 @@
         "success": "镜像更换成功",
         "warning": "更换镜像后，不能确保云机正常启动，请谨慎操作！"
     },
+    "changeSdk": {
+      "label": "SDK版本"
+    },
+    "customSdk": "自定义SDK",
     "instance": {
         "free": "无实例",
         "normal": "正常",

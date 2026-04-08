@@ -56,11 +56,11 @@ export class SwitchSDKDialog extends CommonDialog<HostInfo, boolean> {
     protected renderDialog(): VNode {
         return (
             <el-form ref="formRef" label-position="top" props={{ model: this.obj }} rules={this.formRules}>
-                <el-form-item label={this.$t("changeImage.label")} prop="image_addr"  >
+                <el-form-item label={this.$t("changeSdk.label")} prop="image_addr"  >
                     <SDKImageSelector hostIp={this.data.address} v-model={this.obj.image_addr} />
                 </el-form-item>
                 {this.obj.image_addr == "[customImage]" && (
-                    <el-form-item label={this.$t("customImage")} prop="custom_image_addr">
+                    <el-form-item label={this.$t("customSdk")} prop="custom_image_addr">
                         <el-input v-model={this.obj.custom_image_addr} />
                     </el-form-item>
                 )}
