@@ -1,0 +1,86 @@
+❯ 请你改一改`src/pages/vm/dialog/batch_create.tsx`，我们需要将数量、后缀名称、沙盒大小、宽度、高度、DPI、FPS这七项在浏览器中缓存。具体来说，  
+  如果用户第一次输入提交了，就缓存，下一次再次填写的时候，无论是不是在同一个主机下，都自动填充上一次提交的缓存作为默认值。                    
+
+  Read 1 file (ctrl+o to expand)
+
+● Now let me check what CreateForm looks like to understand the field names for sandbox_size, width, height, dpi, fps.
+
+  Searched for 2 patterns (ctrl+o to expand)
+
+● Now I understand the structure. The fields to cache are: num, suffix_name, sandbox_size, width, height, dpi, fps. Let me also check where
+  data.obj gets its default values.
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● Now I have everything I need. I'll add localStorage caching logic in the show method (to load cached values) and in onConfirm (to save
+  values after successful submission).
+
+● Update(src/pages/vm/dialog/batch_create.tsx)
+  ⎿  Added 32 lines
+      28      protected hasVip = false; // 当前主机是否已开通VIP
+      29      protected allHosts: HostInfo[] = []; // 所有主机列表                        
+      30  
+      31 +    private static readonly CACHE_KEY = "BatchCreateFormCache";                                                                     
+      32 +    private static readonly CACHE_FIELDS = ["num", "suffix_name", "sandbox_size", "width", "height", "dpi", "fps"] as const; 
+      33 +                                                                                                                                    
+      34      public override show(data: DockerBatchCreateParam) {                                                                          
+      35          this.data = data;
+      36          this.title = `${i18n.t("batchCreateVm")} ${data.hostIp.join(",")}`;
+      37 +        // 从缓存中恢复上次提交的值                                                                                          
+      38 +        this.loadCachedValues();                                                                                             
+      39          deviceApi.getImages(this.data.hostIp.first).then((images) => {
+      40              this.images = images;
+      41          });
+     ...
+      51          return super.show(data);
+      52      }
+      53  
+      54 +    private loadCachedValues() {                                                                                             
+      55 +        try {                                                                                                                
+      56 +            const cached = localStorage.getItem(BatchCreateDialog.CACHE_KEY);                                                
+      57 +            if (!cached) return;                                                                                             
+      58 +            const values = JSON.parse(cached);                                                                               
+      59 +            for (const field of BatchCreateDialog.CACHE_FIELDS) {                                                            
+      60 +                if (values[field] !== undefined && values[field] !== null) {                                                 
+      61 +                    (this.data.obj as any)[field] = values[field];                                                           
+      62 +                }                                                                                                            
+      63 +            }                                                                                                                
+      64 +        } catch (e) {                                                                                                        
+      65 +            console.warn("Failed to load batch create cache:", e);                                                           
+      66 +        }                                                                                                                    
+      67 +    }                                                                                                                        
+      68 +                                                                                                                             
+      69 +    private saveCacheValues() {                                                                                              
+      70 +        try {                                                                                                                
+      71 +            const values: Record<string, any> = {};                                                                          
+      72 +            for (const field of BatchCreateDialog.CACHE_FIELDS) {                                                            
+      73 +                values[field] = (this.data.obj as any)[field];                                                               
+      74 +            }                                                                                                                
+      75 +            localStorage.setItem(BatchCreateDialog.CACHE_KEY, JSON.stringify(values));                                       
+      76 +        } catch (e) {                                                                                                        
+      77 +            console.warn("Failed to save batch create cache:", e);                                                           
+      78 +        }                                                                                                                    
+      79 +    }                                                                                                                        
+      80 +                                                                                                                             
+      81      private async checkVipStatus() {
+      82          try {
+      83              const hostId = this.data.hostId?.first;
+
+● Now add saveCacheValues() call in onConfirm, right before confirming():
+                                                                                          
+● Update(src/pages/vm/dialog/batch_create.tsx)
+  ⎿  Added 1 line                                                                                                                             
+      132          }                                                                                                                          
+      133                                                                                                                                     
+      134          this.config.suffixName = this.data.obj.suffix_name || "";                                                                
+      135 +        this.saveCacheValues();                                                                                                    
+      136          this.confirming();                                                                                                       
+      137      }                                                                                                                              
+      138                                                                                                                                   
+                                                                                                                                              
+● 完成。修改逻辑如下：                                    
+                                                                                          
+  1. 定义缓存 key 和字段列表：BatchCreateFormCache 存储在 localStorage，缓存 num、suffix_name、sandbox_size、width、height、dpi、fps          
+  七个字段。                                                                                                                                  
+  2. show() 时加载缓存：调用 loadCachedValues() 将上次提交的值覆盖到 data.obj 中作为默认值，与主机无关。                                      
+  3. onConfirm() 提交时保存缓存：在表单验证通过、实际执行创建之前调用 saveCacheValues()，将当前七项值写入 localStorage。 

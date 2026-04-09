@@ -28,9 +28,14 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     protected hasVip = false; // 当前主机是否已开通VIP
     protected allHosts: HostInfo[] = []; // 所有主机列表
 
+    private static readonly CACHE_KEY = "BatchCreateFormCache";
+    private static readonly CACHE_FIELDS = ["num", "suffix_name", "sandbox_size", "width", "height", "dpi", "fps"] as const;
+
     public override show(data: DockerBatchCreateParam) {
         this.data = data;
         this.title = `${i18n.t("batchCreateVm")} ${data.hostIp.join(",")}`;
+        // 从缓存中恢复上次提交的值
+        this.loadCachedValues();
         deviceApi.getImages(this.data.hostIp.first).then((images) => {
             this.images = images;
         });
@@ -44,6 +49,33 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
             this.allHosts = hosts;
         });
         return super.show(data);
+    }
+
+    private loadCachedValues() {
+        try {
+            const cached = localStorage.getItem(BatchCreateDialog.CACHE_KEY);
+            if (!cached) return;
+            const values = JSON.parse(cached);
+            for (const field of BatchCreateDialog.CACHE_FIELDS) {
+                if (values[field] !== undefined && values[field] !== null) {
+                    (this.data.obj as any)[field] = values[field];
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to load batch create cache:", e);
+        }
+    }
+
+    private saveCacheValues() {
+        try {
+            const values: Record<string, any> = {};
+            for (const field of BatchCreateDialog.CACHE_FIELDS) {
+                values[field] = (this.data.obj as any)[field];
+            }
+            localStorage.setItem(BatchCreateDialog.CACHE_KEY, JSON.stringify(values));
+        } catch (e) {
+            console.warn("Failed to save batch create cache:", e);
+        }
     }
 
     private async checkVipStatus() {
@@ -100,6 +132,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         }
 
         this.config.suffixName = this.data.obj.suffix_name || "";
+        this.saveCacheValues();
         this.confirming();
     }
 
