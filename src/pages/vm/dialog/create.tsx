@@ -23,6 +23,9 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     private hasVip = false;
     private allHosts: HostInfo[] = [];
 
+    private static readonly CACHE_KEY = "CreateFormCache";
+    private static readonly CACHE_FIELDS = ["name", "sandbox_size", "width", "height", "dpi", "fps"] as const;
+
     public override async show(data: DockerEditParam) {
         this.data = data;
         const vmName = getSuffixName(data.info.name);
@@ -36,6 +39,9 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         deviceApi.getDockerRegistries(this.data.info.hostIp).then((list) => {
             this.dockerRegistries = Array.isArray(list) ? list : [];
         });
+        if (!data.isUpdate) {
+            this.loadCachedValues();
+        }
         await this.hostIpChange();
         // 检查VIP状态
         this.checkVipStatus();
@@ -61,6 +67,33 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         } catch (e) {
             console.warn("Failed to check VIP status:", e);
             this.hasVip = false;
+        }
+    }
+
+    private loadCachedValues() {
+        try {
+            const cached = localStorage.getItem(CreateDialog.CACHE_KEY);
+            if (!cached) return;
+            const values = JSON.parse(cached);
+            for (const field of CreateDialog.CACHE_FIELDS) {
+                if (values[field] !== undefined && values[field] !== null) {
+                    (this.data.obj as any)[field] = values[field];
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to load create cache:", e);
+        }
+    }
+
+    private saveCacheValues() {
+        try {
+            const values: Record<string, any> = {};
+            for (const field of CreateDialog.CACHE_FIELDS) {
+                values[field] = (this.data.obj as any)[field];
+            }
+            localStorage.setItem(CreateDialog.CACHE_KEY, JSON.stringify(values));
+        } catch (e) {
+            console.warn("Failed to save create cache:", e);
         }
     }
 
@@ -117,6 +150,9 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                 });
                 if (err) throw err;
             }
+        }
+        if (!this.data.isUpdate) {
+            this.saveCacheValues();
         }
         this.confirming();
     }
