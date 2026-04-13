@@ -196,7 +196,8 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
             // key 格式: ${hostIp}-${index}-${name}
             createdVms.forEach(vm => {
                 const hostIp = this.data.hostIp[0]; // 批量创建时只有一个 hostIp
-                const key = `${hostIp}-${vm.index}-${vm.name}`;
+                const hostId = this.data.hostId?.first || "";
+                const key = `${hostIp}-${vm.index}-${hostId}_${vm.index}_${vm.name}`;
                 
                 // 检查是否已存在，避免重复
                 if (!treeConfig.find(t => t.key === key)) {
