@@ -1,6 +1,6 @@
 import { deviceApi } from '@/api/device_api';
 import { orderApi } from "@/api/order_api";
-import { CreateParam, DockerEditParam, HostInfo, ImageInfo } from "@/api/device_define";
+import { CreateParam, DockerEditParam, HostInfo, ImageInfo, TreeConfig } from "@/api/device_define";
 import { i18n } from "@/i18n/i18n";
 import { getSuffixName, timeDiff } from '@/common/common';
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
@@ -175,6 +175,10 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                 data.obj.index = this.validIndex;
             }
             await deviceApi.create(data);
+
+            // 将新创建的云机加入 TreeConfig 并设为选中
+            this.addCreatedVmToTreeConfig(data.obj.index!, this.data.obj.name!);
+
             let re: any = "";
 
             re = await this.$confirm(this.$t("create.start").toString(), this.$t("confirm.title").toString(), {
@@ -185,6 +189,31 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             if (re == "confirm") await deviceApi.start(this.data.info.hostIp, `${this.data.hostId}_${data.obj.index}_${this.data.obj.name}`);
         }
         this.close(this.data.obj);
+    }
+
+    // 将新创建的云机加入 TreeConfig
+    private addCreatedVmToTreeConfig(index: number, name: string) {
+        try {
+            const str = localStorage.getItem("TreeConfig") || "[]";
+            const treeConfig: TreeConfig[] = JSON.parse(str);
+
+            const hostIp = this.data.info.hostIp;
+            const hostId = this.data.hostId || "";
+            const key = `${hostIp}-${index}-${hostId}_${index}_${name}`;
+
+            // 检查是否已存在，避免重复
+            if (!treeConfig.find(t => t.key === key)) {
+                treeConfig.push({
+                    key: key,
+                    selected: true,
+                    opened: false,
+                });
+            }
+
+            localStorage.setItem("TreeConfig", JSON.stringify(treeConfig));
+        } catch (e) {
+            console.warn("Failed to update TreeConfig:", e);
+        }
     }
 
     protected get formRules() {
