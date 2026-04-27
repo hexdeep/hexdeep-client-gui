@@ -237,3 +237,33 @@ export function sortDevicesByHostIp<T extends { hostIp: string; index: number; c
         return timeB.localeCompare(timeA);
     });
 }
+
+type ImageVersionFamily = "legacy" | "v3" | undefined;
+
+export function getImageVersionFamily(imageAddr?: string): ImageVersionFamily {
+    if (!imageAddr) return;
+    if (imageAddr.includes("-v3.") || imageAddr.includes(":3.")) return "v3";
+    if (imageAddr.includes("-v2.") || imageAddr.includes("-v1.") || imageAddr.includes(":2.") || imageAddr.includes(":1.")) return "legacy";
+    return;
+}
+
+export function isImageVersionCompatible(currentImageAddr?: string, targetImageAddr?: string) {
+    const current = getImageVersionFamily(currentImageAddr);
+    const target = getImageVersionFamily(targetImageAddr);
+    if (!current || !target) return true;
+    return current === target;
+}
+
+export function normalizeMobileModelVersion(version?: string): "v2" | "v3" {
+    return version === "v3" ? "v3" : "v2";
+}
+
+export function isImageVersionCompatibleByModelVersion(mobileModelVersion: string | undefined, targetImageAddr?: string) {
+    const version = normalizeMobileModelVersion(mobileModelVersion);
+    const target = getImageVersionFamily(targetImageAddr);
+    if (!target) return true;
+    if (version === "v3") {
+        return target === "v3";
+    }
+    return target !== "v3";
+}

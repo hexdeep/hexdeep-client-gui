@@ -15,7 +15,7 @@ import { InjectReactive } from 'vue-property-decorator';
 import { PullImageDialog } from './pull_image';
 import { VipHostSelectDialog } from "./vip_host_select";
 import { orderApi } from "@/api/order_api";
-import { timeDiff } from "@/common/common";
+import { isImageVersionCompatibleByModelVersion, timeDiff } from "@/common/common";
 
 
 @Dialog
@@ -29,7 +29,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     protected allHosts: HostInfo[] = []; // 所有主机列表
 
     private static readonly CACHE_KEY = "BatchCreateFormCache";
-    private static readonly CACHE_FIELDS = ["num", "suffix_name", "sandbox_size", "width", "height", "dpi", "fps"] as const;
+    private static readonly CACHE_FIELDS = ["num", "suffix_name", "sandbox_size", "width", "height", "dpi", "fps", "mobile_model_version", "mobile_model_source"] as const;
 
     public override show(data: DockerBatchCreateParam) {
         this.data = data;
@@ -56,6 +56,9 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
             const cached = localStorage.getItem(BatchCreateDialog.CACHE_KEY);
             if (!cached) return;
             const values = JSON.parse(cached);
+            if (values.mobile_model_version === "v1") {
+                values.mobile_model_version = "v2";
+            }
             for (const field of BatchCreateDialog.CACHE_FIELDS) {
                 if (values[field] !== undefined && values[field] !== null) {
                     (this.data.obj as any)[field] = values[field];
@@ -116,6 +119,9 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     @ErrorProxy({ validatForm: "formRef" })
     protected override async onConfirm() {
         const image_addr = this.data.obj.image_addr == "[customImage]" ? this.data.obj.custom_image : this.data.obj.image_addr;
+        if (!isImageVersionCompatibleByModelVersion(this.data.obj.mobile_model_version, image_addr)) {
+            throw new Error(this.$t("changeImage.versionMismatch").toString());
+        }
         if (image_addr && ((image_addr.includes('.') && image_addr.includes('/')))) {
             for (var ip of this.data.hostIp) {
                 var imgs = await this.getImages(ip);
@@ -156,11 +162,15 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         
         for (const ip of this.data.hostIp) {
             const obj = Object.assign({}, this.data.obj);
+            obj.mobile_model_version = obj.mobile_model_version === "v3" ? "v3" : "v2";
             if (obj.image_addr === "[customImage]") {
                 obj.image_addr = obj.custom_image;
                 delete obj.custom_image;
             } else {
                 delete obj.custom_image;
+            }
+            if (Number(obj.model_id ?? 0) !== -1) {
+                delete obj.mobile_model_source;
             }
             try {
                 const result = await deviceApi.batchCreate(ip, this.data.obj.num!, this.data.obj.suffix_name!, obj);
@@ -251,6 +261,9 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
             ],
             dns_urls: [
                 { pattern: /^(((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3})(,((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3})*$/, message: i18n.t("invalidDnsUrls"), trigger: 'blur' },
+            ],
+            mobile_model_source: [
+                { required: Number(this.data.obj.model_id ?? 0) === -1, message: i18n.t("notNull"), trigger: 'blur' },
             ]
         };
     }

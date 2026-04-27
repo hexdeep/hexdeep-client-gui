@@ -42,6 +42,7 @@ export interface MyTreeNode {
 export interface DeviceDetail {
     custom_image?: string; // 扩展字段 自定义镜像地址
     image_addr?: string;//	镜像地址
+    mobile_model_version?: "v2" | "v3";
     width?: number; //	屏幕宽度
     height?: number;//	屏幕高度
     dpi?: number;   //	解析度
@@ -56,6 +57,8 @@ export interface CreateParam extends S5setParam, DeviceDetail {
     num?: number;
     index?: number;
     name: string;
+    mobile_model_version?: "v2" | "v3";
+    mobile_model_source?: string;
     sandbox?: number;   //	沙盒模式:0,禁用;1,启用
     sandbox_size?: number;  //	沙盒大小 单位GB 默认16GB
     mac_vlan?: number;  //	独立ip模式:0,禁用；1，启用
@@ -111,6 +114,18 @@ export interface S5setParam {
     password?: string;//	密码   
     udp_over_tcp?: number; //	1,启用;0,禁用
 }
+
+export interface MobileModelV3Info {
+    id: number;
+    screen_height: number;
+    screen_width: number;
+    screen_density: number;
+    download_url: string;
+}
+
+export type MobileModelListV2 = Record<string, Record<string, number>>;
+export type MobileModelListV3 = Record<string, Record<string, MobileModelV3Info>>;
+export type MobileModelList = MobileModelListV2 | MobileModelListV3;
 
 export interface DockerEditParam {
     isUpdate?: boolean;

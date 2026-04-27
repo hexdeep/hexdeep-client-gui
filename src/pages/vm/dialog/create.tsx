@@ -2,7 +2,7 @@ import { deviceApi } from '@/api/device_api';
 import { orderApi } from "@/api/order_api";
 import { CreateParam, DockerEditParam, HostInfo, ImageInfo, TreeConfig } from "@/api/device_define";
 import { i18n } from "@/i18n/i18n";
-import { getSuffixName, timeDiff } from '@/common/common';
+import { getSuffixName, isImageVersionCompatibleByModelVersion, normalizeMobileModelVersion, timeDiff } from '@/common/common';
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
 import { ErrorProxy } from "@/lib/error_handle";
 import { VNode } from "vue";
@@ -24,7 +24,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     private allHosts: HostInfo[] = [];
 
     private static readonly CACHE_KEY = "CreateFormCache";
-    private static readonly CACHE_FIELDS = ["name", "sandbox_size", "width", "height", "dpi", "fps"] as const;
+    private static readonly CACHE_FIELDS = ["name", "sandbox_size", "width", "height", "dpi", "fps", "mobile_model_version", "mobile_model_source"] as const;
 
     public override async show(data: DockerEditParam) {
         this.data = data;
@@ -75,6 +75,9 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             const cached = localStorage.getItem(CreateDialog.CACHE_KEY);
             if (!cached) return;
             const values = JSON.parse(cached);
+            if (values.mobile_model_version === "v1") {
+                values.mobile_model_version = "v2";
+            }
             for (const field of CreateDialog.CACHE_FIELDS) {
                 if (values[field] !== undefined && values[field] !== null) {
                     (this.data.obj as any)[field] = values[field];
@@ -140,6 +143,12 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             return;
         };
         const image_addr = this.data.obj.image_addr == "[customImage]" ? this.data.obj.custom_image : this.data.obj.image_addr;
+        const modelVersion = this.data.isUpdate
+            ? this.data.info.create_req?.mobile_model_version
+            : this.data.obj.mobile_model_version;
+        if (!isImageVersionCompatibleByModelVersion(modelVersion, image_addr)) {
+            throw new Error(this.$t("changeImage.versionMismatch").toString());
+        }
         if (image_addr && ((image_addr.includes('.') && image_addr.includes('/')))) {
             var image = this.images.find(x => x.address == image_addr);
             if (!image || !image.download) {
@@ -161,11 +170,15 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     protected async confirming() {
         const data = Object.assign({}, this.data);
         data.obj = Object.assign({}, this.data.obj);
+        data.obj.mobile_model_version = normalizeMobileModelVersion(data.obj.mobile_model_version);
         if (data.obj.image_addr === "[customImage]") {
             data.obj.image_addr = data.obj.custom_image;
             delete data.obj.custom_image;
         } else {
             delete data.obj.custom_image;
+        }
+        if (Number(data.obj.model_id ?? 0) !== -1) {
+            delete data.obj.mobile_model_source;
         }
         if (this.data.isUpdate) {
             await deviceApi.update(data);
@@ -250,6 +263,9 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             port: [
                 { required: this.data.obj.isOpenProxy && this.data.obj.protocol_type == 1, message: i18n.t("notNull"), trigger: 'blur' },
                 { pattern: /^([0-9]|[1-9]\d{1,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$/, message: i18n.t("invalidPort"), trigger: 'blur' },
+            ],
+            mobile_model_source: [
+                { required: Number(this.data.obj.model_id ?? 0) === -1, message: i18n.t("notNull"), trigger: 'blur' },
             ]
         };
     }

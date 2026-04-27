@@ -1,20 +1,13 @@
 
 import { deviceApi } from '@/api/device_api';
 import { VNode } from 'vue';
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Watch } from "vue-property-decorator";
 import * as tsx from 'vue-tsx-support';
 import { CommonDialog, Dialog } from '../dialog/dialog';
 import { ErrorProxy } from '../error_handle';
 import { i18n } from '@/i18n/i18n';
 import { DeviceInfo } from '@/api/device_define';
-
-interface IData {
-    label: string;
-    options: {
-        label: string;
-        value: number;
-    }[];
-}
+import { getOrLoadMobileModelList, MobileModelGroup } from './mobile_model_loader';
 
 /**
  * 机型选择器
@@ -22,15 +15,21 @@ interface IData {
 @Component
 export class ModelSelector extends tsx.Component<IPorps & IModelPorps, {}, {}> {
     @Prop() value!: number;
-    protected modelList: IData[] = [];
+    @Prop({ default: "v2" }) version!: "v2" | "v3";
+    protected modelList: MobileModelGroup[] = [];
 
     protected async created() {
+        await this.loadModelList();
+    }
+
+    @Watch("version")
+    protected async onVersionChange() {
+        await this.loadModelList();
+    }
+
+    private async loadModelList() {
         try {
-            const e = await deviceApi.getModelList();
-            this.modelList = Object.entries(e).map(([k, v]) => {
-                return { label: k, options: Object.entries(v as object).map(([k1, v1]) => ({ label: k1, value: v1 })) };
-            });
-            this.modelList.splice(0, 0, { label: this.$t("default").toString(), options: [{ label: this.$t("random").toString(), value: 0 }] });
+            this.modelList = await getOrLoadMobileModelList(this.version, (key) => this.$t(key).toString());
         } catch (error) {
 
         }
@@ -55,7 +54,7 @@ export class ModelSelector extends tsx.Component<IPorps & IModelPorps, {}, {}> {
     }
 
     private async onClick() {
-        const ret = await this.$dialog(ModelSelectotDialog).show(this.value);
+        const ret = await this.$dialog(ModelSelectotDialog).show({ value: this.value, version: this.version });
         if (ret !== undefined) {
             this.$emit("input", ret);
         }
@@ -72,28 +71,26 @@ export class ModelSelector extends tsx.Component<IPorps & IModelPorps, {}, {}> {
 }
 
 @Dialog
-export class ModelSelectotDialog extends CommonDialog<number, number> {
-    protected modelList: IData[] = [];
+export class ModelSelectotDialog extends CommonDialog<IModelDialogData, number> {
+    protected modelList: MobileModelGroup[] = [];
     public override title: string = this.$t("modelSelector.title").toString();
     public override width: string = "650px";
     private loading: boolean = false;
     private value: number = 0;
+    private version: "v2" | "v3" = "v2";
     public immediateSubmit = false;
     public device: DeviceInfo | null = null;
 
-    public override show(data?: number | undefined) {
-        this.value = data || 0;
+    public override show(data?: IModelDialogData | undefined) {
+        this.value = data?.value || 0;
+        this.version = data?.version || "v2";
         return super.show(data);
     }
 
-    protected async created() {
+    protected override async onInit() {
         try {
             this.loading = true;
-            const e = await deviceApi.getModelList();
-            this.modelList = Object.entries(e).map(([k, v]) => {
-                return { label: k, options: Object.entries(v as object).map(([k1, v1]) => ({ label: k1, value: v1 })) };
-            });
-            this.modelList.splice(0, 0, { label: this.$t("default").toString(), options: [{ label: this.$t("random").toString(), value: 0 }] });
+            this.modelList = await getOrLoadMobileModelList(this.version, (key) => this.$t(key).toString());
         } catch (error) {
             this.$message.error(`${error}`);
         } finally {
@@ -121,7 +118,7 @@ export class ModelSelectotDialog extends CommonDialog<number, number> {
         );
     }
 
-    private renderOptions(row: IData) {
+    private renderOptions(row: MobileModelGroup) {
         return row.options.map((v) => {
             return <el-radio v-model={this.value} label={v.value}>{v.label}</el-radio>;
         });
@@ -129,4 +126,10 @@ export class ModelSelectotDialog extends CommonDialog<number, number> {
 }
 
 interface IPorps {
+    version?: "v2" | "v3";
+}
+
+interface IModelDialogData {
+    value?: number;
+    version?: "v2" | "v3";
 }

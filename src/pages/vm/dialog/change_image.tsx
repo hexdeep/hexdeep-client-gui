@@ -11,7 +11,7 @@ import { PullImageDialog } from "./pull_image";
 import { Watch } from 'vue-property-decorator';
 import { VipHostSelectDialog } from "./vip_host_select";
 import { orderApi } from "@/api/order_api";
-import { timeDiff } from "@/common/common";
+import { isImageVersionCompatibleByModelVersion, timeDiff } from "@/common/common";
 
 @Dialog
 export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
@@ -76,6 +76,12 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
 
     @ErrorProxy({ validatForm: "formRef" })
     protected override async onConfirm() {
+        const image_addr = this.obj.image_addr == "[customImage]" ? this.obj.custom_image : this.obj.image_addr;
+        const incompatible = this.data.find(item => !isImageVersionCompatibleByModelVersion(item.create_req?.mobile_model_version, image_addr));
+        if (incompatible) {
+            throw new Error(this.$t("changeImage.versionMismatch").toString());
+        }
+
         if (this.obj.image_addr && ((this.obj.image_addr.includes('.') && this.obj.image_addr.includes('/')))) {
             var gp = this.data.groupBy(x => x.hostIp);
             for (var ip of Object.keys(gp)) {

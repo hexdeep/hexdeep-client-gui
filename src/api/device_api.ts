@@ -4,7 +4,7 @@ import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
-import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse } from "./device_define";
+import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
@@ -148,8 +148,8 @@ class DeviceApi extends ApiBase {
         return result;
     }
 
-    public async getModelList() {
-        const result = await fetch("https://download.hexdeep.com/mobile_cfgs/cfg.txt");
+    public async getModelList(version: "v2" | "v3" = "v2"): Promise<MobileModelList> {
+        const result = await fetch(`https://download.hexdeep.com/mobile_cfgs/${version}/cfg.txt`);
         const json = await result.json();
         return json;
     }

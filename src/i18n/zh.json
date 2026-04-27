@@ -50,6 +50,7 @@
     "success": "成功",
     "default": "默认",
     "random": "随机",
+    "custom": "自定义",
     "list": "列表",
     "vertical": "竖屏",
     "horizontal": "横屏",
@@ -77,7 +78,10 @@
         "height": "高度",
         "dpi": "DPI",
         "fps": "FPS",
+        "mobile_model_version": "机型版本",
         "model_id": "型号",
+        "custom_model_path": "自定义型号路径",
+        "custom_model_path_placeholder": "输入网络下载路径或服务器上的绝对路径",
         "enableS5Proxy": "启用代理",
         "enable": "启用",
         "disable": "禁用",
@@ -285,7 +289,8 @@
         "title": "更换镜像",
         "label": "镜像",
         "success": "镜像更换成功",
-        "warning": "更换镜像后，不能确保云机正常启动，请谨慎操作！"
+        "warning": "更换镜像后，不能确保云机正常启动，请谨慎操作！",
+        "versionMismatch": "镜像版本不兼容：v1/v2 镜像不能更新到 v3，v3 镜像也不能更新到 v1/v2。v1 和 v2 可以互相更新。"
     },
     "changeSdk": {
       "label": "SDK版本"

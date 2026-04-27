@@ -41,6 +41,7 @@
     "vertical": "Vertical",
     "horizontal": "Horizontal",
     "random": "Random",
+    "custom": "Custom",
     "noRun": "Not Running",
     "invalidIp": "Invalid IP Address",
     "invalidSubnet": "Invalid subnet format, e.g., 200.100.10.0/24",
@@ -75,7 +76,10 @@
         "height": "Height",
         "dpi": "DPI",
         "fps": "FPS",
+        "mobile_model_version": "Model Version",
         "model_id": "Model ID",
+        "custom_model_path": "Custom Model Path",
+        "custom_model_path_placeholder": "Enter a download URL or an absolute server file path",
         "enableS5Proxy": "Enable Proxy",
         "enable": "Enable",
         "disable": "Disable",
@@ -282,7 +286,8 @@
         "title": "Change Image",
         "label": "Image Address",
         "success": "Image modification successful",
-        "warning": "After changing the image, it is not guaranteed that the cloud machine will start normally. Please operate with caution!"
+        "warning": "After changing the image, it is not guaranteed that the cloud machine will start normally. Please operate with caution!",
+        "versionMismatch": "Incompatible image versions: v1/v2 images cannot be updated to v3, and v3 images cannot be updated to v1/v2. v1 and v2 can update each other."
     },
     "changeSdk": {
       "label": "SDK Version"

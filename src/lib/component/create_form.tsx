@@ -5,10 +5,11 @@ import { Row } from '../container';
 import "./create_form.less";
 import { ImageSelector2 } from "./image_selector2";
 import { ModelSelector } from "./model_selector";
+import { getOrLoadMobileModelList, MobileModelGroup, MobileModelOption } from "./mobile_model_loader";
 import { S5FormItems } from "./s5_form_items";
 import { i18n } from "@/i18n/i18n";
+import { isImageVersionCompatibleByModelVersion } from "@/common/common";
 import Vue from 'vue';
-import { deviceApi } from "@/api/device_api";
 
 @Component
 export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
@@ -24,13 +25,19 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     // 将 index 包裹为响应式对象
     private index = Vue.observable({ value: this.validIndex });
     private filterState = Vue.observable({ imageType: 'base' });
+    private modelList: MobileModelGroup[] = [];
 
     private get filteredImages() {
         const type = this.filterState.imageType;
-        if (type === 'all') {
-            return this.images;
+        const byType = type === 'all'
+            ? this.images
+            : this.images.filter(img => img.name && img.name.includes(`-${type}-`));
+
+        if (this.isUpdate) {
+            return byType;
         }
-        return this.images.filter(img => img.name && img.name.includes(`-${type}-`));
+
+        return byType.filter(img => isImageVersionCompatibleByModelVersion(this.data.mobile_model_version, img.address));
     }
 
     private inputNumber(key: string, min: number, max: number) {
@@ -44,6 +51,10 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
 
     protected async created() {
         this.index.value = this.validIndex;
+        if (!this.data.mobile_model_version) {
+            this.$set(this.data, "mobile_model_version", "v2");
+        }
+        await this.loadModelList();
     }
 
     private fixNumber(key: string) {
@@ -79,6 +90,73 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
             // 切换回官方镜像且当前为空时，恢复默认值
             this.$set(this.data, "docker_registry", this.dockerRegistries[0]);
         }
+    }
+
+    @Watch("data.mobile_model_version")
+    async onModelVersionChange() {
+        await this.loadModelList();
+        if (!this.isCustomModelSelected && !this.hasModelValue(this.currentModelId)) {
+            this.$set(this.data, "model_id", 0);
+        }
+        if (this.data.image_addr && this.data.image_addr !== "[customImage]" && !isImageVersionCompatibleByModelVersion(this.data.mobile_model_version, this.data.image_addr)) {
+            this.$set(this.data, "image_addr", "");
+        }
+        this.syncModelDimensions();
+    }
+
+    @Watch("data.model_id")
+    onModelIdChange() {
+        this.syncModelDimensions();
+    }
+
+    private get currentModelId() {
+        return Number(this.data.model_id ?? 0);
+    }
+
+    private get isCustomModelSelected() {
+        return this.currentModelId === -1;
+    }
+
+    private normalizeMobileModelVersion(version?: string) {
+        return version === "v3" ? "v3" : "v2";
+    }
+
+    private async loadModelList() {
+        const version = this.normalizeMobileModelVersion(this.data.mobile_model_version);
+        if (this.data.mobile_model_version !== version) {
+            this.$set(this.data, "mobile_model_version", version);
+        }
+        try {
+            this.modelList = await getOrLoadMobileModelList(version, (key) => this.$t(key).toString());
+        } catch (e) {
+            this.modelList = [];
+        }
+    }
+
+    private hasModelValue(value: number) {
+        return this.modelList.some(group => group.options.some(option => option.value === value));
+    }
+
+    private get selectedModelOption(): MobileModelOption | undefined {
+        const value = this.currentModelId;
+        for (const group of this.modelList) {
+            const option = group.options.find(item => item.value === value);
+            if (option) {
+                return option;
+            }
+        }
+        return;
+    }
+
+    private syncModelDimensions() {
+        if (this.data.mobile_model_version !== "v3") return;
+        if (this.isCustomModelSelected) return;
+        const option = this.selectedModelOption;
+        if (!option?.meta) return;
+
+        this.$set(this.data, "width", option.meta.screen_width);
+        this.$set(this.data, "height", option.meta.screen_height);
+        this.$set(this.data, "dpi", option.meta.screen_density);
     }
 
     public render() {
@@ -228,8 +306,25 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                 </Row>
 
                 {!this.isUpdate && (
-                    <el-form-item label={this.$t("create.model_id")} prop="model_id"  >
-                        <ModelSelector v-model={this.data.model_id} />
+                    <Row>
+                        <el-form-item label={this.$t("create.mobile_model_version")} prop="mobile_model_version">
+                            <el-radio-group v-model={this.data.mobile_model_version}>
+                                <el-radio label="v2">v2</el-radio>
+                                <el-radio label="v3">v3</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label={this.$t("create.model_id")} prop="model_id"  >
+                            <ModelSelector v-model={this.data.model_id} version={this.data.mobile_model_version || "v2"} />
+                        </el-form-item>
+                    </Row>
+                )}
+
+                {!this.isUpdate && this.isCustomModelSelected && (
+                    <el-form-item label={this.$t("create.custom_model_path")} prop="mobile_model_source">
+                        <el-input
+                            v-model={this.data.mobile_model_source}
+                            placeholder={this.$t("create.custom_model_path_placeholder")}
+                        />
                     </el-form-item>
                 )}
 
@@ -261,5 +356,3 @@ interface IPorps {
 interface IEvents {
     onVipRequired: () => void;
 }
-
-
