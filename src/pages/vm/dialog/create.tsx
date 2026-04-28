@@ -138,15 +138,16 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
 
     @ErrorProxy({ validatForm: "formRef" })
     protected override async onConfirm() {
+        const normalizedModelVersion = this.data.isUpdate
+            ? normalizeMobileModelVersion(this.data.info.create_req?.mobile_model_version)
+            : normalizeMobileModelVersion(this.data.obj.mobile_model_version);
+
         if (this.dirty < 2) {
             this.close();
             return;
         };
         const image_addr = this.data.obj.image_addr == "[customImage]" ? this.data.obj.custom_image : this.data.obj.image_addr;
-        const modelVersion = this.data.isUpdate
-            ? this.data.info.create_req?.mobile_model_version
-            : this.data.obj.mobile_model_version;
-        if (!isImageVersionCompatibleByModelVersion(modelVersion, image_addr)) {
+        if (!isImageVersionCompatibleByModelVersion(normalizedModelVersion, image_addr)) {
             throw new Error(this.$t("changeImage.versionMismatch").toString());
         }
         if (image_addr && ((image_addr.includes('.') && image_addr.includes('/')))) {

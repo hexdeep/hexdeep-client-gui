@@ -31,11 +31,23 @@ function normalizeModelList(data: MobileModelList, version: "v2" | "v3", t: (key
     list.splice(0, 0, {
         label: t("default"),
         options: [
-            { label: t("random"), value: 0 },
             { label: t("custom"), value: CUSTOM_MODEL_VALUE },
         ],
     });
     return list;
+}
+
+export function pickRandomMobileModelOption(groups: MobileModelGroup[]): MobileModelOption | undefined {
+    const options = groups
+        .flatMap(group => group.options)
+        .filter(option => option.value > 0);
+
+    if (options.length === 0) {
+        return;
+    }
+
+    const index = Math.floor(Math.random() * options.length);
+    return options[index];
 }
 
 export async function getOrLoadMobileModelList(version: "v2" | "v3", t: (key: string) => string): Promise<MobileModelGroup[]> {

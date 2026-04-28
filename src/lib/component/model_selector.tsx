@@ -40,7 +40,7 @@ export class ModelSelector extends tsx.Component<IPorps & IModelPorps, {}, {}> {
     }
 
     private get label() {
-        let ret = this.$t("random").toString();
+        let ret = "";
         const value = this.value;
         if (!value) return ret;
         for (const item of this.modelList) {

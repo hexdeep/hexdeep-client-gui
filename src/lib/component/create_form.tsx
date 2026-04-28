@@ -5,7 +5,7 @@ import { Row } from '../container';
 import "./create_form.less";
 import { ImageSelector2 } from "./image_selector2";
 import { ModelSelector } from "./model_selector";
-import { getOrLoadMobileModelList, MobileModelGroup, MobileModelOption } from "./mobile_model_loader";
+import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup, MobileModelOption, pickRandomMobileModelOption } from "./mobile_model_loader";
 import { S5FormItems } from "./s5_form_items";
 import { i18n } from "@/i18n/i18n";
 import { isImageVersionCompatibleByModelVersion } from "@/common/common";
@@ -55,6 +55,8 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
             this.$set(this.data, "mobile_model_version", "v2");
         }
         await this.loadModelList();
+        this.ensureValidModelSelection();
+        this.ensureCompatibleSelectedImage();
     }
 
     private fixNumber(key: string) {
@@ -95,12 +97,8 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     @Watch("data.mobile_model_version")
     async onModelVersionChange() {
         await this.loadModelList();
-        if (!this.isCustomModelSelected && !this.hasModelValue(this.currentModelId)) {
-            this.$set(this.data, "model_id", 0);
-        }
-        if (this.data.image_addr && this.data.image_addr !== "[customImage]" && !isImageVersionCompatibleByModelVersion(this.data.mobile_model_version, this.data.image_addr)) {
-            this.$set(this.data, "image_addr", "");
-        }
+        this.ensureValidModelSelection();
+        this.ensureCompatibleSelectedImage();
         this.syncModelDimensions();
     }
 
@@ -114,7 +112,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     }
 
     private get isCustomModelSelected() {
-        return this.currentModelId === -1;
+        return this.currentModelId === CUSTOM_MODEL_VALUE;
     }
 
     private normalizeMobileModelVersion(version?: string) {
@@ -137,6 +135,21 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         return this.modelList.some(group => group.options.some(option => option.value === value));
     }
 
+    private ensureValidModelSelection() {
+        if (this.isUpdate || this.isCustomModelSelected) {
+            return;
+        }
+
+        if (this.currentModelId > 0 && this.hasModelValue(this.currentModelId)) {
+            return;
+        }
+
+        const option = pickRandomMobileModelOption(this.modelList);
+        if (option) {
+            this.$set(this.data, "model_id", option.value);
+        }
+    }
+
     private get selectedModelOption(): MobileModelOption | undefined {
         const value = this.currentModelId;
         for (const group of this.modelList) {
@@ -157,6 +170,15 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         this.$set(this.data, "width", option.meta.screen_width);
         this.$set(this.data, "height", option.meta.screen_height);
         this.$set(this.data, "dpi", option.meta.screen_density);
+    }
+
+    private ensureCompatibleSelectedImage() {
+        if (!this.data.image_addr || this.data.image_addr === "[customImage]") {
+            return;
+        }
+        if (!isImageVersionCompatibleByModelVersion(this.data.mobile_model_version, this.data.image_addr)) {
+            this.$set(this.data, "image_addr", "");
+        }
     }
 
     public render() {
