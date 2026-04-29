@@ -82,6 +82,7 @@ export interface ImageInfo {
     created_at: string;
     updated_at: string;
     is_vip?: boolean;
+    model?: string; // 适用机型，CSV如"H1-1,H1-2"，空表示通用
 }
 
 export interface SDKImageInfo {
