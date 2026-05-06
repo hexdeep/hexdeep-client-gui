@@ -28,6 +28,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected timer: any;
     protected vipInfo?: DeviceVipInfo;
     protected vipExpired: boolean = true;
+    protected vipEndTime: string = '';
     protected firmwareList: FirmwareVersionInfo[] = [];
     protected firmwareUpdated: boolean = false;
     override width: string = "600px";
@@ -63,12 +64,24 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
             const vipInfos = await orderApi.getDeviceVip(this.data.device_id);
             if (vipInfos && vipInfos.length > 0) {
                 this.vipInfo = vipInfos[0];
-                this.vipExpired = timeDiff(this.vipInfo.rental_end_time, this.vipInfo.current_time, "second") <= 0;
+                const { rental_end_time, trial_time, current_time } = this.vipInfo;
+                if (rental_end_time && timeDiff(rental_end_time, current_time, "second") > 0) {
+                    this.vipEndTime = rental_end_time;
+                    this.vipExpired = false;
+                } else if (trial_time && timeDiff(trial_time, current_time, "second") > 0) {
+                    this.vipEndTime = trial_time;
+                    this.vipExpired = false;
+                } else {
+                    this.vipEndTime = '';
+                    this.vipExpired = true;
+                }
             } else {
+                this.vipEndTime = '';
                 this.vipExpired = true;
             }
         } catch (e) {
             console.warn(e);
+            this.vipEndTime = '';
             this.vipExpired = true;
         }
     }
@@ -129,7 +142,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         {!this.vipExpired && this.vipInfo && (
                             <Row crossAlign="center" gap={10}>
                                 <span style={{ color: "green", fontSize: "12px" }}>
-                                    {this.$t("vip.expireTime")}: {this.vipInfo.rental_end_time}
+                                    {this.$t("vip.expireTime")}: {this.vipEndTime}
                                 </span>
                                 <MyButton type="primary" size="small" onClick={this.onRenewVip}>
                                     {this.$t("vip.renew")}
