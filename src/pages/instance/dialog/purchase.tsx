@@ -34,19 +34,24 @@ export class PurchaseDialog extends CommonDialog<PurchaseInfo, boolean> {
 
     protected override renderFooter() {
         return (
-            <Row class={s.footer} crossAlign="center" mainAlign="space-between"  >
-                <span>{this.$t("instance.total")}</span>
-                <span class={s.calc}>{this.$t("instance.calc", {
-                    0: this.selected.length,
-                    1: (this.packages.find(x => x.id == this.data.package_id)?.price || 0) / 100,
-                    2: this.$i18n.locale == "zh" ? this.packages.find(x => x.id == this.data.package_id)?.name : this.packages.find(x => x.id == this.data.package_id)?.english_name
-                })}</span>
-                <Row crossAlign="center" gap={5}>
-                    <span>{this.$t("instance.calcTotal")}</span>
-                    <span class={s.amount}>￥{this.selected.length * (this.packages.find(x => x.id == this.data.package_id)?.price || 0) / 100} {this.$t("instance.priceUnit")}</span>
-                    <MyButton type="primary" style="margin-left:15px" onClick={this.purchaseNow}>{this.$t("instance.purchaseNow")}</MyButton>
+            <Column>
+                <div style={{ color: "red", fontSize: "12px", padding: "6px 20px 4px", lineHeight: "1.5" }}>
+                    注：云服务类商品一经充值，非官方服务终止，概不退货退款，请谨慎购买。
+                </div>
+                <Row class={s.footer} crossAlign="center" mainAlign="space-between">
+                    <span>{this.$t("instance.total")}</span>
+                    <span class={s.calc}>{this.$t("instance.calc", {
+                        0: this.selected.length,
+                        1: (this.packages.find(x => x.id == this.data.package_id)?.price || 0) / 100,
+                        2: this.$i18n.locale == "zh" ? this.packages.find(x => x.id == this.data.package_id)?.name : this.packages.find(x => x.id == this.data.package_id)?.english_name
+                    })}</span>
+                    <Row crossAlign="center" gap={5}>
+                        <span>{this.$t("instance.calcTotal")}</span>
+                        <span class={s.amount}>￥{this.selected.length * (this.packages.find(x => x.id == this.data.package_id)?.price || 0) / 100} {this.$t("instance.priceUnit")}</span>
+                        <MyButton type="primary" style="margin-left:15px" onClick={this.purchaseNow}>{this.$t("instance.purchaseNow")}</MyButton>
+                    </Row>
                 </Row>
-            </Row>
+            </Column>
         );
     }
 
