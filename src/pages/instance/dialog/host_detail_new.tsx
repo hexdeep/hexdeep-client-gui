@@ -236,6 +236,16 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                 <el-descriptions-item label={i18n.t("vmDetail.temperature")}>
                     {this.detail?.temperature} ℃
                 </el-descriptions-item>
+                {this.detail?.uptime && (
+                    <el-descriptions-item label={i18n.t("vmDetail.uptime")}>
+                        {this.detail.uptime}
+                        {this.detail.boot_time && (
+                            <span style={{ color: "#909399", fontSize: "12px", marginLeft: "8px" }}>
+                                ({this.$t("vmDetail.bootTime")}: {this.detail.boot_time})
+                            </span>
+                        )}
+                    </el-descriptions-item>
+                )}
                 <el-descriptions-item label={i18n.t("vmDetail.hostOperate")}>
                     <div
                         style={{

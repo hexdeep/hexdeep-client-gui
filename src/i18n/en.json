@@ -223,6 +223,8 @@
         "createdAt": "Created At",
         "rebootSDKSuccess": "Reboot SDK Successful",
         "temperature": "Temperature",
+        "uptime": "Uptime",
+        "bootTime": "Boot Time",
         "swap": "Virtual Memory",
         "harddisk": "Harddisk",
         "mem": "Physical Memory",

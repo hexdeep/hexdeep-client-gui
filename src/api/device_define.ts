@@ -156,6 +156,8 @@ export interface HostDetailInfo {
     git_commit_id: string;
     disk?: string;
     remark: string;
+    uptime?: string;
+    boot_time?: string;
 }
 
 export interface ImportVmParam {
