@@ -125,7 +125,6 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                 height: 1280,
                 dpi: 320,
                 fps: 24,
-                subnet: "10.93.51.0/24",
                 dns_urls: "223.5.5.5",
             }
         }).then(async re => {

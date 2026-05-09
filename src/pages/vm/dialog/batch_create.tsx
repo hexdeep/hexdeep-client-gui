@@ -259,7 +259,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         return (
             <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="150px" class={s.form}>
                 <div class={s.tip}>{this.$t("create.tip", { 0: this.data.maxNum })}</div>
-                <CreateForm data={this.data.obj} needName={false} images={this.images} dockerRegistries={this.dockerRegistries} validIndex={0} validInstance={[]} hasVip={this.hasVip} on={{ "vip-required": () => this.onVipRequired() }}>
+                <CreateForm data={this.data.obj} needName={false} images={this.images} dockerRegistries={this.dockerRegistries} validIndex={0} validInstance={[]} hasVip={this.hasVip} isBatchCreate={true} on={{ "vip-required": () => this.onVipRequired() }}>
                     <Row>
                         <el-form-item label={this.$t("batchCreate.num")} prop="num" style={{ "width": "100%" }}>
                             <el-input v-model={this.data.obj.num} min={1} max={this.data.maxNum} type="number" />
