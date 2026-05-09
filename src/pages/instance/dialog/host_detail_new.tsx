@@ -234,18 +234,15 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                 </el-descriptions-item>
 
                 <el-descriptions-item label={i18n.t("vmDetail.temperature")}>
-                    {this.detail?.temperature} ℃
-                </el-descriptions-item>
-                {this.detail?.uptime && (
-                    <el-descriptions-item label={i18n.t("vmDetail.uptime")}>
-                        {this.detail.uptime}
-                        {this.detail.boot_time && (
-                            <span style={{ color: "#909399", fontSize: "12px", marginLeft: "8px" }}>
-                                ({this.$t("vmDetail.bootTime")}: {this.detail.boot_time})
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span>{this.detail?.temperature} ℃</span>
+                        {this.detail?.uptime && (
+                            <span class="ms-auto" style={{ marginLeft: "12px" }}>
+                                {this.$t("vmDetail.uptime")}: {this.formatUptime(this.detail.uptime)}
                             </span>
                         )}
-                    </el-descriptions-item>
-                )}
+                    </div>
+                </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.hostOperate")}>
                     <div
                         style={{
@@ -367,6 +364,19 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
             // 刷新VIP信息
             this.loadVipInfo();
         }
+    }
+
+    private formatUptime(uptime: string): string {
+        const match = uptime.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/);
+        if (!match) return uptime;
+        const hours = match[1] ? parseInt(match[1]) : 0;
+        const minutes = match[2] ? parseInt(match[2]) : 0;
+        const seconds = match[3] ? parseInt(match[3]) : 0;
+        const parts: string[] = [];
+        if (hours > 0) parts.push(`${hours}${this.$t("vmDetail.uptimeHours")}`);
+        if (minutes > 0) parts.push(`${minutes}${this.$t("vmDetail.uptimeMinutes")}`);
+        if (seconds > 0 || parts.length === 0) parts.push(`${seconds}${this.$t("vmDetail.uptimeSeconds")}`);
+        return parts.join(' ');
     }
 
     private getStatus(percent: string | undefined): string | undefined {
