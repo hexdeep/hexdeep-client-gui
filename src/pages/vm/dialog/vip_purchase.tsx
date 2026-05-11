@@ -44,8 +44,8 @@ export class VipPurchaseDialog extends CommonDialog<VipPurchaseData, boolean> {
     protected override renderFooter() {
         return (
             <Column>
-                <div style={{ color: "red", fontSize: "12px", padding: "6px 20px 4px", lineHeight: "1.5" }}>
-                    注：云服务类商品一经充值，非官方服务终止，概不退货退款，请谨慎购买。
+                <div style={{ fontSize: "12px", padding: "6px 20px 4px", lineHeight: "1.5" }} class="text-gray-600">
+                    注：用户需理解本服务为虚拟商品，购买成功后，不支持退款。
                 </div>
                 <Row class={s.footer} crossAlign="center" mainAlign="space-between">
                     <span>{this.$t("instance.total")}</span>
