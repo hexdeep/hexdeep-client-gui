@@ -52,7 +52,18 @@ export default class VMPage extends Vue {
     protected async refreshImages() {
         try {
             const cacheFun = async () => {
-                this.images = await deviceApi.getImages(Config.host);
+                // server 已按主机机型过滤镜像，跨机型时需要按所有 host 拉取后合并去重，
+                // 否则 dev_list 通过 address 反查 image 时可能找不到。
+                const hosts = this.hosts.length ? this.hosts : await deviceApi.getHosts();
+                const targets = hosts.length ? hosts.map(h => h.address) : [Config.host];
+                const results = await Promise.allSettled(targets.map(ip => deviceApi.getImages(ip)));
+                const merged = new Map<string, ImageInfo>();
+                results.forEach(r => {
+                    if (r.status === "fulfilled") {
+                        (r.value ?? []).forEach(img => merged.set(img.address, img));
+                    }
+                });
+                this.images = Array.from(merged.values());
                 sessionStorage.setItem("imagesCache", JSON.stringify(this.images));
             };
             let cache = this.loadImageCache();

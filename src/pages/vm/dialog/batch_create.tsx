@@ -159,7 +159,8 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     @ErrorProxy({ success: i18n.t("batchCreate.success"), loading: i18n.t("loading") })
     protected async confirming() {
         const createdVms: CreatedVmInfo[] = [];
-        
+        const errors: string[] = [];
+
         for (const ip of this.data.hostIp) {
             const obj = Object.assign({}, this.data.obj);
             obj.mobile_model_version = obj.mobile_model_version === "v3" ? "v3" : "v2";
@@ -174,25 +175,24 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
             }
             try {
                 const result = await deviceApi.batchCreate(ip, this.data.obj.num!, this.data.obj.suffix_name!, obj);
-                // 收集创建成功的云机信息
                 if (result.created && result.created.length > 0) {
                     result.created.forEach(vm => {
-                        createdVms.push({
-                            index: vm.index,
-                            name: vm.name,
-                        });
+                        createdVms.push({ index: vm.index, name: vm.name });
                     });
                 }
-            } catch (e) {
-                console.log(e);
+            } catch (e: any) {
+                errors.push(e.message ?? String(e));
             }
         }
-        
-        // 将新创建的云机加入 TreeConfig 并设为选中
+
         if (createdVms.length > 0) {
             this.addCreatedVmsToTreeConfig(createdVms);
         }
-        
+
+        if (errors.length > 0) {
+            throw new Error(errors.join('\n'));
+        }
+
         this.close(true);
     }
 
@@ -272,7 +272,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         return (
             <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="150px" class={s.form}>
                 <div class={s.tip}>{this.$t("create.tip", { 0: this.data.maxNum })}</div>
-                <CreateForm data={this.data.obj} needName={false} images={this.images} dockerRegistries={this.dockerRegistries} validIndex={0} validInstance={[]} hasVip={this.hasVip} on={{ "vip-required": () => this.onVipRequired() }}>
+                <CreateForm data={this.data.obj} needName={false} images={this.images} dockerRegistries={this.dockerRegistries} validIndex={0} validInstance={[]} hasVip={this.hasVip} isBatchCreate={true} on={{ "vip-required": () => this.onVipRequired() }}>
                     <Row>
                         <el-form-item label={this.$t("batchCreate.num")} prop="num" style={{ "width": "100%" }}>
                             <el-input v-model={this.data.obj.num} min={1} max={this.data.maxNum} type="number" />

@@ -28,6 +28,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected timer: any;
     protected vipInfo?: DeviceVipInfo;
     protected vipExpired: boolean = true;
+    protected vipEndTime: string = '';
     protected firmwareList: FirmwareVersionInfo[] = [];
     protected firmwareUpdated: boolean = false;
     override width: string = "600px";
@@ -63,12 +64,24 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
             const vipInfos = await orderApi.getDeviceVip(this.data.device_id);
             if (vipInfos && vipInfos.length > 0) {
                 this.vipInfo = vipInfos[0];
-                this.vipExpired = timeDiff(this.vipInfo.rental_end_time, this.vipInfo.current_time, "second") <= 0;
+                const { rental_end_time, trial_time, current_time } = this.vipInfo;
+                if (rental_end_time && timeDiff(rental_end_time, current_time, "second") > 0) {
+                    this.vipEndTime = rental_end_time;
+                    this.vipExpired = false;
+                } else if (trial_time && timeDiff(trial_time, current_time, "second") > 0) {
+                    this.vipEndTime = trial_time;
+                    this.vipExpired = false;
+                } else {
+                    this.vipEndTime = '';
+                    this.vipExpired = true;
+                }
             } else {
+                this.vipEndTime = '';
                 this.vipExpired = true;
             }
         } catch (e) {
             console.warn(e);
+            this.vipEndTime = '';
             this.vipExpired = true;
         }
     }
@@ -129,7 +142,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         {!this.vipExpired && this.vipInfo && (
                             <Row crossAlign="center" gap={10}>
                                 <span style={{ color: "green", fontSize: "12px" }}>
-                                    {this.$t("vip.expireTime")}: {this.vipInfo.rental_end_time}
+                                    {this.$t("vip.expireTime")}: {this.vipEndTime}
                                 </span>
                                 <MyButton type="primary" size="small" onClick={this.onRenewVip}>
                                     {this.$t("vip.renew")}
@@ -221,7 +234,14 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                 </el-descriptions-item>
 
                 <el-descriptions-item label={i18n.t("vmDetail.temperature")}>
-                    {this.detail?.temperature} ℃
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span>{this.detail?.temperature} ℃</span>
+                        {this.detail?.uptime && (
+                            <span class="ms-auto" style={{ marginLeft: "12px" }}>
+                                {this.$t("vmDetail.uptime")}: {this.formatUptime(this.detail.uptime)}
+                            </span>
+                        )}
+                    </div>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.hostOperate")}>
                     <div
@@ -344,6 +364,19 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
             // 刷新VIP信息
             this.loadVipInfo();
         }
+    }
+
+    private formatUptime(uptime: string): string {
+        const match = uptime.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/);
+        if (!match) return uptime;
+        const hours = match[1] ? parseInt(match[1]) : 0;
+        const minutes = match[2] ? parseInt(match[2]) : 0;
+        const seconds = match[3] ? parseInt(match[3]) : 0;
+        const parts: string[] = [];
+        if (hours > 0) parts.push(`${hours}${this.$t("vmDetail.uptimeHours")}`);
+        if (minutes > 0) parts.push(`${minutes}${this.$t("vmDetail.uptimeMinutes")}`);
+        if (seconds > 0 || parts.length === 0) parts.push(`${seconds}${this.$t("vmDetail.uptimeSeconds")}`);
+        return parts.join(' ');
     }
 
     private getStatus(percent: string | undefined): string | undefined {

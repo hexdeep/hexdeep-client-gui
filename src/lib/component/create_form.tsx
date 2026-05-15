@@ -21,6 +21,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     @Prop({ default: true }) needName!: boolean;
     @Prop({ default: false }) isUpdate!: boolean;
     @Prop({ default: false }) hasVip!: boolean;
+    @Prop({ default: false }) isBatchCreate!: boolean;
 
     // 将 index 包裹为响应式对象
     private index = Vue.observable({ value: this.validIndex });
@@ -49,8 +50,23 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         };
     }
 
+    private getDefaultSubnet(index: number): string {
+        return `10.93.${50 + index}.0/24`;
+    }
+
+    @Watch("validIndex")
+    onValidIndexChange(newVal: number) {
+        this.index.value = newVal;
+        if (!this.isBatchCreate && !this.isUpdate && newVal > 0) {
+            this.$set(this.data, "subnet", this.getDefaultSubnet(newVal));
+        }
+    }
+
     protected async created() {
         this.index.value = this.validIndex;
+        if (!this.isBatchCreate && !this.isUpdate && !this.data.subnet && this.validIndex > 0) {
+            this.$set(this.data, "subnet", this.getDefaultSubnet(this.validIndex));
+        }
         if (!this.data.mobile_model_version) {
             this.$set(this.data, "mobile_model_version", "v2");
         }
@@ -200,11 +216,12 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                             <el-select
                                 v-model={this.index.value}
                                 onChange={(v: number) => {
-                                    console.log("v is", v);
                                     this.index.value = v;
-                                    // 同步到 data.index，如果你有这个字段
                                     if (this.data) {
                                         this.$set(this.data, "index", v);
+                                        if (!this.isBatchCreate && !this.isUpdate) {
+                                            this.$set(this.data, "subnet", this.getDefaultSubnet(v));
+                                        }
                                     }
                                 }}
                             >
@@ -256,9 +273,9 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                 </el-form-item>
 
                 <el-form-item label={this.$t("create.image_addr")} prop="image_addr">
-                    <ImageSelector2 
-                        images={this.filteredImages} 
-                        v-model={this.data.image_addr} 
+                    <ImageSelector2
+                        images={this.filteredImages}
+                        v-model={this.data.image_addr}
                         showCustom={this.filterState.imageType === 'base'}
                         hasVip={this.hasVip}
                         on={{ "vip-required": () => this.$emit("vip-required") }}
@@ -373,6 +390,7 @@ interface IPorps {
     validIndex: number;
     isUpdate?: boolean;
     hasVip?: boolean;
+    isBatchCreate?: boolean;
 }
 
 interface IEvents {

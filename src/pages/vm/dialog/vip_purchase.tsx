@@ -43,23 +43,28 @@ export class VipPurchaseDialog extends CommonDialog<VipPurchaseData, boolean> {
 
     protected override renderFooter() {
         return (
-            <Row class={s.footer} crossAlign="center" mainAlign="space-between">
-                <span>{this.$t("instance.total")}</span>
-                <span class={s.calc}>{this.$t("vip.calc", {
-                    0: this.data.hosts.length,
-                    1: (this.selectedPackage?.price || 0) / 100,
-                    2: this.$i18n.locale === "zh" 
-                        ? this.selectedPackage?.name 
-                        : this.selectedPackage?.english_name
-                })}</span>
-                <Row crossAlign="center" gap={5}>
-                    <span>{this.$t("instance.calcTotal")}</span>
-                    <span class={s.amount}>￥{this.totalPrice} {this.$t("instance.priceUnit")}</span>
-                    <MyButton type="primary" style="margin-left:15px" onClick={this.purchaseNow}>
-                        {this.$t("instance.purchaseNow")}
-                    </MyButton>
+            <Column>
+                <div style={{ fontSize: "12px", padding: "6px 20px 4px", lineHeight: "1.5" }} class="text-gray-600">
+                    注：用户需理解本服务为虚拟商品，购买成功后，不支持退款。
+                </div>
+                <Row class={s.footer} crossAlign="center" mainAlign="space-between">
+                    <span>{this.$t("instance.total")}</span>
+                    <span class={s.calc}>{this.$t("vip.calc", {
+                        0: this.data.hosts.length,
+                        1: (this.selectedPackage?.price || 0) / 100,
+                        2: this.$i18n.locale === "zh"
+                            ? this.selectedPackage?.name
+                            : this.selectedPackage?.english_name
+                    })}</span>
+                    <Row crossAlign="center" gap={5}>
+                        <span>{this.$t("instance.calcTotal")}</span>
+                        <span class={s.amount}>￥{this.totalPrice} {this.$t("instance.priceUnit")}</span>
+                        <MyButton type="primary" style="margin-left:15px" onClick={this.purchaseNow}>
+                            {this.$t("instance.purchaseNow")}
+                        </MyButton>
+                    </Row>
                 </Row>
-            </Row>
+            </Column>
         );
     }
 
