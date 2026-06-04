@@ -398,7 +398,10 @@
         "title": "选择机型",
         "brand": "品牌",
         "model": "机型",
-        "notSelect": "请选择机型"
+        "notSelect": "请选择机型",
+        "selectUploaded": "选择已上传机型",
+        "uploadHint": "将机型文件拖到此处，或点击上传",
+        "uploadSuccess": "机型文件上传成功"
     },
     "checkS5": {
         "check": "检查代理连接",

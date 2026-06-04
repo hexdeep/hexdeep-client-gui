@@ -394,7 +394,10 @@
         "title": "Select model",
         "brand": "Brand",
         "model": "Model",
-        "notSelect": "Please select a model"
+        "notSelect": "Please select a model",
+        "selectUploaded": "Select uploaded model",
+        "uploadHint": "Drop the model file here, or click to upload",
+        "uploadSuccess": "Model file uploaded successfully"
     },
     "checkS5": {
         "check": "Check Proxy Connection",

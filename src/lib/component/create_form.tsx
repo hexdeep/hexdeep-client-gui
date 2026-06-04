@@ -22,6 +22,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     @Prop({ default: false }) isUpdate!: boolean;
     @Prop({ default: false }) hasVip!: boolean;
     @Prop({ default: false }) isBatchCreate!: boolean;
+    @Prop({ default: "" }) ip!: string;
 
     // 将 index 包裹为响应式对象
     private index = Vue.observable({ value: this.validIndex });
@@ -349,11 +350,18 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                         <el-form-item label={this.$t("create.mobile_model_version")} prop="mobile_model_version">
                             <el-radio-group v-model={this.data.mobile_model_version}>
                                 <el-radio label="v2">v2</el-radio>
-                                <el-radio label="v3">v3</el-radio>
+                                {/* v3 暂未完成，先隐藏 */}
+                                {/* <el-radio label="v3">v3</el-radio> */}
                             </el-radio-group>
                         </el-form-item>
                         <el-form-item label={this.$t("create.model_id")} prop="model_id"  >
-                            <ModelSelector v-model={this.data.model_id} version={this.data.mobile_model_version || "v2"} />
+                            <ModelSelector
+                                v-model={this.data.model_id}
+                                version={this.data.mobile_model_version || "v2"}
+                                ip={this.ip}
+                                source={this.data.mobile_model_source}
+                                on={{ "update:source": (v: string) => this.$set(this.data, "mobile_model_source", v) }}
+                            />
                         </el-form-item>
                     </Row>
                 )}
@@ -391,6 +399,7 @@ interface IPorps {
     isUpdate?: boolean;
     hasVip?: boolean;
     isBatchCreate?: boolean;
+    ip?: string;
 }
 
 interface IEvents {

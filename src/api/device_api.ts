@@ -4,7 +4,7 @@ import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
-import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList } from "./device_define";
+import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
@@ -152,6 +152,24 @@ class DeviceApi extends ApiBase {
         const result = await fetch(`https://download.hexdeep.com/mobile_cfgs/${version}/cfg.txt`);
         const json = await result.json();
         return json;
+    }
+
+    // 上传自定义机型文件到主机，返回主机上的绝对路径
+    public async uploadMobileModel(ip: string, version: "v2" | "v3", file: File): Promise<string> {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("mobile_model_version", version);
+        const result = await fetch(makeVmApiUrl("host/mobile_model/upload", ip), {
+            method: "POST",
+            body: formData,
+        });
+        return await this.handleError(result);
+    }
+
+    // 获取主机上已上传的自定义机型文件列表
+    public async getMobileModelUploadList(ip: string, version: "v2" | "v3"): Promise<MobileModelFile[]> {
+        const result = await fetch(makeVmApiUrl("host/mobile_model/list", ip) + `?mobile_model_version=${version}`);
+        return await this.handleError(result);
     }
 
     public async upload(ip: string, name: string, remotePath: string, file: File) {

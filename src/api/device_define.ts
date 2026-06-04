@@ -128,6 +128,12 @@ export type MobileModelListV2 = Record<string, Record<string, number>>;
 export type MobileModelListV3 = Record<string, Record<string, MobileModelV3Info>>;
 export type MobileModelList = MobileModelListV2 | MobileModelListV3;
 
+// 用户上传到主机上的自定义机型文件
+export interface MobileModelFile {
+    name: string;
+    path: string;
+}
+
 export interface DockerEditParam {
     isUpdate?: boolean;
     info: DeviceInfo;
