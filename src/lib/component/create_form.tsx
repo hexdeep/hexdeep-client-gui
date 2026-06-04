@@ -7,7 +7,6 @@ import { ImageSelector2 } from "./image_selector2";
 import { ModelSelector } from "./model_selector";
 import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup, MobileModelOption, pickRandomMobileModelOption } from "./mobile_model_loader";
 import { S5FormItems } from "./s5_form_items";
-import { V2ToolDownloadDialog } from "./v2_tool_dialog";
 import { i18n } from "@/i18n/i18n";
 import { isImageVersionCompatibleByModelVersion } from "@/common/common";
 import Vue from 'vue';
@@ -54,10 +53,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
 
     private getDefaultSubnet(index: number): string {
         return `10.93.${50 + index}.0/24`;
-    }
-
-    private openV2Tool() {
-        this.$dialog(V2ToolDownloadDialog).show();
     }
 
     @Watch("validIndex")
@@ -369,14 +364,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                             />
                         </el-form-item>
                     </Row>
-                )}
-
-                {!this.isUpdate && (
-                    <el-form-item label=" ">
-                        <el-link type="primary" underline={false} onClick={() => this.openV2Tool()}>
-                            {this.$t("v2Tool.entry")}
-                        </el-link>
-                    </el-form-item>
                 )}
 
                 {!this.isUpdate && this.isCustomModelSelected && (

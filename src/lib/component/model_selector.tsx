@@ -8,6 +8,7 @@ import { ErrorProxy } from '../error_handle';
 import { i18n } from '@/i18n/i18n';
 import { DeviceInfo, MobileModelFile } from '@/api/device_define';
 import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup } from './mobile_model_loader';
+import { V2ToolDownloadDialog } from './v2_tool_dialog';
 
 /**
  * 机型选择器
@@ -174,9 +175,18 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         this.close({ model_id: this.value, source: this.source });
     }
 
+    private openV2Tool() {
+        this.$dialog(V2ToolDownloadDialog).show();
+    }
+
     protected override renderDialog(): VNode {
         return (
             <div style={{ padding: "15px" }}>
+                <div style={{ marginBottom: "10px", textAlign: "right" }}>
+                    <el-link type="primary" underline={false} onClick={() => this.openV2Tool()}>
+                        {this.$t("v2Tool.entry")}
+                    </el-link>
+                </div>
                 <el-table v-loading={this.loading} default-expand-all data={this.modelList} width="100%" height="400px" style={{ minHeight: "400px" }}>
                     <el-table-column label={this.$t("modelSelector.brand")} prop="label" width="100px" />
                     <el-table-column label={this.$t("modelSelector.model")} prop="options" formatter={this.renderOptions} />
