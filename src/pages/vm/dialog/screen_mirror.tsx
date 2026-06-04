@@ -7,6 +7,7 @@ import { deviceApi } from "@/api/device_api";
 import { Row } from "@/lib/container";
 import { MyButton } from "@/lib/my_button";
 import { getSuffixName } from "@/common/common";
+import { QrCode } from "@/lib/component/QrCode";
 
 @Dialog
 export class ScreenMirrorDialog extends CommonDialog<DeviceInfo, void> {
@@ -130,16 +131,14 @@ export class ScreenMirrorDialog extends CommonDialog<DeviceInfo, void> {
                     </div>
                 </el-descriptions-item>
 
-                {/* 下载 */}
+                {/* 下载：扫码下载 Android App */}
                 <el-descriptions-item label={this.$t("screenMirror.download")}>
-                    <el-link
-                        type="primary"
-                        href={this.downloadUrl}
-                        target="_blank"
-                        underline={false}
-                    >
-                        {this.$t("screenMirror.downloadClient")}
-                    </el-link>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <QrCode qrData={this.downloadUrl} size={120} />
+                        <span style={{ color: "#909399", fontSize: "13px" }}>
+                            {this.$t("screenMirror.scanToDownload")}
+                        </span>
+                    </div>
                 </el-descriptions-item>
 
                 {/* 操作 */}

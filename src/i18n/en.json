@@ -399,6 +399,11 @@
         "uploadHint": "Drop the model file here, or click to upload",
         "uploadSuccess": "Model file uploaded successfully"
     },
+    "v2Tool": {
+        "entry": "Download V2 model extraction tool",
+        "title": "V2 Model Extraction Tool",
+        "hint": "Scan to download the V2 model extraction tool, used to extract a phone model file and then upload it"
+    },
     "checkS5": {
         "check": "Check Proxy Connection",
         "title": "Check Proxy",
@@ -431,6 +436,7 @@
         "regenerate": "Regenerate",
         "download": "android app download",
         "downloadClient": "Hexdeep Screen Mirror Client",
+        "scanToDownload": "Scan to download (open the App, tap the + at the top right, enter the device ID)",
         "run_success": "Screen mirroring worked successfully. The device ID has been copied to the screenshot panel. Please add it in the screen cast app",
         "regenerateSuccess": "ID regenerated successfully. The ID has been copied to the clipboard. Please add it in the screen mirroring client"
     },

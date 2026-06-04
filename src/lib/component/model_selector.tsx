@@ -162,6 +162,11 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
 
     @ErrorProxy({ success: i18n.t("changeModel.success"), loading: i18n.t("loading") })
     protected override async onConfirm() {
+        // 选择了自定义但未指定具体机型时，从已上传机型中随机选一个
+        if (this.value === CUSTOM_MODEL_VALUE && !this.source && this.uploadedModels.length > 0) {
+            const random = this.uploadedModels[Math.floor(Math.random() * this.uploadedModels.length)];
+            this.source = random.path;
+        }
         if (this.immediateSubmit) {
             if (!this.device) throw new Error("device is null");
             await deviceApi.changeModelMacvlan(this.device.android_sdk, this.value);

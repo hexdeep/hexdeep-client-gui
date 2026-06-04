@@ -403,6 +403,11 @@
         "uploadHint": "将机型文件拖到此处，或点击上传",
         "uploadSuccess": "机型文件上传成功"
     },
+    "v2Tool": {
+        "entry": "下载 V2 机型提取工具",
+        "title": "V2 机型提取工具",
+        "hint": "扫码下载 V2 机型提取工具，用于提取手机机型文件后上传使用"
+    },
     "checkS5": {
         "check": "检查代理连接",
         "title": "检查代理连接",
@@ -435,6 +440,7 @@
         "regenerate": "重新生成",
         "download": "android app",
         "downloadClient": "下载（运行App，点击右上角加号，输入设备ID）",
+        "scanToDownload": "扫码下载（运行App，点击右上角加号，输入设备ID）",
         "runSuccess": "投屏运行成功，设备id已复制到剪贴板，请前往投屏客户端添加",
         "regenerateSuccess": "重新生成id成功，id已复制到剪贴板，请前往投屏客户端添加"
     },
