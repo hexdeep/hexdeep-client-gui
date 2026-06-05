@@ -13,6 +13,10 @@ export interface MobileModelGroup {
 }
 
 export const CUSTOM_MODEL_VALUE = -1;
+// 品牌随机：交由后端随机选取机型（model_id <= 0 即随机），不需要指定具体机型
+export const RANDOM_BRAND = "__random_brand__";
+// 机型随机：在当前品牌下由前端随机选取一个具体机型
+export const RANDOM_MODEL_VALUE = -2;
 
 const modelListCache: Partial<Record<"v2" | "v3", MobileModelGroup[]>> = {};
 const modelListPending: Partial<Record<"v2" | "v3", Promise<MobileModelGroup[]>>> = {};

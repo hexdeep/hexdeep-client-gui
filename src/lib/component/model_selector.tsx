@@ -7,7 +7,7 @@ import { CommonDialog, Dialog } from '../dialog/dialog';
 import { ErrorProxy } from '../error_handle';
 import { i18n } from '@/i18n/i18n';
 import { DeviceInfo, MobileModelFile } from '@/api/device_define';
-import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup } from './mobile_model_loader';
+import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup, RANDOM_BRAND, RANDOM_MODEL_VALUE } from './mobile_model_loader';
 import { V2ToolDownloadDialog } from './v2_tool_dialog';
 
 /**
@@ -87,6 +87,10 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
     private loading: boolean = false;
     private value: number = 0;
     private version: "v2" | "v3" = "v2";
+    // 机型类型：preset 预设机型，custom 自定义机型
+    private modelType: "preset" | "custom" = "preset";
+    // 预设机型下当前选中的品牌
+    private selectedBrand: string = "";
     public immediateSubmit = false;
     public device: DeviceInfo | null = null;
     // 当前主机 IP，存在时才提供「上传/选择已上传机型」能力（创建/批量创建场景）
@@ -116,6 +120,52 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
             this.loading = false;
         }
         await this.loadUploadedModels();
+        this.syncSelectionFromValue();
+    }
+
+    // 预设机型分组（排除含「自定义」选项的「默认」分组）
+    private get presetGroups(): MobileModelGroup[] {
+        return this.modelList.filter((g) => !g.options.some((o) => o.value === CUSTOM_MODEL_VALUE));
+    }
+
+    // 当前品牌下的机型列表
+    private get currentModelOptions() {
+        const group = this.presetGroups.find((g) => g.label === this.selectedBrand);
+        return group ? group.options : [];
+    }
+
+    // 根据初始 value/source 推断机型类型与已选品牌
+    private syncSelectionFromValue() {
+        if (this.value === CUSTOM_MODEL_VALUE || (!!this.source && this.value <= 0)) {
+            this.modelType = this.ip ? "custom" : "preset";
+        } else if (this.value > 0) {
+            this.modelType = "preset";
+            const group = this.presetGroups.find((g) => g.options.some((o) => o.value === this.value));
+            if (group) this.selectedBrand = group.label;
+        }
+        // 预设机型未匹配到具体品牌时，默认选中「随机」品牌
+        if (this.modelType === "preset" && !this.selectedBrand) {
+            this.selectedBrand = RANDOM_BRAND;
+        }
+    }
+
+    @Watch("modelType")
+    protected onModelTypeChange(type: "preset" | "custom") {
+        if (type === "custom") {
+            this.value = CUSTOM_MODEL_VALUE;
+        } else {
+            this.source = "";
+            if (this.value <= 0) this.value = 0;
+            if (!this.selectedBrand) {
+                this.selectedBrand = RANDOM_BRAND;
+            }
+        }
+    }
+
+    private onBrandChange(brand: string) {
+        this.selectedBrand = brand;
+        // 切换到具体品牌时，机型默认选中「随机」；品牌随机则无需指定机型
+        this.value = brand === RANDOM_BRAND ? 0 : RANDOM_MODEL_VALUE;
     }
 
     private async loadUploadedModels() {
@@ -161,18 +211,39 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         }
     }
 
+    // 将选择结果解析为最终提交的 model_id（解开「随机」占位值）
+    private resolveModelId(): number {
+        if (this.modelType === "custom") {
+            return CUSTOM_MODEL_VALUE;
+        }
+        // 品牌随机：传 0，由后端随机选取机型
+        if (this.selectedBrand === RANDOM_BRAND) {
+            return 0;
+        }
+        // 当前品牌内机型随机：前端随机选取一个具体机型
+        if (this.value === RANDOM_MODEL_VALUE) {
+            const candidates = this.currentModelOptions.filter((o) => o.value > 0);
+            if (candidates.length > 0) {
+                return candidates[Math.floor(Math.random() * candidates.length)].value;
+            }
+            return 0;
+        }
+        return this.value;
+    }
+
     @ErrorProxy({ success: i18n.t("changeModel.success"), loading: i18n.t("loading") })
     protected override async onConfirm() {
+        const modelId = this.resolveModelId();
         // 选择了自定义但未指定具体机型时，从已上传机型中随机选一个
-        if (this.value === CUSTOM_MODEL_VALUE && !this.source && this.uploadedModels.length > 0) {
+        if (modelId === CUSTOM_MODEL_VALUE && !this.source && this.uploadedModels.length > 0) {
             const random = this.uploadedModels[Math.floor(Math.random() * this.uploadedModels.length)];
             this.source = random.path;
         }
         if (this.immediateSubmit) {
             if (!this.device) throw new Error("device is null");
-            await deviceApi.changeModelMacvlan(this.device.android_sdk, this.value);
+            await deviceApi.changeModelMacvlan(this.device.android_sdk, modelId);
         }
-        this.close({ model_id: this.value, source: this.source });
+        this.close({ model_id: modelId, source: this.source });
     }
 
     private openV2Tool() {
@@ -181,50 +252,81 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
 
     protected override renderDialog(): VNode {
         return (
-            <div style={{ padding: "15px" }}>
-                <div style={{ marginBottom: "10px", textAlign: "right" }}>
-                    <el-link type="primary" underline={false} onClick={() => this.openV2Tool()}>
-                        {this.$t("v2Tool.entry")}
-                    </el-link>
-                </div>
-                <el-table v-loading={this.loading} default-expand-all data={this.modelList} width="100%" height="400px" style={{ minHeight: "400px" }}>
-                    <el-table-column label={this.$t("modelSelector.brand")} prop="label" width="100px" />
-                    <el-table-column label={this.$t("modelSelector.model")} prop="options" formatter={this.renderOptions} />
-                </el-table>
+            <div style={{ padding: "15px" }} v-loading={this.loading}>
+                <el-form label-width="90px">
+                    <el-form-item label={this.$t("modelSelector.modelType")}>
+                        <el-radio-group v-model={this.modelType}>
+                            <el-radio label="preset">{this.$t("modelSelector.preset")}</el-radio>
+                            <el-radio label="custom" disabled={!this.ip}>{this.$t("modelSelector.customType")}</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    {this.modelType === "preset" ? this.renderPreset() : this.renderCustom()}
+                    {/*
+                    <el-form-item label={this.$t("modelSelector.tool")}>
+                        <el-link type="primary" underline={false} onClick={() => this.openV2Tool()}>
+                            {this.$t("v2Tool.entry")}
+                        </el-link>
+                    </el-form-item>
+                      */}
+                </el-form>
             </div>
         );
     }
 
-    private renderOptions(row: MobileModelGroup) {
-        const radios = row.options.map((v) => {
-            return <el-radio v-model={this.value} label={v.value}>{v.label}</el-radio>;
-        });
-        // 「默认」分组（含自定义选项）且处于创建/批量创建场景时，追加「已上传机型」select 与上传区
-        const isDefaultGroup = row.options.some((v) => v.value === CUSTOM_MODEL_VALUE);
-        if (!isDefaultGroup || !this.ip) {
-            return radios;
-        }
-        return (
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                    {radios}
-                    <el-select
-                        value={this.source}
-                        placeholder={this.$t("modelSelector.selectUploaded")}
-                        size="small"
-                        clearable
-                        loading={this.uploadedLoading}
-                        style={{ width: "260px" }}
-                        onChange={(v: string) => {
-                            this.source = v || "";
-                            if (v) this.value = CUSTOM_MODEL_VALUE;
-                        }}
-                    >
-                        {this.uploadedModels.map((m) => (
-                            <el-option key={m.path} label={m.name} value={m.path} />
+    // 预设机型：品牌 select + 具体型号 select（均含「随机」项，且为第一项）
+    private renderPreset(): VNode[] {
+        const items: VNode[] = [
+            <el-form-item label={this.$t("modelSelector.brand")}>
+                <el-select
+                    value={this.selectedBrand}
+                    placeholder={this.$t("modelSelector.brand")}
+                    style={{ width: "100%" }}
+                    onChange={(v: string) => this.onBrandChange(v)}
+                >
+                    <el-option key={RANDOM_BRAND} label={this.$t("random")} value={RANDOM_BRAND} />
+                    {this.presetGroups.map((g) => (
+                        <el-option key={g.label} label={g.label} value={g.label} />
+                    ))}
+                </el-select>
+            </el-form-item>,
+        ];
+        // 品牌随机时无需指定机型
+        if (this.selectedBrand !== RANDOM_BRAND) {
+            items.push(
+                <el-form-item label={this.$t("modelSelector.model")}>
+                    <el-select v-model={this.value} placeholder={this.$t("modelSelector.notSelect")} style={{ width: "100%" }}>
+                        <el-option key={RANDOM_MODEL_VALUE} label={this.$t("random")} value={RANDOM_MODEL_VALUE} />
+                        {this.currentModelOptions.map((o) => (
+                            <el-option key={o.value} label={o.label} value={o.value} />
                         ))}
                     </el-select>
-                </div>
+                </el-form-item>,
+            );
+        }
+        return items;
+    }
+
+    // 自定义机型：选择已上传机型 select + 上传 UI
+    private renderCustom(): VNode[] {
+        return [
+            <el-form-item label={this.$t("modelSelector.uploadedLabel")}>
+                <el-select
+                    value={this.source}
+                    placeholder={this.$t("modelSelector.selectUploaded")}
+                    loading={this.uploadedLoading}
+                    style={{ width: "100%" }}
+                    onChange={(v: string) => {
+                        this.source = v || "";
+                        this.value = CUSTOM_MODEL_VALUE;
+                    }}
+                >
+                    <el-option key="__random_source__" label={this.$t("random")} value="" />
+                    {this.uploadedModels.map((m) => (
+                        <el-option key={m.path} label={m.name} value={m.path} />
+                    ))}
+                </el-select>
+            </el-form-item>,
+            <el-form-item label={this.$t("modelSelector.uploadLabel")}>
                 <el-upload
                     action="#"
                     drag
@@ -239,8 +341,8 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                         <div class="el-upload__text">{this.$t("modelSelector.uploadHint")}</div>
                     </div>
                 </el-upload>
-            </div>
-        );
+            </el-form-item>,
+        ];
     }
 }
 

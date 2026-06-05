@@ -392,16 +392,22 @@
     },
     "modelSelector": {
         "title": "Select model",
+        "modelType": "Model type",
+        "preset": "Preset model",
+        "customType": "Custom model",
         "brand": "Brand",
         "model": "Model",
         "notSelect": "Please select a model",
         "selectUploaded": "Select uploaded model",
+        "uploadedLabel": "Uploaded model",
+        "uploadLabel": "Upload model",
+        "tool": "Extraction tool",
         "uploadHint": "Drop the model file here, or click to upload",
         "uploadSuccess": "Model file uploaded successfully"
     },
     "v2Tool": {
-        "entry": "Download V2 model extraction tool",
-        "title": "V2 Model Extraction Tool",
+        "entry": "Download extraction tool",
+        "title": "Model Extraction Tool",
         "hint": "Scan to download the V2 model extraction tool, used to extract a phone model file and then upload it"
     },
     "checkS5": {
