@@ -61,6 +61,10 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
 
         let iscsiInfo: IscsiInfo | undefined;
         if (this.form.disk === 'iscsi') {
+            // 提交前校验 iSCSI 表单（含 Target 格式），不通过则中止
+            const form = this.$refs.iscsiForm as { validate: () => Promise<boolean> } | undefined;
+            const valid = await form?.validate().catch(() => false);
+            if (!valid) return false;
             iscsiInfo = {
                 ip: this.form.iscsi_ip,
                 port: this.form.iscsi_port,
@@ -87,6 +91,27 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
         this.close(true);
     }
 
+    // 校验 iSCSI Target 是否为合法的 IQN/EUI/NAA 格式，减少符号误输入
+    private validateTarget(_rule: any, value: string, callback: (error?: Error) => void) {
+        const target = (value || "").trim();
+        // 为空交给 required 规则处理
+        if (!target) {
+            callback();
+            return;
+        }
+        // IQN: iqn.YYYY-MM.<反向域名>[:<唯一标识>]，如 iqn.2003-01.com.example:storage.disk1
+        const iqn = /^iqn\.\d{4}-\d{2}\.[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*(?::[A-Za-z0-9._:-]+)?$/;
+        // EUI-64: eui. + 16 位十六进制
+        const eui = /^eui\.[0-9A-Fa-f]{16}$/;
+        // NAA: naa. + 16 或 32 位十六进制
+        const naa = /^naa\.[0-9A-Fa-f]{16}(?:[0-9A-Fa-f]{16})?$/;
+        if (iqn.test(target) || eui.test(target) || naa.test(target)) {
+            callback();
+        } else {
+            callback(new Error(i18n.t("vmDetail.iscsi.targetInvalid").toString()));
+        }
+    }
+
     private get formRules() {
         return {
             iscsi_ip: [
@@ -96,7 +121,8 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
                 { required: true, message: i18n.t("notNull"), trigger: "blur" }
             ],
             iscsi_target: [
-                { required: true, message: i18n.t("notNull"), trigger: "blur" }
+                { required: true, message: i18n.t("notNull"), trigger: "blur" },
+                { validator: this.validateTarget, trigger: "blur" }
             ],
             iscsi_lun: [
                 { required: true, message: i18n.t("notNull"), trigger: "blur" },
@@ -145,6 +171,7 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
 
                 {this.form.disk === 'iscsi' ? (
                     <el-form
+                        ref="iscsiForm"
                         label-position="left"
                         label-width="120px"
                         props={{ model: this.form }}
@@ -163,7 +190,7 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
                             <el-input type="password" v-model={this.form.iscsi_password} show-password />
                         </el-form-item>
                         <el-form-item label={this.$t("vmDetail.iscsi.target")} prop="iscsi_target">
-                            <el-input v-model={this.form.iscsi_target} />
+                            <el-input v-model={this.form.iscsi_target} placeholder={this.$t("vmDetail.iscsi.targetPlaceholder")} />
                         </el-form-item>
                         <el-form-item label={this.$t("vmDetail.iscsi.lun")} prop="iscsi_lun">
                             <el-input v-model={this.form.iscsi_lun} type="number" min="0" onInput={(v: string) => this.form.iscsi_lun = Number(v)} />

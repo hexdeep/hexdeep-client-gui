@@ -301,6 +301,8 @@
             "username": "用户名",
             "password": "密码",
             "target": "Target",
+            "targetPlaceholder": "例如：iqn.2003-01.com.example:storage.disk1",
+            "targetInvalid": "Target 格式不正确，应为 IQN 格式，如 iqn.2003-01.com.example:storage.disk1",
             "lun": "Lun"
         }
     },

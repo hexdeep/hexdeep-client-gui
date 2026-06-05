@@ -298,6 +298,8 @@
             "username": "Username",
             "password": "Password",
             "target": "Target",
+            "targetPlaceholder": "e.g. iqn.2003-01.com.example:storage.disk1",
+            "targetInvalid": "Invalid Target format. It should be an IQN, e.g. iqn.2003-01.com.example:storage.disk1",
             "lun": "Lun"
         }
     },
