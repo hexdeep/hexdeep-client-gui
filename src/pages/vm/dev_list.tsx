@@ -14,6 +14,7 @@ import { CloneVmDialog } from './dialog/clone_vm';
 import { ExportModelDialog } from './dialog/export_model';
 import { ImportModelDialog } from './dialog/import_model';
 import { ScreenMirrorDialog } from './dialog/screen_mirror';
+import { ShakeDialog } from './dialog/shake';
 import { CreateDialog } from './dialog/create';
 import { FilelistDialog } from './dialog/filelist';
 import { PullImageDialog } from './dialog/pull_image';
@@ -572,27 +573,17 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
     private async importModel(data: DeviceInfo) {
         const ok = await this.$dialog(ImportModelDialog).show(data);
-        if (!ok) return;
-        // 导入机型成功后重启容器使新机型生效
-        const l = this.$loading({ lock: true, text: i18n.t("loading").toString() });
-        try {
-            const imageAddress = await deviceApi.reboot(data.hostIp, data.name).finally(() => l.close());
-            if (imageAddress) {
-                await this.$dialog(PullImageDialog).show({
-                    hostIp: data.hostIp,
-                    imageAddress: imageAddress,
-                });
-                await deviceApi.reboot(data.hostIp, data.name);
-            }
-            this.$emit("changed", data.hostIp);
-        } catch (e) {
-            this.$message.error(e instanceof Error ? e.message : `${e}`);
-        }
+        // 后端已处理云机重启，这里仅刷新列表
+        if (ok) this.$emit("changed", data.hostIp);
     }
 
     private async screenMirror(data: DeviceInfo) {
         let re = await this.$dialog(ScreenMirrorDialog).show(data);
         if (re) this.$emit("changed", data.hostIp);
+    }
+
+    private async shake(data: DeviceInfo) {
+        await this.$dialog(ShakeDialog).show(data);
     }
 
 
@@ -653,6 +644,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <el-dropdown-item nativeOnClick={() => this.cloneVm(row)}>{this.$t("menu.clone")}</el-dropdown-item>
                         <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.selectFile(row)}>{this.$t("menu.upload")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.screenMirror(row)}>{this.$t("menu.screenMirror")}</el-dropdown-item>
+                        <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.shake(row)}>{this.$t("menu.shake")}</el-dropdown-item>
                         <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.fileBrowser(row)}>{this.$t("menu.fileBrowser")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.hostDetails(row)}>{this.$t("menu.hostDetails")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.setS5Proxy(row)}>{this.$t("menu.setS5Proxy")}</el-dropdown-item>

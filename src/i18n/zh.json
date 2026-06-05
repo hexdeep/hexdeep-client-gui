@@ -145,8 +145,14 @@
         "importModel": "导入机型",
         "clone": "移动",
         "screenMirror": "手机端🔥",
+        "shake": "摇一摇",
         "androidSdkApi": "安卓SdkApi",
         "switchFirmware": "切换固件"
+    },
+    "shake": {
+        "title": "摇一摇",
+        "count": "摇一摇时间因子",
+        "hint": "数值越大，传感器处于摇一摇状态的时间越长；0 表示关闭。"
     },
     "exportModel": {
         "title": "导出机型",
@@ -463,6 +469,8 @@
         "download": "android app",
         "downloadClient": "下载（运行App，点击右上角加号，输入设备ID）",
         "scanToDownload": "扫码下载（运行App，点击右上角加号，输入设备ID）",
+        "copy": "复制",
+        "copySuccess": "下载链接已复制",
         "runSuccess": "投屏运行成功，设备id已复制到剪贴板，请前往投屏客户端添加",
         "regenerateSuccess": "重新生成id成功，id已复制到剪贴板，请前往投屏客户端添加"
     },

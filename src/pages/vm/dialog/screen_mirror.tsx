@@ -16,7 +16,9 @@ export class ScreenMirrorDialog extends CommonDialog<DeviceInfo, void> {
     protected deviceId: string = "";
     protected isRunning: boolean = false;
 
-    protected downloadUrl: string = "https://download.hexdeep.com/screen_mirror/hexdeep.apk";
+    protected downloadUrl: string = "https://download.hexdeep.com/tools/hexdeep.apk";
+    // 带时间戳的下载地址，避免浏览器/代理缓存该 URL
+    protected qrUrl: string = "";
 
     override width: string = "600px";
 
@@ -24,6 +26,7 @@ export class ScreenMirrorDialog extends CommonDialog<DeviceInfo, void> {
         this.data = data;
         this.deviceInfo = data;
         this.title = `${this.$t("menu.screenMirror")} ${data.hostIp}(${data.index}-${getSuffixName(data.name)})`;
+        this.qrUrl = `${this.downloadUrl}?t=${Date.now()}`;
 
         this.deviceId = i18n.t("loading").toString();
         this.loadDeviceId();
@@ -71,6 +74,12 @@ export class ScreenMirrorDialog extends CommonDialog<DeviceInfo, void> {
     private async stopCast() {
         await deviceApi.screenMirrorRun(this.deviceInfo.android_sdk, 1);
         this.isRunning = false;
+    }
+
+    /** 复制下载链接到剪贴板 */
+    private async copyDownloadUrl() {
+        await this.copyToClipboard(this.qrUrl);
+        this.$message.success(this.$t("screenMirror.copySuccess").toString());
     }
 
     private async copyToClipboard(text: string) {
@@ -131,13 +140,33 @@ export class ScreenMirrorDialog extends CommonDialog<DeviceInfo, void> {
                     </div>
                 </el-descriptions-item>
 
-                {/* 下载：扫码下载 Android App */}
+                {/* 下载：扫码下载 Android App，同时提供可点击的下载链接与复制按钮 */}
                 <el-descriptions-item label={this.$t("screenMirror.download")}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <QrCode qrData={this.downloadUrl} size={120} />
-                        <span style={{ color: "#909399", fontSize: "13px" }}>
-                            {this.$t("screenMirror.scanToDownload")}
-                        </span>
+                        <QrCode qrData={this.qrUrl} size={120} />
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px", minWidth: 0 }}>
+                            <span style={{ color: "#909399", fontSize: "13px" }}>
+                                {this.$t("screenMirror.scanToDownload")}
+                            </span>
+                            <a
+                                href={this.qrUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: "#409eff", fontSize: "13px", wordBreak: "break-all" }}
+                            >
+                                {this.qrUrl}
+                            </a>
+                            <div>
+                                <el-button
+                                    type="primary"
+                                    size="mini"
+                                    icon="el-icon-document-copy"
+                                    onClick={() => this.copyDownloadUrl()}
+                                >
+                                    {this.$t("screenMirror.copy")}
+                                </el-button>
+                            </div>
+                        </div>
                     </div>
                 </el-descriptions-item>
 

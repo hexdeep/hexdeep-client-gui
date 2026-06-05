@@ -193,7 +193,7 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
                         <el-link
                             type="primary"
                             underline={false}
-                            href={`https://download.hexdeep.com/super_sdk/docker_registry.exe?t=${Date.now()}`}
+                            href={`https://download.hexdeep.com/tools/docker_registry.exe?t=${Date.now()}`}
                             target="_blank"
                         >
                             {this.$t("create.download_docker_registry")}

@@ -144,8 +144,14 @@
         "importModel": "Import Model",
         "clone": "Move",
         "screenMirror": "Screen Mirror",
+        "shake": "Shake",
         "androidSdkApi": "Android Sdk Api",
         "switchFirmware": "Switch Firmware"
+    },
+    "shake": {
+        "title": "Shake",
+        "count": "Shake Duration Factor",
+        "hint": "A larger value keeps the sensor shaking longer; 0 disables it."
     },
     "exportModel": {
         "title": "Export Model",
@@ -459,6 +465,8 @@
         "download": "android app download",
         "downloadClient": "Hexdeep Screen Mirror Client",
         "scanToDownload": "Scan to download (open the App, tap the + at the top right, enter the device ID)",
+        "copy": "Copy",
+        "copySuccess": "Download link copied",
         "run_success": "Screen mirroring worked successfully. The device ID has been copied to the screenshot panel. Please add it in the screen cast app",
         "regenerateSuccess": "ID regenerated successfully. The ID has been copied to the clipboard. Please add it in the screen mirroring client"
     },

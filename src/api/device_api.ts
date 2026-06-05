@@ -437,6 +437,18 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    // 查询摇一摇时间因子（0 表示关闭，范围 0-300）
+    public async getShake(android_sdk: string): Promise<number> {
+        const result = await fetch(makeMacvlanVmApiUrl("and_api/set_shake", android_sdk) + `?act=0`);
+        return await this.handleError(result);
+    }
+
+    // 设置摇一摇时间因子，返回设置后的值
+    public async setShake(android_sdk: string, count: number): Promise<number> {
+        const result = await fetch(makeMacvlanVmApiUrl("and_api/set_shake", android_sdk) + `?act=1&count=${count}`);
+        return await this.handleError(result);
+    }
+
     public async getHosts(): Promise<HostInfo[]> {
         const result = await fetch(makeHostVmApiUrl("entry/get", Config.host));
         const hosts: HostInfo[] = await this.handleError(result);
