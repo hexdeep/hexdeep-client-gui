@@ -140,10 +140,24 @@
         "hostDetails": "Host Details",
         "changeImage": "Change Image",
         "backup": "Backup",
+        "exportModel": "Export Model",
+        "importModel": "Import Model",
         "clone": "Move",
         "screenMirror": "Screen Mirror",
         "androidSdkApi": "Android Sdk Api",
         "switchFirmware": "Switch Firmware"
+    },
+    "exportModel": {
+        "title": "Export Model",
+        "exportRandomData": "Export randomly generated files",
+        "success": "Model exported successfully"
+    },
+    "importModel": {
+        "title": "Import Model",
+        "file": "Model File",
+        "tip": "Drag the model file here, or click to upload",
+        "noFile": "Please select a model file",
+        "success": "Model imported successfully"
     },
     "batchCreate": {
         "num": "Number",

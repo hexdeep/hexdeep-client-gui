@@ -172,6 +172,23 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    // 导出容器机型文件，返回机型文件在主机上的绝对路径
+    public async exportMobileModelFile(ip: string, name: string, exportRandomData: boolean): Promise<string> {
+        const result = await fetch(makeVmApiUrl("dc_api/export_mobile_model", ip, name) + `?export_random_data=${exportRandomData}&async=false`);
+        return await this.handleError(result);
+    }
+
+    // 导入机型文件到容器，成功返回 'ok'
+    public async importMobileModelFile(ip: string, name: string, file: File): Promise<string> {
+        const formData = new FormData();
+        formData.append("file", file);
+        const result = await fetch(makeVmApiUrl("dc_api/import_mobile_model", ip, name) + `?async=false`, {
+            method: "POST",
+            body: formData,
+        });
+        return await this.handleError(result);
+    }
+
     public async upload(ip: string, name: string, remotePath: string, file: File) {
         var formData = new FormData();
         formData.append('file', file);

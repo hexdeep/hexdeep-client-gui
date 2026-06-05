@@ -141,10 +141,24 @@
         "changeImage": "更换镜像",
         "success": "上传成功",
         "backup": "备份",
+        "exportModel": "导出机型",
+        "importModel": "导入机型",
         "clone": "移动",
         "screenMirror": "手机端🔥",
         "androidSdkApi": "安卓SdkApi",
         "switchFirmware": "切换固件"
+    },
+    "exportModel": {
+        "title": "导出机型",
+        "exportRandomData": "是否导出随机生成的文件",
+        "success": "导出机型成功"
+    },
+    "importModel": {
+        "title": "导入机型",
+        "file": "机型文件",
+        "tip": "将机型文件拖到此处，或点击上传",
+        "noFile": "请选择机型文件",
+        "success": "导入机型成功"
     },
     "batchCreate": {
         "num": "数量",

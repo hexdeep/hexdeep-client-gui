@@ -11,6 +11,8 @@ import { Component, InjectReactive, Prop, Ref, Watch } from 'vue-property-decora
 import * as tsx from 'vue-tsx-support';
 import s from './dev_list.module.less';
 import { CloneVmDialog } from './dialog/clone_vm';
+import { ExportModelDialog } from './dialog/export_model';
+import { ImportModelDialog } from './dialog/import_model';
 import { ScreenMirrorDialog } from './dialog/screen_mirror';
 import { CreateDialog } from './dialog/create';
 import { FilelistDialog } from './dialog/filelist';
@@ -564,6 +566,30 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         if (re) this.$emit("changed", data.hostIp);
     }
 
+    private async exportModel(data: DeviceInfo) {
+        await this.$dialog(ExportModelDialog).show(data);
+    }
+
+    private async importModel(data: DeviceInfo) {
+        const ok = await this.$dialog(ImportModelDialog).show(data);
+        if (!ok) return;
+        // 导入机型成功后重启容器使新机型生效
+        const l = this.$loading({ lock: true, text: i18n.t("loading").toString() });
+        try {
+            const imageAddress = await deviceApi.reboot(data.hostIp, data.name).finally(() => l.close());
+            if (imageAddress) {
+                await this.$dialog(PullImageDialog).show({
+                    hostIp: data.hostIp,
+                    imageAddress: imageAddress,
+                });
+                await deviceApi.reboot(data.hostIp, data.name);
+            }
+            this.$emit("changed", data.hostIp);
+        } catch (e) {
+            this.$message.error(e instanceof Error ? e.message : `${e}`);
+        }
+    }
+
     private async screenMirror(data: DeviceInfo) {
         let re = await this.$dialog(ScreenMirrorDialog).show(data);
         if (re) this.$emit("changed", data.hostIp);
@@ -622,6 +648,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <el-dropdown-item nativeOnClick={() => this.rename(row)}>{this.$t("menu.rename")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.updateVm(row)}>{this.$t("menu.updateVm")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.backupVm(row)}>{this.$t("menu.backup")}</el-dropdown-item>
+                        <el-dropdown-item nativeOnClick={() => this.exportModel(row)}>{this.$t("menu.exportModel")}</el-dropdown-item>
+                        <el-dropdown-item nativeOnClick={() => this.importModel(row)}>{this.$t("menu.importModel")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.cloneVm(row)}>{this.$t("menu.clone")}</el-dropdown-item>
                         <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.selectFile(row)}>{this.$t("menu.upload")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.screenMirror(row)}>{this.$t("menu.screenMirror")}</el-dropdown-item>
