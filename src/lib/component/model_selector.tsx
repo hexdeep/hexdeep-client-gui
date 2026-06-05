@@ -4,6 +4,7 @@ import { VNode } from 'vue';
 import { Component, Prop, Watch } from "vue-property-decorator";
 import * as tsx from 'vue-tsx-support';
 import { CommonDialog, Dialog } from '../dialog/dialog';
+import { MyButton } from '../my_button';
 import { ErrorProxy } from '../error_handle';
 import { i18n } from '@/i18n/i18n';
 import { DeviceInfo, MobileModelFile } from '@/api/device_define';
@@ -155,9 +156,12 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
             this.value = CUSTOM_MODEL_VALUE;
         } else {
             this.source = "";
-            if (this.value <= 0) this.value = 0;
             if (!this.selectedBrand) {
                 this.selectedBrand = RANDOM_BRAND;
+            }
+            // 恢复机型选择：具体品牌默认「随机」机型，品牌随机则为 0（机型选择项隐藏）
+            if (this.value <= 0) {
+                this.value = this.selectedBrand === RANDOM_BRAND ? 0 : RANDOM_MODEL_VALUE;
             }
         }
     }
@@ -250,6 +254,20 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         this.$dialog(V2ToolDownloadDialog).show();
     }
 
+    // 自定义机型：既未选中具体机型，也没有可随机的已上传机型时，禁用确定按钮
+    private get confirmDisabled(): boolean {
+        return this.modelType === "custom" && !this.source && this.uploadedModels.length === 0;
+    }
+
+    protected override renderFooter() {
+        return (
+            <div class="dialog-footer">
+                <MyButton text={i18n.t("confirm.ok")} disabled={this.confirmDisabled} onClick={() => this.onConfirm()} type="primary" />
+                <MyButton text={i18n.t("confirm.cancel")} onClick={() => this.close()} />
+            </div>
+        );
+    }
+
     protected override renderDialog(): VNode {
         return (
             <div style={{ padding: "15px" }} v-loading={this.loading}>
@@ -261,13 +279,6 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                         </el-radio-group>
                     </el-form-item>
                     {this.modelType === "preset" ? this.renderPreset() : this.renderCustom()}
-                    {/*
-                    <el-form-item label={this.$t("modelSelector.tool")}>
-                        <el-link type="primary" underline={false} onClick={() => this.openV2Tool()}>
-                            {this.$t("v2Tool.entry")}
-                        </el-link>
-                    </el-form-item>
-                      */}
                 </el-form>
             </div>
         );
@@ -320,7 +331,9 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                         this.value = CUSTOM_MODEL_VALUE;
                     }}
                 >
-                    <el-option key="__random_source__" label={this.$t("random")} value="" />
+                    {this.uploadedModels.length > 0 && (
+                        <el-option key="__random_source__" label={this.$t("random")} value="" />
+                    )}
                     {this.uploadedModels.map((m) => (
                         <el-option key={m.path} label={m.name} value={m.path} />
                     ))}
@@ -341,6 +354,12 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                         <div class="el-upload__text">{this.$t("modelSelector.uploadHint")}</div>
                     </div>
                 </el-upload>
+            </el-form-item>,
+            // 提取工具下载入口（仅自定义机型）
+            <el-form-item label={this.$t("modelSelector.tool")}>
+                <el-link type="primary" underline={false} onClick={() => this.openV2Tool()}>
+                    {this.$t("v2Tool.entry")}
+                </el-link>
             </el-form-item>,
         ];
     }

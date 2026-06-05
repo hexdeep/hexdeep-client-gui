@@ -21,7 +21,7 @@ import { isImageVersionCompatibleByModelVersion, timeDiff } from "@/common/commo
 @Dialog
 export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, boolean> {
     @InjectReactive() private config!: MyConfig;
-    public override width: string = "650px";
+    public override width: string = "700px";
     protected images: ImageInfo[] = [];
     private dockerRegistries: string[] = [];
     public override allowEscape: boolean = false;
