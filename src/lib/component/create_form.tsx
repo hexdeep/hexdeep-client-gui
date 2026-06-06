@@ -360,7 +360,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                             <el-radio-group v-model={this.data.mobile_model_version}>
                                 <el-radio label="v2">v2</el-radio>
                                 {/* v3 暂未完成，先隐藏 */}
-                                {/* <el-radio label="v3">v3</el-radio> */}
+                                <el-radio label="v3">v3</el-radio>
                             </el-radio-group>
                         </el-form-item>
                         <el-form-item label={this.$t("create.model_id")} prop="model_id"  >
