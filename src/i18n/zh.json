@@ -77,6 +77,8 @@
         "width": "宽度",
         "height": "高度",
         "dpi": "DPI",
+        "x_dpi": "XDPI",
+        "y_dpi": "YDPI",
         "fps": "FPS",
         "mobile_model_version": "机型版本",
         "model_id": "型号",

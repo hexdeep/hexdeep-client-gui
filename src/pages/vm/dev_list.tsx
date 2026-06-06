@@ -380,6 +380,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                 width: 720,
                 height: 1280,
                 dpi: 320,
+                x_dpi: 449.942,
+                y_dpi: 451.338,
                 fps: 24,
                 dns_urls: "223.5.5.5",
             },

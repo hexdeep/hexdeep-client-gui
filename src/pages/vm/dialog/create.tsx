@@ -24,7 +24,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     private allHosts: HostInfo[] = [];
 
     private static readonly CACHE_KEY = "CreateFormCache";
-    private static readonly CACHE_FIELDS = ["name", "sandbox_size", "width", "height", "dpi", "fps", "mobile_model_version", "mobile_model_source"] as const;
+    private static readonly CACHE_FIELDS = ["name", "sandbox_size", "width", "height", "dpi", "x_dpi", "y_dpi", "fps", "mobile_model_version", "mobile_model_source"] as const;
 
     public override async show(data: DockerEditParam) {
         this.data = data;

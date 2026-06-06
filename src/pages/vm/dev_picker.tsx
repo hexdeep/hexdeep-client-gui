@@ -124,6 +124,8 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                 width: 720,
                 height: 1280,
                 dpi: 320,
+                x_dpi: 449.942,
+                y_dpi: 451.338,
                 fps: 24,
                 dns_urls: "223.5.5.5",
             }
@@ -164,7 +166,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
             isUpdate: true,
             info: v,
             hostId: v.hostId,
-            obj: { name: getSuffixName(v.name), sandbox: 1 }
+            obj: Object.assign({ name: getSuffixName(v.name) }, v.create_req)
         });
         if (re) {
             if (re.name != getSuffixName(v.name)) {

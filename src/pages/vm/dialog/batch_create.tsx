@@ -29,7 +29,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     protected allHosts: HostInfo[] = []; // 所有主机列表
 
     private static readonly CACHE_KEY = "BatchCreateFormCache";
-    private static readonly CACHE_FIELDS = ["num", "suffix_name", "sandbox_size", "width", "height", "dpi", "fps", "mobile_model_version", "mobile_model_source"] as const;
+    private static readonly CACHE_FIELDS = ["num", "suffix_name", "sandbox_size", "width", "height", "dpi", "x_dpi", "y_dpi", "fps", "mobile_model_version", "mobile_model_source"] as const;
 
     public override show(data: DockerBatchCreateParam) {
         this.data = data;

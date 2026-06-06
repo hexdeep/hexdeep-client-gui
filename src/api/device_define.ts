@@ -46,6 +46,8 @@ export interface DeviceDetail {
     width?: number; //	屏幕宽度
     height?: number;//	屏幕高度
     dpi?: number;   //	解析度
+    x_dpi?: number; //	横向物理DPI
+    y_dpi?: number; //	纵向物理DPI
     fps?: number;   //	分辨率
     dns_urls?: string;  //	dns服务器地址,例如:223.5.5.5,8.8.8.8
     subnet?: string;

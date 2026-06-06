@@ -340,6 +340,15 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     <el-form-item label={this.$t("create.dpi")} prop="dpi">
                         <el-input v-model={this.data.dpi} onBlur={this.fixNumber("dpi")} min={100} max={600} type="number" />
                     </el-form-item>
+                    <el-form-item label={this.$t("create.x_dpi")} prop="x_dpi">
+                        <el-input v-model={this.data.x_dpi} onBlur={this.fixNumber("x_dpi")} min={100} max={600} type="number" />
+                    </el-form-item>
+                </Row>
+
+                <Row>
+                    <el-form-item label={this.$t("create.y_dpi")} prop="y_dpi">
+                        <el-input v-model={this.data.y_dpi} onBlur={this.fixNumber("y_dpi")} min={100} max={600} type="number" />
+                    </el-form-item>
                     <el-form-item label={this.$t("create.fps")} prop="fps">
                         <el-input v-model={this.data.fps} onBlur={this.fixNumber("fps")} min={10} max={60} type="number" />
                     </el-form-item>
