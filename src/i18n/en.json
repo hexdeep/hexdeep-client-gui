@@ -427,7 +427,10 @@
         "uploadLabel": "Upload model",
         "tool": "Extraction tool",
         "uploadHint": "Drop the model file here, or click to upload",
-        "uploadSuccess": "Model file uploaded successfully"
+        "uploadSuccess": "Model file uploaded successfully",
+        "deleteConfirm": "Delete model file \"{0}\"?",
+        "deleteSuccess": "Model file deleted successfully",
+        "download": "Download"
     },
     "v2Tool": {
         "entry": "Download extraction tool",

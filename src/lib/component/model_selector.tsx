@@ -102,6 +102,7 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
     private uploadedModels: MobileModelFile[] = [];
     private uploadedLoading: boolean = false;
     private uploading: boolean = false;
+    private deletingPath: string = "";
 
     public override show(data?: IModelDialogData | undefined) {
         this.value = data?.value || 0;
@@ -198,20 +199,62 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
             option.onError?.(new Error("ip is empty"));
             return;
         }
+
         try {
             this.uploading = true;
-            const path = await deviceApi.uploadMobileModel(this.ip, this.version, option.file);
-            // 上传成功即视为选中该自定义机型
+
+            const list = await deviceApi.uploadMobileModel(this.ip, this.version, option.file);
+
+            this.uploadedModels = list || [];
             this.value = CUSTOM_MODEL_VALUE;
-            this.source = path;
-            await this.loadUploadedModels();
+
+            const uploadedFileName = option.file.name;
+
+            const current = this.uploadedModels.find((item) => item.name === uploadedFileName)
+                || this.uploadedModels[this.uploadedModels.length - 1];
+
+            if (current) {
+                this.source = current.path;
+            }
+
             this.$message.success(this.$t("modelSelector.uploadSuccess").toString());
-            option.onSuccess?.(path);
+            option.onSuccess?.(current);
         } catch (error) {
             this.$message.error(`${error}`);
             option.onError?.(error);
         } finally {
             this.uploading = false;
+        }
+    }
+
+    private async deleteUploadedModel(model: MobileModelFile, event: Event) {
+        event.stopPropagation();
+        if (!this.ip || this.deletingPath) return;
+        try {
+            await this.$confirm(
+                this.$t("modelSelector.deleteConfirm", [model.name]).toString(),
+                i18n.t("confirm.title") as string,
+                {
+                    confirmButtonText: i18n.t("confirm.ok") as string,
+                    cancelButtonText: i18n.t("confirm.cancel") as string,
+                    type: "warning",
+                }
+            );
+        } catch (error) {
+            return;
+        }
+        try {
+            this.deletingPath = model.path;
+            await deviceApi.deleteMobileModel(this.ip, this.version, model.path);
+            if (this.source === model.path) {
+                this.source = "";
+            }
+            await this.loadUploadedModels();
+            this.$message.success(this.$t("modelSelector.deleteSuccess").toString());
+        } catch (error) {
+            this.$message.error(`${error}`);
+        } finally {
+            this.deletingPath = "";
         }
     }
 
@@ -252,6 +295,60 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
 
     private openV2Tool() {
         this.$dialog(V2ToolDownloadDialog).show();
+    }
+
+    private getPresetModelDownloadUrl(option: MobileModelGroup["options"][number]): string {
+        if (this.version === "v3") {
+            return option.meta?.download_url || "";
+        }
+        return `https://download.hexdeep.com/mobile_cfgs/v2/${option.value}.tar`;
+    }
+
+    // private downloadPresetModel(option: MobileModelGroup["options"][number], event: Event) {
+    //     event.stopPropagation();
+    //     event.preventDefault();
+    //     const url = this.getPresetModelDownloadUrl(option);
+    //     if (!url) return;
+    //     window.open(url, "_blank");
+    // }
+
+    private async downloadPresetModel(option: MobileModelGroup["options"][number], event: Event) {
+        event.stopPropagation();
+        event.preventDefault();
+
+        const url = this.getPresetModelDownloadUrl(option);
+        if (!url) return;
+
+        const sanitizeFileName = (value: string) => {
+            return value
+                .trim()
+                .replace(/[\\/:*?"<>|\s]+/g, "_")
+                .replace(/^_+|_+$/g, "");
+        };
+
+        const brand = sanitizeFileName(this.selectedBrand || "unknown");
+        const model = sanitizeFileName(option.label || String(option.value));
+        const fileName = `${brand}_${model}.tar`;
+
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error("下载失败");
+
+            const blob = await res.blob();
+            const objectUrl = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = objectUrl;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            URL.revokeObjectURL(objectUrl);
+        } catch (error) {
+            console.error(error);
+            this.$message.error("下载失败");
+        }
     }
 
     // 自定义机型：既未选中具体机型，也没有可随机的已上传机型时，禁用确定按钮
@@ -308,7 +405,19 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                     <el-select v-model={this.value} placeholder={this.$t("modelSelector.notSelect")} style={{ width: "100%" }}>
                         <el-option key={RANDOM_MODEL_VALUE} label={this.$t("random")} value={RANDOM_MODEL_VALUE} />
                         {this.currentModelOptions.map((o) => (
-                            <el-option key={o.value} label={o.label} value={o.value} />
+                            <el-option key={o.value} label={o.label} value={o.value}>
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.label}</span>
+                                    <el-button
+                                        type="text"
+                                        size="mini"
+                                        icon="el-icon-download"
+                                        nativeOnClick={(event: Event) => this.downloadPresetModel(o, event)}
+                                    >
+                                        {this.$t("modelSelector.download")}
+                                    </el-button>
+                                </div>
+                            </el-option>
                         ))}
                     </el-select>
                 </el-form-item>,
@@ -335,7 +444,20 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                         <el-option key="__random_source__" label={this.$t("random")} value="" />
                     )}
                     {this.uploadedModels.map((m) => (
-                        <el-option key={m.path} label={m.name} value={m.path} />
+                        <el-option key={m.path} label={m.name} value={m.path}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.name}</span>
+                                <el-button
+                                    type="text"
+                                    size="mini"
+                                    icon={this.deletingPath === m.path ? "el-icon-loading" : "el-icon-delete"}
+                                    disabled={!!this.deletingPath}
+                                    nativeOnClick={(event: Event) => this.deleteUploadedModel(m, event)}
+                                >
+                                    {this.$t("delete")}
+                                </el-button>
+                            </div>
+                        </el-option>
                     ))}
                 </el-select>
             </el-form-item>,

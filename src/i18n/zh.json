@@ -431,7 +431,10 @@
         "uploadLabel": "上传机型",
         "tool": "提取工具",
         "uploadHint": "将机型文件拖到此处，或点击上传",
-        "uploadSuccess": "机型文件上传成功"
+        "uploadSuccess": "机型文件上传成功",
+        "deleteConfirm": "确定删除机型文件「{0}」吗？",
+        "deleteSuccess": "机型文件删除成功",
+        "download": "下载"
     },
     "v2Tool": {
         "entry": "下载提取工具",

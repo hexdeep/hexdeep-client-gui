@@ -154,12 +154,19 @@ class DeviceApi extends ApiBase {
         return json;
     }
 
+    private makeMobileModelUrl(ip: string, act: 0 | 1 | 2, version: "v2" | "v3", path?: string) {
+        const url = makeVmApiUrl("host/mobile_model", ip);
+        url.searchParams.set("act", act.toString());
+        url.searchParams.set("mobile_model_version", version);
+        if (path) url.searchParams.set("path", path);
+        return url;
+    }
+
     // 上传自定义机型文件到主机，返回主机上的绝对路径
-    public async uploadMobileModel(ip: string, version: "v2" | "v3", file: File): Promise<string> {
+    public async uploadMobileModel(ip: string, version: "v2" | "v3", file: File): Promise<MobileModelFile[]> {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("mobile_model_version", version);
-        const result = await fetch(makeVmApiUrl("host/mobile_model/upload", ip), {
+        const result = await fetch(this.makeMobileModelUrl(ip, 1, version), {
             method: "POST",
             body: formData,
         });
@@ -168,7 +175,17 @@ class DeviceApi extends ApiBase {
 
     // 获取主机上已上传的自定义机型文件列表
     public async getMobileModelUploadList(ip: string, version: "v2" | "v3"): Promise<MobileModelFile[]> {
-        const result = await fetch(makeVmApiUrl("host/mobile_model/list", ip) + `?mobile_model_version=${version}`);
+        const result = await fetch(this.makeMobileModelUrl(ip, 0, version), {
+            method: "POST",
+        });
+        return await this.handleError(result);
+    }
+
+    // 删除主机上已上传的自定义机型文件
+    public async deleteMobileModel(ip: string, version: "v2" | "v3", path: string): Promise<MobileModelFile[] | string> {
+        const result = await fetch(this.makeMobileModelUrl(ip, 2, version, path), {
+            method: "POST",
+        });
         return await this.handleError(result);
     }
 
