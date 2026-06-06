@@ -9,7 +9,7 @@ import { ErrorProxy } from '../error_handle';
 import { i18n } from '@/i18n/i18n';
 import { DeviceInfo, MobileModelFile } from '@/api/device_define';
 import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup, RANDOM_BRAND, RANDOM_MODEL_VALUE } from './mobile_model_loader';
-import { V2ToolDownloadDialog } from './v2_tool_dialog';
+import { MobileModelToolDownloadDialog } from './v2_tool_dialog';
 
 /**
  * 机型选择器
@@ -304,8 +304,8 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         this.close({ model_id: modelId, source: this.source });
     }
 
-    private openV2Tool() {
-        this.$dialog(V2ToolDownloadDialog).show();
+    private openTool() {
+        this.$dialog(MobileModelToolDownloadDialog).show({ version: this.version });
     }
 
     private getPresetModelDownloadUrl(option: MobileModelGroup["options"][number]): string {
@@ -485,7 +485,7 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
             </el-form-item>,
             // 提取工具下载入口（仅自定义机型）
             <el-form-item label={this.$t("modelSelector.tool")}>
-                <el-link type="primary" underline={false} onClick={() => this.openV2Tool()}>
+                <el-link type="primary" underline={false} onClick={() => this.openTool()}>
                     {this.$t("v2Tool.entry")}
                 </el-link>
             </el-form-item>,

@@ -2,37 +2,49 @@ import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
 import { VNode } from "vue";
 import { QrCode } from "./QrCode";
 
-/**
- * 机型提取工具下载弹窗：以 tabs 形式分别展示各版本工具，目前仅 V2（V3 待完成）
- */
 @Dialog
-export class V2ToolDownloadDialog extends CommonDialog<void, void> {
+export class MobileModelToolDownloadDialog extends CommonDialog<{ version: "v2" | "v3"; }, void> {
     public override title: string = this.$t("v2Tool.title").toString();
     public override width: string = "360px";
+
     private activeTab: string = "v2";
-    private readonly v2Url: string = "https://download.hexdeep.com/tools/HexV2.apk";
-    // 带时间戳的下载地址，避免浏览器/代理缓存该 URL
-    private v2QrUrl: string = "";
+    private version: "v2" | "v3" = "v2";
+    private downloadUrl: string = "";
 
     protected override onInit() {
-        this.v2QrUrl = `${this.v2Url}?t=${Date.now()}`;
+        // 根据传入版本初始化下载链接
+        this.version = this.data?.version || "v2";
+        this.downloadUrl = this.getDownloadUrl(this.version);
+        this.activeTab = this.version;
     }
 
     protected override renderFooter() {
-        // 仅展示二维码，使用右上角关闭按钮
+        // 仅展示二维码和关闭按钮
     }
 
     protected renderDialog(): VNode {
         return (
             <el-tabs value={this.activeTab} onInput={(v: string) => (this.activeTab = v)}>
                 <el-tab-pane label="V2" name="v2">
-                    {this.renderQr(this.v2QrUrl)}
+                    {this.version === "v2" && this.renderQr(this.downloadUrl)}
+                </el-tab-pane>
+                <el-tab-pane label="V3" name="v3">
+                    {this.version === "v3" && this.renderQr(this.downloadUrl)}
                 </el-tab-pane>
             </el-tabs>
         );
     }
 
-    /** 复制下载链接到剪贴板 */
+    /** 根据版本生成下载链接 */
+    private getDownloadUrl(version: "v2" | "v3"): string {
+        if (version === "v2") {
+            return `https://download.hexdeep.com/tools/HexV2.apk?t=${Date.now()}`;
+        } else if (version === "v3") {
+            return `https://download.hexdeep.com/tools/HexV3.apk?t=${Date.now()}`;
+        }
+        return "";
+    }
+
     private async copyUrl(url: string) {
         await this.copyToClipboard(url);
         this.$message.success(this.$t("v2Tool.copySuccess").toString());
@@ -40,11 +52,9 @@ export class V2ToolDownloadDialog extends CommonDialog<void, void> {
 
     private async copyToClipboard(text: string) {
         if (!text) return;
-        // https + 新浏览器
         if (navigator.clipboard && window.isSecureContext) {
             await navigator.clipboard.writeText(text);
         } else {
-            // 兼容 http / 老浏览器
             const textarea = document.createElement("textarea");
             textarea.value = text;
             textarea.style.position = "fixed";
