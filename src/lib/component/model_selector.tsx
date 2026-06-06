@@ -178,8 +178,19 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         try {
             this.uploadedLoading = true;
             this.uploadedModels = await deviceApi.getMobileModelUploadList(this.ip, this.version) || [];
-        } catch (error) {
-            this.uploadedModels = [];
+
+            // 校验 source
+            if (this.source) {
+                const exists = this.uploadedModels.some((m) => m.path === this.source);
+                if (!exists) {
+                    // 被删除了，自动选择最新上传的机型
+                    const latest = this.uploadedModels[this.uploadedModels.length - 1];
+                    this.source = latest ? latest.path : "";
+                }
+            } else if (this.uploadedModels.length > 0) {
+                // 初始为空，默认选最新机型
+                this.source = this.uploadedModels[this.uploadedModels.length - 1].path;
+            }
         } finally {
             this.uploadedLoading = false;
         }
@@ -303,14 +314,6 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         }
         return `https://download.hexdeep.com/mobile_cfgs/v2/${option.value}.tar`;
     }
-
-    // private downloadPresetModel(option: MobileModelGroup["options"][number], event: Event) {
-    //     event.stopPropagation();
-    //     event.preventDefault();
-    //     const url = this.getPresetModelDownloadUrl(option);
-    //     if (!url) return;
-    //     window.open(url, "_blank");
-    // }
 
     private async downloadPresetModel(option: MobileModelGroup["options"][number], event: Event) {
         event.stopPropagation();
