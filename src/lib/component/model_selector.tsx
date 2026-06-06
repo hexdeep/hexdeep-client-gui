@@ -322,17 +322,6 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         const url = this.getPresetModelDownloadUrl(option);
         if (!url) return;
 
-        const sanitizeFileName = (value: string) => {
-            return value
-                .trim()
-                .replace(/[\\/:*?"<>|\s]+/g, "_")
-                .replace(/^_+|_+$/g, "");
-        };
-
-        const brand = sanitizeFileName(this.selectedBrand || "unknown");
-        const model = sanitizeFileName(option.label || String(option.value));
-        const fileName = `${brand}_${model}.tar`;
-
         try {
             const res = await fetch(url);
             if (!res.ok) throw new Error("下载失败");
@@ -342,7 +331,21 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
 
             const a = document.createElement("a");
             a.href = objectUrl;
-            a.download = fileName;
+
+            if (this.version === "v2") {
+                // v2 自定义下载文件名
+                const sanitizeFileName = (value: string) =>
+                    value.trim().replace(/[\\/:*?"<>|\s]+/g, "_").replace(/^_+|_+$/g, "");
+                const brand = sanitizeFileName(this.selectedBrand || "unknown");
+                const model = sanitizeFileName(option.label || String(option.value));
+                a.download = `${brand}_${model}.tar`;
+            } else {
+                // v3 使用服务器返回的原始文件名
+                // 尝试从 URL 提取文件名
+                const urlParts = url.split("/");
+                a.download = urlParts[urlParts.length - 1] || "file.tar";
+            }
+
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
