@@ -137,7 +137,15 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
     private async rename(v: DeviceInfo) {
         const re = await this.$dialog(RenameDialog).show(v);
         if (re) {
+            // 重命名后云机的 key（hostIp-index-name）会变化，需同步更新已持久化的 TreeConfig，
+            // 否则刷新页面后因 key 不匹配导致选中状态丢失
+            const tc = this.treeConfig.find(x => x.key == v.key);
+            if (tc) {
+                tc.key = `${v.hostIp}-${v.index}-${re}`;
+                localStorage.setItem("TreeConfig", JSON.stringify(this.treeConfig));
+            }
             v.name = re;
+            this.$emit('changed', v.hostIp);
         }
     }
 
@@ -171,7 +179,10 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         if (re) {
             if (re.name != getSuffixName(v.name)) {
                 var tc = this.treeConfig.find(x => x.key == v.key);
-                if (tc) tc.key = `${v.hostIp}-${v.index}-${getPrefixName(v.name)}${re.name}`;
+                if (tc) {
+                    tc.key = `${v.hostIp}-${v.index}-${getPrefixName(v.name)}${re.name}`;
+                    localStorage.setItem("TreeConfig", JSON.stringify(this.treeConfig));
+                }
             }
             this.$emit('changed', v.hostIp);
         }
