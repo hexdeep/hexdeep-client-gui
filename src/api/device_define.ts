@@ -118,16 +118,20 @@ export interface S5setParam {
     udp_over_tcp?: number; //	1,启用;0,禁用
 }
 
-export interface MobileModelV3Info {
+export interface MobileModelInfo {
     id: number;
     screen_height: number;
     screen_width: number;
     screen_density: number;
-    download_url: string;
+    screen_xdpi?: number;
+    screen_ydpi?: number;
+    download_url?: string;
 }
 
-export type MobileModelListV2 = Record<string, Record<string, number>>;
-export type MobileModelListV3 = Record<string, Record<string, MobileModelV3Info>>;
+export type MobileModelV2Info = number | MobileModelInfo;
+export type MobileModelV3Info = MobileModelInfo;
+export type MobileModelListV2 = Record<string, Record<string, MobileModelV2Info>>;
+export type MobileModelListV3 = Record<string, Record<string, MobileModelInfo>>;
 export type MobileModelList = MobileModelListV2 | MobileModelListV3;
 
 // 用户上传到主机上的自定义机型文件

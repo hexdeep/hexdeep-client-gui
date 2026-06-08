@@ -8,7 +8,7 @@ import { MyButton } from '../my_button';
 import { ErrorProxy } from '../error_handle';
 import { i18n } from '@/i18n/i18n';
 import { DeviceInfo, MobileModelFile } from '@/api/device_define';
-import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup, RANDOM_BRAND, RANDOM_MODEL_VALUE } from './mobile_model_loader';
+import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup, MobileModelOption, RANDOM_BRAND, RANDOM_MODEL_VALUE } from './mobile_model_loader';
 import { MobileModelToolDownloadDialog } from './v2_tool_dialog';
 
 /**
@@ -67,6 +67,7 @@ export class ModelSelector extends tsx.Component<IPorps & IModelPorps, {}, {}> {
         if (ret !== undefined) {
             this.$emit("input", ret.model_id);
             this.$emit("update:source", ret.source);
+            this.$emit("model-selected", ret.option);
         }
     }
 
@@ -269,29 +270,42 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         }
     }
 
-    // 将选择结果解析为最终提交的 model_id（解开「随机」占位值）
-    private resolveModelId(): number {
-        if (this.modelType === "custom") {
-            return CUSTOM_MODEL_VALUE;
+    private findModelOption(value: number): MobileModelOption | undefined {
+        for (const group of this.presetGroups) {
+            const option = group.options.find((o) => o.value === value);
+            if (option) return option;
         }
-        // 品牌随机：传 0，由后端随机选取机型
+        return;
+    }
+
+    private pickRandomOption(options: MobileModelOption[]): MobileModelOption | undefined {
+        const candidates = options.filter((o) => o.value > 0);
+        if (candidates.length === 0) return;
+        return candidates[Math.floor(Math.random() * candidates.length)];
+    }
+
+    // 将选择结果解析为最终提交的 model_id（解开「随机」占位值）
+    private resolveModelSelection(): { modelId: number; option?: MobileModelOption } {
+        if (this.modelType === "custom") {
+            return { modelId: CUSTOM_MODEL_VALUE };
+        }
+        // 品牌随机：前端随机选取一个具体机型，便于同步屏幕参数。
         if (this.selectedBrand === RANDOM_BRAND) {
-            return 0;
+            const option = this.pickRandomOption(this.presetGroups.flatMap((g) => g.options));
+            return { modelId: option?.value ?? 0, option };
         }
         // 当前品牌内机型随机：前端随机选取一个具体机型
         if (this.value === RANDOM_MODEL_VALUE) {
-            const candidates = this.currentModelOptions.filter((o) => o.value > 0);
-            if (candidates.length > 0) {
-                return candidates[Math.floor(Math.random() * candidates.length)].value;
-            }
-            return 0;
+            const option = this.pickRandomOption(this.currentModelOptions);
+            return { modelId: option?.value ?? 0, option };
         }
-        return this.value;
+        return { modelId: this.value, option: this.findModelOption(this.value) };
     }
 
     @ErrorProxy({ success: i18n.t("changeModel.success"), loading: i18n.t("loading") })
     protected override async onConfirm() {
-        const modelId = this.resolveModelId();
+        const selection = this.resolveModelSelection();
+        const modelId = selection.modelId;
         // 选择了自定义但未指定具体机型时，从已上传机型中随机选一个
         if (modelId === CUSTOM_MODEL_VALUE && !this.source && this.uploadedModels.length > 0) {
             const random = this.uploadedModels[Math.floor(Math.random() * this.uploadedModels.length)];
@@ -301,7 +315,7 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
             if (!this.device) throw new Error("device is null");
             await deviceApi.changeModelMacvlan(this.device.android_sdk, modelId);
         }
-        this.close({ model_id: modelId, source: this.source });
+        this.close({ model_id: modelId, source: this.source, option: selection.option });
     }
 
     private openTool() {
@@ -509,4 +523,5 @@ interface IModelDialogData {
 interface IModelSelectResult {
     model_id: number;
     source: string;
+    option?: MobileModelOption;
 }

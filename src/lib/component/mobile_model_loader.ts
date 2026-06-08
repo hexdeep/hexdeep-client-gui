@@ -1,10 +1,10 @@
 import { deviceApi } from "@/api/device_api";
-import { MobileModelList, MobileModelV3Info } from "@/api/device_define";
+import { MobileModelInfo, MobileModelList } from "@/api/device_define";
 
 export interface MobileModelOption {
     label: string;
     value: number;
-    meta?: MobileModelV3Info;
+    meta?: MobileModelInfo;
 }
 
 export interface MobileModelGroup {
@@ -24,8 +24,8 @@ const modelListPending: Partial<Record<"v2" | "v3", Promise<MobileModelGroup[]>>
 function normalizeModelList(data: MobileModelList, version: "v2" | "v3", t: (key: string) => string): MobileModelGroup[] {
     const list = Object.entries(data).map(([brand, models]) => {
         const options = Object.entries(models).map(([name, value]) => {
-            if (version === "v3") {
-                const info = value as MobileModelV3Info;
+            if (typeof value === "object") {
+                const info = value as MobileModelInfo;
                 return { label: name, value: info.id, meta: info };
             }
             return { label: name, value: value as number };

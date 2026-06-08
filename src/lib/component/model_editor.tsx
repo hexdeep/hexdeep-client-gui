@@ -22,7 +22,13 @@ export class ModelEditor extends tsx.Component<IPorps, {}, {}> {
         }
         deviceApi.getModelList().then(e => {
             this.modelList = Object.entries(e).map(([k, v]) => {
-                return { label: k, options: Object.entries(v as object).map(([k1, v1]) => ({ label: k1, value: v1 })) };
+                return {
+                    label: k,
+                    options: Object.entries(v as object).map(([k1, v1]) => ({
+                        label: k1,
+                        value: typeof v1 === "object" ? (v1 as any).id : v1
+                    }))
+                };
             });
             this.modelList.splice(0, 0, { label: i18n.t("default"), options: [{ label: i18n.t("random"), value: 0 }] });
             ModelEditor.cachedModelList = this.modelList;
