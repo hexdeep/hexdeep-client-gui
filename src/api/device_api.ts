@@ -149,7 +149,8 @@ class DeviceApi extends ApiBase {
     }
 
     public async getModelList(version: "v2" | "v3" = "v2"): Promise<MobileModelList> {
-        const result = await fetch(`https://download.hexdeep.com/mobile_cfgs/${version}/cfg.txt`);
+        const fileName = version === "v2" ? "cfg_v2.txt" : "cfg.txt";
+        const result = await fetch(`https://download.hexdeep.com/mobile_cfgs/${version}/${fileName}`);
         const json = await result.json();
         return json;
     }

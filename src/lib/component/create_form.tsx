@@ -1,4 +1,4 @@
-import { CreateParam, ImageInfo } from "@/api/device_define";
+import { CreateParam, ImageInfo, MobileModelDimensions } from "@/api/device_define";
 import { Component, Prop, Watch } from "vue-property-decorator";
 import * as tsx from 'vue-tsx-support';
 import { Row } from '../container';
@@ -73,6 +73,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         }
         await this.loadModelList();
         this.ensureValidModelSelection();
+        this.syncModelDimensions();
         this.ensureCompatibleSelectedImage();
     }
 
@@ -84,6 +85,9 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
             let max = Number(target.max);
             if (val < min) val = min;
             if (val > max) val = max;
+            if (key === "x_dpi" || key === "y_dpi") {
+                val = this.roundDpi(val);
+            }
             this.$set(this.data, key, val);
         };
     }
@@ -178,15 +182,36 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         return;
     }
 
+    private applyModelDimensions(meta: MobileModelDimensions) {
+        this.$set(this.data, "width", meta.screen_width);
+        this.$set(this.data, "height", meta.screen_height);
+        this.$set(this.data, "dpi", meta.screen_density);
+        if (meta.screen_xdpi !== undefined) {
+            this.$set(this.data, "x_dpi", this.roundDpi(meta.screen_xdpi));
+        }
+        if (meta.screen_ydpi !== undefined) {
+            this.$set(this.data, "y_dpi", this.roundDpi(meta.screen_ydpi));
+        }
+    }
+
+    private roundDpi(value: number) {
+        return Math.round(value * 1000) / 1000;
+    }
+
+    private onModelSelected(option?: MobileModelOption) {
+        if (option?.meta) {
+            this.applyModelDimensions(option.meta);
+            return;
+        }
+        this.syncModelDimensions();
+    }
+
     private syncModelDimensions() {
-        if (this.data.mobile_model_version !== "v3") return;
         if (this.isCustomModelSelected) return;
         const option = this.selectedModelOption;
         if (!option?.meta) return;
 
-        this.$set(this.data, "width", option.meta.screen_width);
-        this.$set(this.data, "height", option.meta.screen_height);
-        this.$set(this.data, "dpi", option.meta.screen_density);
+        this.applyModelDimensions(option.meta);
     }
 
     private ensureCompatibleSelectedImage() {
@@ -341,13 +366,13 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                         <el-input v-model={this.data.dpi} onBlur={this.fixNumber("dpi")} min={100} max={600} type="number" />
                     </el-form-item>
                     <el-form-item label={this.$t("create.x_dpi")} prop="x_dpi">
-                        <el-input v-model={this.data.x_dpi} onBlur={this.fixNumber("x_dpi")} min={100} max={600} type="number" />
+                        <el-input class="no-number-spinner" v-model={this.data.x_dpi} onBlur={this.fixNumber("x_dpi")} min={100} max={600} step={0.001} type="number" />
                     </el-form-item>
                 </Row>
 
                 <Row>
                     <el-form-item label={this.$t("create.y_dpi")} prop="y_dpi">
-                        <el-input v-model={this.data.y_dpi} onBlur={this.fixNumber("y_dpi")} min={100} max={600} type="number" />
+                        <el-input class="no-number-spinner" v-model={this.data.y_dpi} onBlur={this.fixNumber("y_dpi")} min={100} max={600} step={0.001} type="number" />
                     </el-form-item>
                     <el-form-item label={this.$t("create.fps")} prop="fps">
                         <el-input v-model={this.data.fps} onBlur={this.fixNumber("fps")} min={10} max={60} type="number" />
@@ -369,7 +394,10 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                                 version={this.data.mobile_model_version || "v2"}
                                 ip={this.ip}
                                 source={this.data.mobile_model_source}
-                                on={{ "update:source": (v: string) => this.$set(this.data, "mobile_model_source", v) }}
+                                on={{
+                                    "update:source": (v: string) => this.$set(this.data, "mobile_model_source", v),
+                                    "model-selected": this.onModelSelected
+                                }}
                             />
                         </el-form-item>
                     </Row>
