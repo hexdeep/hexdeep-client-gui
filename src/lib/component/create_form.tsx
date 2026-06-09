@@ -1,4 +1,4 @@
-import { CreateParam, ImageInfo, MobileModelInfo } from "@/api/device_define";
+import { CreateParam, ImageInfo, MobileModelDimensions } from "@/api/device_define";
 import { Component, Prop, Watch } from "vue-property-decorator";
 import * as tsx from 'vue-tsx-support';
 import { Row } from '../container';
@@ -182,7 +182,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         return;
     }
 
-    private applyModelDimensions(meta: MobileModelInfo) {
+    private applyModelDimensions(meta: MobileModelDimensions) {
         this.$set(this.data, "width", meta.screen_width);
         this.$set(this.data, "height", meta.screen_height);
         this.$set(this.data, "dpi", meta.screen_density);

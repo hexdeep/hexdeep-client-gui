@@ -1,10 +1,10 @@
 import { deviceApi } from "@/api/device_api";
-import { MobileModelInfo, MobileModelList } from "@/api/device_define";
+import { MobileModelDimensions, MobileModelInfo, MobileModelList } from "@/api/device_define";
 
 export interface MobileModelOption {
     label: string;
     value: number;
-    meta?: MobileModelInfo;
+    meta?: MobileModelDimensions;
 }
 
 export interface MobileModelGroup {

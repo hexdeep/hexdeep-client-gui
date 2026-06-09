@@ -7,9 +7,10 @@ import { CommonDialog, Dialog } from '../dialog/dialog';
 import { MyButton } from '../my_button';
 import { ErrorProxy } from '../error_handle';
 import { i18n } from '@/i18n/i18n';
-import { DeviceInfo, MobileModelFile } from '@/api/device_define';
+import { DeviceInfo, MobileModelDimensions, MobileModelFile } from '@/api/device_define';
 import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup, MobileModelOption, RANDOM_BRAND, RANDOM_MODEL_VALUE } from './mobile_model_loader';
 import { MobileModelToolDownloadDialog } from './v2_tool_dialog';
+import { makeVmApiUrl } from '@/common/common';
 
 /**
  * 机型选择器
@@ -270,12 +271,48 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         }
     }
 
+    private downloadUploadedModel(model: MobileModelFile, event: Event) {
+        event.stopPropagation();
+        event.preventDefault();
+        if (!this.ip || !model.path) return;
+
+        const link = makeVmApiUrl("host/download", this.ip) + `?path=${encodeURIComponent(model.path)}`;
+        location.href = link;
+    }
+
     private findModelOption(value: number): MobileModelOption | undefined {
         for (const group of this.presetGroups) {
             const option = group.options.find((o) => o.value === value);
             if (option) return option;
         }
         return;
+    }
+
+    private hasModelDimensions(model: MobileModelFile): model is MobileModelFile & MobileModelDimensions {
+        return typeof model.screen_width === "number"
+            && typeof model.screen_height === "number"
+            && typeof model.screen_density === "number";
+    }
+
+    private findUploadedModel(path: string): MobileModelFile | undefined {
+        return this.uploadedModels.find((model) => model.path === path);
+    }
+
+    private toUploadedModelOption(model?: MobileModelFile): MobileModelOption | undefined {
+        if (!model || !this.hasModelDimensions(model)) {
+            return;
+        }
+        return {
+            label: model.name,
+            value: CUSTOM_MODEL_VALUE,
+            meta: {
+                screen_width: model.screen_width,
+                screen_height: model.screen_height,
+                screen_density: model.screen_density,
+                screen_xdpi: model.screen_xdpi,
+                screen_ydpi: model.screen_ydpi,
+            },
+        };
     }
 
     private pickRandomOption(options: MobileModelOption[]): MobileModelOption | undefined {
@@ -306,16 +343,20 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
     protected override async onConfirm() {
         const selection = this.resolveModelSelection();
         const modelId = selection.modelId;
+        let selectedOption = selection.option;
         // 选择了自定义但未指定具体机型时，从已上传机型中随机选一个
         if (modelId === CUSTOM_MODEL_VALUE && !this.source && this.uploadedModels.length > 0) {
             const random = this.uploadedModels[Math.floor(Math.random() * this.uploadedModels.length)];
             this.source = random.path;
+            selectedOption = this.toUploadedModelOption(random);
+        } else if (modelId === CUSTOM_MODEL_VALUE) {
+            selectedOption = this.toUploadedModelOption(this.findUploadedModel(this.source));
         }
         if (this.immediateSubmit) {
             if (!this.device) throw new Error("device is null");
             await deviceApi.changeModelMacvlan(this.device.android_sdk, modelId);
         }
-        this.close({ model_id: modelId, source: this.source, option: selection.option });
+        this.close({ model_id: modelId, source: this.source, option: selectedOption });
     }
 
     private openTool() {
@@ -467,6 +508,14 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                         <el-option key={m.path} label={m.name} value={m.path}>
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
                                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.name}</span>
+                                <el-button
+                                    type="text"
+                                    size="mini"
+                                    icon="el-icon-download"
+                                    nativeOnClick={(event: Event) => this.downloadUploadedModel(m, event)}
+                                >
+                                    {this.$t("modelSelector.download")}
+                                </el-button>
                                 <el-button
                                     type="text"
                                     size="mini"
