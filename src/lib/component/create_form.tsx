@@ -354,10 +354,10 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
 
                 <Row>
                     <el-form-item label={this.$t("create.width")} prop="width">
-                        <el-input v-model={this.data.width} onBlur={this.fixNumber("width")} min={600} max={3000} type="number" />
+                        <el-input v-model={this.data.width} onBlur={this.fixNumber("width")} min={600} max={4000} type="number" />
                     </el-form-item>
                     <el-form-item label={this.$t("create.height")} prop="height">
-                        <el-input v-model={this.data.height} onBlur={this.fixNumber("height")} min={600} max={3000} type="number" />
+                        <el-input v-model={this.data.height} onBlur={this.fixNumber("height")} min={600} max={4000} type="number" />
                     </el-form-item>
                 </Row>
 
