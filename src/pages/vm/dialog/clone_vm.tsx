@@ -11,7 +11,7 @@ import { orderApi } from "@/api/order_api";
 import { getSuffixName } from "@/common/common";
 
 @Dialog
-export class CloneVmDialog extends CommonDialog<DeviceInfo, boolean> {
+export class CloneVmDialog extends CommonDialog<DeviceInfo, CloneVmParam> {
 
     private record: RentalRecord[] = [];
     private validInstance: number[] = [];
@@ -48,7 +48,8 @@ export class CloneVmDialog extends CommonDialog<DeviceInfo, boolean> {
     @ErrorProxy({ success: i18n.t("success"), loading: i18n.t("loading"), validatForm: "formRef" })
     protected override async onConfirm() {
         await deviceApi.cloneVm(this.data.hostIp, this.data.name, this.item);
-        this.close(true);
+        // 返回移动参数（目标实例位与名称），供调用方同步更新 TreeConfig
+        this.close({ ...this.item });
     }
 
     private get formRules() {
