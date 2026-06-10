@@ -566,7 +566,18 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
     private async cloneVm(data: DeviceInfo) {
         let re = await this.$dialog(CloneVmDialog).show(data);
-        if (re) this.$emit("changed", data.hostIp);
+        if (re) {
+            // 移动后云机的实例位 index 与名称（内嵌 index）都会变化，导致 key 改变，
+            // 需同步更新已持久化的 TreeConfig，否则刷新页面后因 key 不匹配导致选中状态丢失
+            var t = this.treeConfig.find(x => x.key == data.key);
+            if (t) {
+                // 移动保留同一 deviceId，仅替换前缀中的实例位编号并使用新名称
+                const newPrefix = getPrefixName(data.name).replace(/\d+([-_])$/, `${re.index}$1`);
+                t.key = `${data.hostIp}-${re.index}-${newPrefix}${re.dst_name}`;
+                localStorage.setItem("TreeConfig", JSON.stringify(this.treeConfig));
+            }
+            this.$emit("changed", data.hostIp);
+        }
     }
 
     private async exportModel(data: DeviceInfo) {
