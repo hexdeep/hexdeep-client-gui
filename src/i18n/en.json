@@ -62,6 +62,7 @@
     "create": {
         "name": "Name",
         "sandbox": "Sandbox",
+        "sandbox_tip": "For example, creating 64GB does not actually occupy 64GB; space is allocated on demand, which improves emulation fidelity.",
         "sandbox_size": "Sandbox Size(GB)",
         "subnet": "Subnet",
         "memory": "Memory",
@@ -77,6 +78,7 @@
         "dpi": "DPI",
         "x_dpi": "XDPI",
         "y_dpi": "YDPI",
+        "dpi_axis_tip": "Supported in version 2.6.1 and later. If unsure, just keep it the same as DPI.",
         "fps": "FPS",
         "mobile_model_version": "Model Version",
         "model_id": "Model ID",

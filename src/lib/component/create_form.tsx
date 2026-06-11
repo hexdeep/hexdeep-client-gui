@@ -9,7 +9,7 @@ import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup } from "
 import { S5FormItems } from "./s5_form_items";
 import { i18n } from "@/i18n/i18n";
 import { isImageVersionCompatibleByModelVersion } from "@/common/common";
-import Vue from 'vue';
+import Vue, { VNode } from 'vue';
 
 @Component
 export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
@@ -176,6 +176,18 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         return Math.round(value * 1000) / 1000;
     }
 
+    // 带信息图标 + 悬停提示的表单项标签
+    private labelWithTip(label: string, tip: string): VNode {
+        return (
+            <span>
+                {label}
+                <el-tooltip content={tip} placement="top" effect="dark" transition="">
+                    <i class="el-icon-info" style="margin-left: 4px; color: #909399; cursor: help;"></i>
+                </el-tooltip>
+            </span>
+        );
+    }
+
     // 用户在机型对话框点击「覆盖到表单」后，才用机型屏幕参数覆盖当前表单
     private onApplyDimensions(meta?: MobileModelDimensions) {
         if (meta) {
@@ -233,7 +245,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
 
                 {!this.isUpdate && (
                     <Row>
-                        <el-form-item label={this.$t("create.sandbox")} prop="sandbox">
+                        <el-form-item label={this.$t("create.sandbox")} prop="sandbox" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.sandbox") as string, this.$t("create.sandbox_tip") as string) }}>
                             <el-switch v-model={this.data.sandbox} active-value={1} inactive-value={0} />
                         </el-form-item>
 
@@ -334,13 +346,13 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     <el-form-item label={this.$t("create.dpi")} prop="dpi">
                         <el-input v-model={this.data.dpi} onBlur={this.fixNumber("dpi")} min={100} max={600} type="number" />
                     </el-form-item>
-                    <el-form-item label={this.$t("create.x_dpi")} prop="x_dpi">
+                    <el-form-item label={this.$t("create.x_dpi")} prop="x_dpi" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.x_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
                         <el-input class="no-number-spinner" v-model={this.data.x_dpi} onBlur={this.fixNumber("x_dpi")} min={100} max={600} step={0.001} type="number" />
                     </el-form-item>
                 </Row>
 
                 <Row>
-                    <el-form-item label={this.$t("create.y_dpi")} prop="y_dpi">
+                    <el-form-item label={this.$t("create.y_dpi")} prop="y_dpi" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.y_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
                         <el-input class="no-number-spinner" v-model={this.data.y_dpi} onBlur={this.fixNumber("y_dpi")} min={100} max={600} step={0.001} type="number" />
                     </el-form-item>
                     <el-form-item label={this.$t("create.fps")} prop="fps">
