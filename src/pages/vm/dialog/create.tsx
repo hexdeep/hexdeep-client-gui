@@ -14,7 +14,7 @@ import { VipHostSelectDialog } from "./vip_host_select";
 
 @Dialog
 export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
-    public override width: string = "700px";
+    public override width: string = "800px";
     protected images: ImageInfo[] = [];
     private dockerRegistries: string[] = [];
     private validInstance: number[] = [];
