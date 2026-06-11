@@ -23,6 +23,8 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     @Prop({ default: false }) hasVip!: boolean;
     @Prop({ default: false }) isBatchCreate!: boolean;
     @Prop({ default: "" }) ip!: string;
+    // 从缓存恢复屏幕参数时，跳过初始的机型尺寸同步，避免覆盖缓存值
+    @Prop({ default: false }) preserveCachedDimensions!: boolean;
 
     // 将 index 包裹为响应式对象
     private index = Vue.observable({ value: this.validIndex });
@@ -73,7 +75,10 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         }
         await this.loadModelList();
         this.ensureValidModelSelection();
-        this.syncModelDimensions();
+        // 缓存恢复场景下，屏幕参数以缓存为准，不用机型参数覆盖
+        if (!this.preserveCachedDimensions) {
+            this.syncModelDimensions();
+        }
         this.ensureCompatibleSelectedImage();
     }
 
@@ -437,6 +442,7 @@ interface IPorps {
     hasVip?: boolean;
     isBatchCreate?: boolean;
     ip?: string;
+    preserveCachedDimensions?: boolean;
 }
 
 interface IEvents {

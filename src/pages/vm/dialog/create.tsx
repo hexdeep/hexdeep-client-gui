@@ -22,9 +22,11 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     public override allowEscape: boolean = false;
     private hasVip = false;
     private allHosts: HostInfo[] = [];
+    // 是否从缓存恢复了屏幕参数，用于让缓存值优先于机型提取值
+    private restoredFromCache = false;
 
     private static readonly CACHE_KEY = "CreateFormCache";
-    private static readonly CACHE_FIELDS = ["name", "sandbox_size", "width", "height", "dpi", "x_dpi", "y_dpi", "fps", "mobile_model_version", "mobile_model_source"] as const;
+    private static readonly CACHE_FIELDS = ["name", "sandbox_size", "width", "height", "dpi", "x_dpi", "y_dpi", "fps", "mobile_model_version", "mobile_model_source", "model_id"] as const;
 
     public override async show(data: DockerEditParam) {
         this.data = data;
@@ -83,6 +85,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                     (this.data.obj as any)[field] = values[field];
                 }
             }
+            this.restoredFromCache = true;
         } catch (e) {
             console.warn("Failed to load create cache:", e);
         }
@@ -284,6 +287,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                     isUpdate={this.data.isUpdate}
                     hasVip={this.hasVip}
                     ip={this.data.info.hostIp}
+                    preserveCachedDimensions={this.restoredFromCache}
                     on={{ "vip-required": () => this.onVipRequired() }}
                 ></CreateForm>
             </el-form>
