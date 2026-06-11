@@ -41,17 +41,36 @@ function normalizeModelList(data: MobileModelList, version: "v2" | "v3", t: (key
     return list;
 }
 
-export function pickRandomMobileModelOption(groups: MobileModelGroup[]): MobileModelOption | undefined {
-    const options = groups
-        .flatMap(group => group.options)
-        .filter(option => option.value > 0);
-
-    if (options.length === 0) {
+/**
+ * 将表单内部的机型选择状态规范化为后端 API 字段（创建/批量创建）。
+ * 后端语义（super_sdk GetRandDevPathWithSource）：
+ *  - mobile_model_source 非空 => 自定义机型（"random" 由后端随机选取，否则视为主机上的绝对路径），优先级最高；
+ *  - mobile_model_source 为空 => 预设机型：model_id>0 固定机型；model_id<=0 随机，
+ *    此时 model_manufacturer 非空则限定在该品牌内随机，为空则全部品牌随机。
+ * 前端内部仍用 model_id === CUSTOM_MODEL_VALUE(-1) 作为「自定义」标记，这里在提交时转换。
+ */
+export function normalizeModelSubmitFields(obj: {
+    model_id?: number;
+    model_manufacturer?: string;
+    mobile_model_source?: string;
+}) {
+    const isCustom = Number(obj.model_id ?? 0) === CUSTOM_MODEL_VALUE;
+    if (isCustom) {
+        // 自定义机型：来源为空表示随机，转为后端约定的 "random"
+        obj.mobile_model_source = obj.mobile_model_source || "random";
+        obj.model_id = 0;
+        delete obj.model_manufacturer;
         return;
     }
-
-    const index = Math.floor(Math.random() * options.length);
-    return options[index];
+    // 预设机型：不发送自定义来源
+    delete obj.mobile_model_source;
+    if (Number(obj.model_id ?? 0) > 0) {
+        // 指定具体机型，品牌无意义
+        delete obj.model_manufacturer;
+    } else {
+        obj.model_id = 0; // 随机机型，交由后端选取
+        if (!obj.model_manufacturer) delete obj.model_manufacturer; // 空品牌 = 全部品牌随机
+    }
 }
 
 export async function getOrLoadMobileModelList(version: "v2" | "v3", t: (key: string) => string): Promise<MobileModelGroup[]> {

@@ -9,6 +9,7 @@ import { ErrorProxy } from "@/lib/error_handle";
 import { MyButton } from "@/lib/my_button";
 import { VNode } from "vue";
 import { CreateForm } from "../../../lib/component/create_form";
+import { normalizeModelSubmitFields } from "@/lib/component/mobile_model_loader";
 import s from './batch_create.module.less';
 import { CheckS5Dialog } from "./check_s5";
 import { InjectReactive } from 'vue-property-decorator';
@@ -31,7 +32,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     private restoredFromCache = false;
 
     private static readonly CACHE_KEY = "BatchCreateFormCache";
-    private static readonly CACHE_FIELDS = ["num", "suffix_name", "sandbox_size", "width", "height", "dpi", "x_dpi", "y_dpi", "fps", "mobile_model_version", "mobile_model_source", "model_id"] as const;
+    private static readonly CACHE_FIELDS = ["num", "suffix_name", "sandbox_size", "width", "height", "dpi", "x_dpi", "y_dpi", "fps", "mobile_model_version", "mobile_model_source", "model_id", "model_manufacturer"] as const;
 
     public override show(data: DockerBatchCreateParam) {
         this.data = data;
@@ -173,9 +174,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
             } else {
                 delete obj.custom_image;
             }
-            if (Number(obj.model_id ?? 0) !== -1) {
-                delete obj.mobile_model_source;
-            }
+            normalizeModelSubmitFields(obj);
             try {
                 const result = await deviceApi.batchCreate(ip, this.data.obj.num!, this.data.obj.suffix_name!, obj);
                 if (result.created && result.created.length > 0) {
@@ -265,9 +264,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
             dns_urls: [
                 { pattern: /^(((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3})(,((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3})*$/, message: i18n.t("invalidDnsUrls"), trigger: 'blur' },
             ],
-            mobile_model_source: [
-                { required: Number(this.data.obj.model_id ?? 0) === -1, message: i18n.t("notNull"), trigger: 'blur' },
-            ]
+            // 自定义机型来源可留空（留空表示由后端随机选取一个自定义机型），故不再强制必填
         };
     }
 

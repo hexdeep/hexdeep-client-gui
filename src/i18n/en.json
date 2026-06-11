@@ -81,7 +81,7 @@
         "mobile_model_version": "Model Version",
         "model_id": "Model ID",
         "custom_model_path": "Custom Model Path",
-        "custom_model_path_placeholder": "Enter a download URL or an absolute server file path",
+        "custom_model_path_placeholder": "Enter a download URL or an absolute server file path (leave empty for a random model)",
         "enableS5Proxy": "Enable Proxy",
         "enable": "Enable",
         "disable": "Disable",

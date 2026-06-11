@@ -5,7 +5,7 @@ import { Row } from '../container';
 import "./create_form.less";
 import { ImageSelector2 } from "./image_selector2";
 import { ModelSelector } from "./model_selector";
-import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup, MobileModelOption, pickRandomMobileModelOption } from "./mobile_model_loader";
+import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup, MobileModelOption } from "./mobile_model_loader";
 import { S5FormItems } from "./s5_form_items";
 import { i18n } from "@/i18n/i18n";
 import { isImageVersionCompatibleByModelVersion } from "@/common/common";
@@ -165,14 +165,10 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         if (this.isUpdate || this.isCustomModelSelected) {
             return;
         }
-
-        if (this.currentModelId > 0 && this.hasModelValue(this.currentModelId)) {
-            return;
-        }
-
-        const option = pickRandomMobileModelOption(this.modelList);
-        if (option) {
-            this.$set(this.data, "model_id", option.value);
+        // 随机由后端完成，model_id<=0 保持「随机」即可，不再前端预抽具体机型。
+        // 仅当指定的具体机型在当前版本机型列表中不存在时，回退为随机(0)。
+        if (this.currentModelId > 0 && !this.hasModelValue(this.currentModelId)) {
+            this.$set(this.data, "model_id", 0);
         }
     }
 
@@ -399,8 +395,10 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                                 version={this.data.mobile_model_version || "v2"}
                                 ip={this.ip}
                                 source={this.data.mobile_model_source}
+                                manufacturer={this.data.model_manufacturer}
                                 on={{
                                     "update:source": (v: string) => this.$set(this.data, "mobile_model_source", v),
+                                    "update:manufacturer": (v: string) => this.$set(this.data, "model_manufacturer", v),
                                     "model-selected": this.onModelSelected
                                 }}
                             />

@@ -248,10 +248,11 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                         <el-tag type={data.value.has_error ? "danger" : ""}
                             style={data.value.has_error ? "cursor: pointer;" : ""}
                             title={data.value.has_error ? this.$t("tree.retry") as string : ""}
-                            nativeOnClick={data.value.has_error ? (e: Event) => {
+                            nativeOnClick={(e: Event) => {
+                                if (!data.value.has_error) return;
                                 e.stopPropagation();
                                 this.$emit("changed", data.value.address);
-                            } : undefined}> {data.value.has_error ? <i class="el-icon-warning"></i> : (data.value.devices === undefined ? this.$t("tree.loading") : children.length)} </el-tag>
+                            }}> {data.value.has_error ? <i class="el-icon-warning"></i> : (data.value.devices === undefined ? this.$t("tree.loading") : children.length)} </el-tag>
                     </Row>
                     <Row>
                         <div class="autohide" onClick={(e) => {
