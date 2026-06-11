@@ -79,6 +79,11 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     private fixNumber(key: string) {
         return (e: Event) => {
             const target = e.target as HTMLInputElement;
+            // x_dpi/y_dpi 允许留空，由后端处理空值
+            if ((key === "x_dpi" || key === "y_dpi") && target.value.trim() === "") {
+                this.$set(this.data, key, undefined);
+                return;
+            }
             let val = Number(target.value);
             let min = Number(target.min);
             let max = Number(target.max);
