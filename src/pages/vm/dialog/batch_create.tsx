@@ -28,8 +28,6 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     public override allowEscape: boolean = false;
     protected hasVip = false; // 当前主机是否已开通VIP
     protected allHosts: HostInfo[] = []; // 所有主机列表
-    // 是否从缓存恢复了屏幕参数，用于让缓存值优先于机型提取值
-    private restoredFromCache = false;
 
     private static readonly CACHE_KEY = "BatchCreateFormCache";
     private static readonly CACHE_FIELDS = ["num", "suffix_name", "sandbox_size", "width", "height", "dpi", "x_dpi", "y_dpi", "fps", "mobile_model_version", "mobile_model_source", "model_id", "model_manufacturer"] as const;
@@ -67,7 +65,6 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
                     (this.data.obj as any)[field] = values[field];
                 }
             }
-            this.restoredFromCache = true;
         } catch (e) {
             console.warn("Failed to load batch create cache:", e);
         }
@@ -272,7 +269,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
         return (
             <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="150px" class={s.form}>
                 <div class={s.tip}>{this.$t("create.tip", { 0: this.data.maxNum })}</div>
-                <CreateForm data={this.data.obj} needName={false} images={this.images} dockerRegistries={this.dockerRegistries} validIndex={0} validInstance={[]} hasVip={this.hasVip} isBatchCreate={true} ip={this.data.hostIp.first} preserveCachedDimensions={this.restoredFromCache} on={{ "vip-required": () => this.onVipRequired() }}>
+                <CreateForm data={this.data.obj} needName={false} images={this.images} dockerRegistries={this.dockerRegistries} validIndex={0} validInstance={[]} hasVip={this.hasVip} isBatchCreate={true} ip={this.data.hostIp.first} on={{ "vip-required": () => this.onVipRequired() }}>
                     <Row>
                         <el-form-item label={this.$t("batchCreate.num")} prop="num" style={{ "width": "100%" }}>
                             <el-input v-model={this.data.obj.num} min={1} max={this.data.maxNum} type="number" />

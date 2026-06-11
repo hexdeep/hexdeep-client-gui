@@ -435,7 +435,9 @@
         "uploadSuccess": "机型文件上传成功",
         "deleteConfirm": "确定删除机型文件「{0}」吗？",
         "deleteSuccess": "机型文件删除成功",
-        "download": "下载"
+        "download": "下载",
+        "dimensions": "屏幕参数",
+        "overrideToForm": "覆盖到表单"
     },
     "v2Tool": {
         "entry": "下载提取工具",

@@ -5,7 +5,7 @@ import { Row } from '../container';
 import "./create_form.less";
 import { ImageSelector2 } from "./image_selector2";
 import { ModelSelector } from "./model_selector";
-import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup, MobileModelOption } from "./mobile_model_loader";
+import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup } from "./mobile_model_loader";
 import { S5FormItems } from "./s5_form_items";
 import { i18n } from "@/i18n/i18n";
 import { isImageVersionCompatibleByModelVersion } from "@/common/common";
@@ -23,8 +23,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     @Prop({ default: false }) hasVip!: boolean;
     @Prop({ default: false }) isBatchCreate!: boolean;
     @Prop({ default: "" }) ip!: string;
-    // 从缓存恢复屏幕参数时，跳过初始的机型尺寸同步，避免覆盖缓存值
-    @Prop({ default: false }) preserveCachedDimensions!: boolean;
 
     // 将 index 包裹为响应式对象
     private index = Vue.observable({ value: this.validIndex });
@@ -75,10 +73,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         }
         await this.loadModelList();
         this.ensureValidModelSelection();
-        // 缓存恢复场景下，屏幕参数以缓存为准，不用机型参数覆盖
-        if (!this.preserveCachedDimensions) {
-            this.syncModelDimensions();
-        }
         this.ensureCompatibleSelectedImage();
     }
 
@@ -125,12 +119,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         await this.loadModelList();
         this.ensureValidModelSelection();
         this.ensureCompatibleSelectedImage();
-        this.syncModelDimensions();
-    }
-
-    @Watch("data.model_id")
-    onModelIdChange() {
-        this.syncModelDimensions();
     }
 
     private get currentModelId() {
@@ -172,17 +160,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         }
     }
 
-    private get selectedModelOption(): MobileModelOption | undefined {
-        const value = this.currentModelId;
-        for (const group of this.modelList) {
-            const option = group.options.find(item => item.value === value);
-            if (option) {
-                return option;
-            }
-        }
-        return;
-    }
-
     private applyModelDimensions(meta: MobileModelDimensions) {
         this.$set(this.data, "width", meta.screen_width);
         this.$set(this.data, "height", meta.screen_height);
@@ -199,20 +176,11 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         return Math.round(value * 1000) / 1000;
     }
 
-    private onModelSelected(option?: MobileModelOption) {
-        if (option?.meta) {
-            this.applyModelDimensions(option.meta);
-            return;
+    // 用户在机型对话框点击「覆盖到表单」后，才用机型屏幕参数覆盖当前表单
+    private onApplyDimensions(meta?: MobileModelDimensions) {
+        if (meta) {
+            this.applyModelDimensions(meta);
         }
-        this.syncModelDimensions();
-    }
-
-    private syncModelDimensions() {
-        if (this.isCustomModelSelected) return;
-        const option = this.selectedModelOption;
-        if (!option?.meta) return;
-
-        this.applyModelDimensions(option.meta);
     }
 
     private ensureCompatibleSelectedImage() {
@@ -399,7 +367,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                                 on={{
                                     "update:source": (v: string) => this.$set(this.data, "mobile_model_source", v),
                                     "update:manufacturer": (v: string) => this.$set(this.data, "model_manufacturer", v),
-                                    "model-selected": this.onModelSelected
+                                    "apply-dimensions": this.onApplyDimensions
                                 }}
                             />
                         </el-form-item>
@@ -440,7 +408,6 @@ interface IPorps {
     hasVip?: boolean;
     isBatchCreate?: boolean;
     ip?: string;
-    preserveCachedDimensions?: boolean;
 }
 
 interface IEvents {

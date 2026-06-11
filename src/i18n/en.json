@@ -431,7 +431,9 @@
         "uploadSuccess": "Model file uploaded successfully",
         "deleteConfirm": "Delete model file \"{0}\"?",
         "deleteSuccess": "Model file deleted successfully",
-        "download": "Download"
+        "download": "Download",
+        "dimensions": "Screen params",
+        "overrideToForm": "Apply to form"
     },
     "v2Tool": {
         "entry": "Download extraction tool",
