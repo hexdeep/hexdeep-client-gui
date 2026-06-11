@@ -387,7 +387,8 @@
         "hostDetail": "主机详情"
     },
     "tree": {
-        "loading": "加载中"
+        "loading": "加载中",
+        "retry": "加载失败，点击重试"
     },
     "filter": {
         "running": "运行中云机",

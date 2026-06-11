@@ -245,7 +245,13 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                                 <span><Icon icon={this.getDiskIcon(data.value.disk)} style={{ verticalAlign: "middle", fontSize: "16px", marginLeft: "-3px" }} /></span>
                             </el-tooltip>}
                             {data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
-                        <el-tag type={data.value.has_error ? "danger" : ""}> {data.value.has_error ? <i class="el-icon-warning"></i> : (data.value.devices === undefined ? this.$t("tree.loading") : children.length)} </el-tag>
+                        <el-tag type={data.value.has_error ? "danger" : ""}
+                            style={data.value.has_error ? "cursor: pointer;" : ""}
+                            title={data.value.has_error ? this.$t("tree.retry") as string : ""}
+                            nativeOnClick={data.value.has_error ? (e: Event) => {
+                                e.stopPropagation();
+                                this.$emit("changed", data.value.address);
+                            } : undefined}> {data.value.has_error ? <i class="el-icon-warning"></i> : (data.value.devices === undefined ? this.$t("tree.loading") : children.length)} </el-tag>
                     </Row>
                     <Row>
                         <div class="autohide" onClick={(e) => {

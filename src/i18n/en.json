@@ -383,7 +383,8 @@
         "hostDetail": "Host Detail"
     },
     "tree": {
-        "loading": "Loading"
+        "loading": "Loading",
+        "retry": "Failed to load. Click to retry"
     },
     "filter": {
         "running": "Running",

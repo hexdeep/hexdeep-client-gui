@@ -125,8 +125,18 @@ export default class VMPage extends Vue {
             } else {
                 curr = this.hosts.find(x => x.address == ip);
                 if (curr) {
-                    curr.devices = await deviceApi.getDeviceListByHost(curr);
-                    curr.remark = await deviceApi.getHostRemark(curr.address);
+                    try {
+                        curr.devices = await deviceApi.getDeviceListByHost(curr);
+                        curr.has_error = false;
+                    } catch (e) {
+                        // 单主机刷新失败不应清空整棵树，仅标记该主机为错误状态以便重试
+                        console.log(e);
+                        curr.has_error = true;
+                        curr.devices = [];
+                    }
+                    deviceApi.getHostRemark(curr.address).then(r => {
+                        this.$set(curr!, "remark", r);
+                    }).catch(e => console.log(e));
                     deviceApi.getDisks(curr.address).then(res => {
                         this.$set(curr!, "disk", res.current_disk);
                     }).catch(e => console.log(e));
