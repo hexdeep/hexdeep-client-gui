@@ -121,11 +121,11 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                 sandbox: 1,
                 sandbox_size: 64,
                 suffix_name: this.config.suffixName || "deep",
-                width: 720,
-                height: 1280,
-                dpi: 320,
-                x_dpi: 449.942,
-                y_dpi: 451.338,
+                width: 1080,
+                height: 1920,
+                dpi: 400,
+                x_dpi: 400,
+                y_dpi: 400,
                 fps: 24,
                 dns_urls: "223.5.5.5",
             }
@@ -245,7 +245,14 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                                 <span><Icon icon={this.getDiskIcon(data.value.disk)} style={{ verticalAlign: "middle", fontSize: "16px", marginLeft: "-3px" }} /></span>
                             </el-tooltip>}
                             {data.label}{data.value.remark && data.value.remark != "" ? "(" + data.value.remark + ")" : ""}</span>
-                        <el-tag type={data.value.has_error ? "danger" : ""}> {data.value.has_error ? <i class="el-icon-warning"></i> : (data.value.devices === undefined ? this.$t("tree.loading") : children.length)} </el-tag>
+                        <el-tag type={data.value.has_error ? "danger" : ""}
+                            style={data.value.has_error ? "cursor: pointer;" : ""}
+                            title={data.value.has_error ? this.$t("tree.retry") as string : ""}
+                            nativeOnClick={(e: Event) => {
+                                if (!data.value.has_error) return;
+                                e.stopPropagation();
+                                this.$emit("changed", data.value.address);
+                            }}> {data.value.has_error ? <i class="el-icon-warning"></i> : (data.value.devices === undefined ? this.$t("tree.loading") : children.length)} </el-tag>
                     </Row>
                     <Row>
                         <div class="autohide" onClick={(e) => {

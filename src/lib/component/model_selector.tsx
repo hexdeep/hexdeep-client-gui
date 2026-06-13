@@ -21,6 +21,7 @@ export class ModelSelector extends tsx.Component<IPorps & IModelPorps, {}, {}> {
     @Prop({ default: "v2" }) version!: "v2" | "v3";
     @Prop({ default: "" }) ip!: string;
     @Prop({ default: "" }) source!: string;
+    @Prop({ default: "" }) manufacturer!: string;
     protected modelList: MobileModelGroup[] = [];
 
     protected async created() {
@@ -45,17 +46,27 @@ export class ModelSelector extends tsx.Component<IPorps & IModelPorps, {}, {}> {
     }
 
     private get label() {
-        let ret = "";
         const value = this.value;
-        if (!value) return ret;
+        // 自定义机型：来源为空表示随机，否则显示文件名
+        if (value === CUSTOM_MODEL_VALUE) {
+            const name = this.source ? this.source.split(/[\\/]/).pop() : "";
+            return name
+                ? ` ${this.$t("modelSelector.customType")}: ${name}`
+                : ` ${this.$t("modelSelector.customType")} (${this.$t("random")})`;
+        }
+        // 随机机型（value<=0）：可限定品牌
+        if (!value || value <= 0) {
+            const brand = (this.manufacturer || "").trim();
+            return brand ? ` ${brand} ${this.$t("random")}` : ` ${this.$t("random")}`;
+        }
+        // 指定具体机型
         for (const item of this.modelList) {
             const model = item.options.find((v) => v.value == value);
             if (model) {
-                ret = ` ${item.label} ${model.label}`;
-                break;
+                return ` ${item.label} ${model.label}`;
             }
         }
-        return ret;
+        return "";
     }
 
     private async onClick() {
@@ -64,11 +75,16 @@ export class ModelSelector extends tsx.Component<IPorps & IModelPorps, {}, {}> {
             version: this.version,
             ip: this.ip,
             source: this.source,
+            manufacturer: this.manufacturer,
         });
         if (ret !== undefined) {
             this.$emit("input", ret.model_id);
             this.$emit("update:source", ret.source);
-            this.$emit("model-selected", ret.option);
+            this.$emit("update:manufacturer", ret.manufacturer);
+            // 仅当用户在对话框中点击「覆盖到表单」时，才把机型屏幕参数同步到父表单
+            if (ret.applyDimensions && ret.option?.meta) {
+                this.$emit("apply-dimensions", ret.option.meta);
+            }
         }
     }
 
@@ -100,6 +116,10 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
     private ip: string = "";
     // 自定义机型的服务器路径（选中已上传机型或手动上传后填充）
     private source: string = "";
+    // 预设随机时限定的品牌名（空表示全部品牌随机）
+    private manufacturer: string = "";
+    // 确认时是否把所选机型的屏幕参数覆盖到父表单（仅「覆盖到表单」按钮置为 true）
+    private applyDimensionsOnConfirm: boolean = false;
     // 已上传的机型文件列表
     private uploadedModels: MobileModelFile[] = [];
     private uploadedLoading: boolean = false;
@@ -111,6 +131,8 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         this.version = data?.version || "v2";
         this.ip = data?.ip || "";
         this.source = data?.source || "";
+        this.manufacturer = data?.manufacturer || "";
+        this.applyDimensionsOnConfirm = false;
         return super.show(data);
     }
 
@@ -146,6 +168,17 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
             this.modelType = "preset";
             const group = this.presetGroups.find((g) => g.options.some((o) => o.value === this.value));
             if (group) this.selectedBrand = group.label;
+        } else {
+            // value<=0 且非自定义：随机机型，按 manufacturer 还原已选品牌
+            this.modelType = "preset";
+            const brand = (this.manufacturer || "").trim();
+            if (brand) {
+                const group = this.presetGroups.find((g) => g.label.toLowerCase() === brand.toLowerCase());
+                if (group) {
+                    this.selectedBrand = group.label;
+                    this.value = RANDOM_MODEL_VALUE;
+                }
+            }
         }
         // 预设机型未匹配到具体品牌时，默认选中「随机」品牌
         if (this.modelType === "preset" && !this.selectedBrand) {
@@ -315,48 +348,66 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         };
     }
 
-    private pickRandomOption(options: MobileModelOption[]): MobileModelOption | undefined {
-        const candidates = options.filter((o) => o.value > 0);
-        if (candidates.length === 0) return;
-        return candidates[Math.floor(Math.random() * candidates.length)];
+    private roundDpi(value: number) {
+        return Math.round(value * 1000) / 1000;
     }
 
-    // 将选择结果解析为最终提交的 model_id（解开「随机」占位值）
-    private resolveModelSelection(): { modelId: number; option?: MobileModelOption } {
+    // 当前选中的「具体机型」所携带的屏幕参数；随机/品牌随机/自定义随机时为空
+    private get selectedDimensions(): MobileModelDimensions | undefined {
         if (this.modelType === "custom") {
-            return { modelId: CUSTOM_MODEL_VALUE };
+            // 自定义随机（source 为空）无确定参数；选中了具体已上传机型才有
+            if (!this.source) return;
+            const model = this.findUploadedModel(this.source);
+            return model ? this.toUploadedModelOption(model)?.meta : undefined;
         }
-        // 品牌随机：前端随机选取一个具体机型，便于同步屏幕参数。
+        if (this.selectedBrand === RANDOM_BRAND) return; // 全部品牌随机
+        if (this.value <= 0) return; // 品牌内随机
+        return this.findModelOption(this.value)?.meta;
+    }
+
+    // 「覆盖到表单」：确认所选机型，并把其屏幕参数同步到父表单
+    private confirmWithOverride() {
+        this.applyDimensionsOnConfirm = true;
+        return this.onConfirm();
+    }
+
+    // 将选择结果解析为提交字段。随机由后端完成，前端不再预先抽取具体机型。
+    private resolveModelSelection(): { modelId: number; manufacturer: string; option?: MobileModelOption } {
+        // 自定义机型：用 model_id 占位标记，具体来源走 source
+        if (this.modelType === "custom") {
+            return { modelId: CUSTOM_MODEL_VALUE, manufacturer: "" };
+        }
+        // 品牌随机：后端在所有品牌中随机
         if (this.selectedBrand === RANDOM_BRAND) {
-            const option = this.pickRandomOption(this.presetGroups.flatMap((g) => g.options));
-            return { modelId: option?.value ?? 0, option };
+            return { modelId: 0, manufacturer: "" };
         }
-        // 当前品牌内机型随机：前端随机选取一个具体机型
+        // 指定品牌 + 机型随机：后端在该品牌内随机
         if (this.value === RANDOM_MODEL_VALUE) {
-            const option = this.pickRandomOption(this.currentModelOptions);
-            return { modelId: option?.value ?? 0, option };
+            return { modelId: 0, manufacturer: this.selectedBrand };
         }
-        return { modelId: this.value, option: this.findModelOption(this.value) };
+        // 指定具体机型
+        return { modelId: this.value, manufacturer: "", option: this.findModelOption(this.value) };
     }
 
     @ErrorProxy({ success: i18n.t("changeModel.success"), loading: i18n.t("loading") })
     protected override async onConfirm() {
+        const applyDimensions = this.applyDimensionsOnConfirm;
+        this.applyDimensionsOnConfirm = false;
         const selection = this.resolveModelSelection();
         const modelId = selection.modelId;
+        const manufacturer = selection.manufacturer;
+        let source = "";
         let selectedOption = selection.option;
-        // 选择了自定义但未指定具体机型时，从已上传机型中随机选一个
-        if (modelId === CUSTOM_MODEL_VALUE && !this.source && this.uploadedModels.length > 0) {
-            const random = this.uploadedModels[Math.floor(Math.random() * this.uploadedModels.length)];
-            this.source = random.path;
-            selectedOption = this.toUploadedModelOption(random);
-        } else if (modelId === CUSTOM_MODEL_VALUE) {
-            selectedOption = this.toUploadedModelOption(this.findUploadedModel(this.source));
+        if (modelId === CUSTOM_MODEL_VALUE) {
+            // 自定义机型：source 为空表示随机（提交时转为 "random"），有值则为具体路径并据此同步屏幕参数
+            source = this.source;
+            selectedOption = this.source ? this.toUploadedModelOption(this.findUploadedModel(this.source)) : undefined;
         }
         if (this.immediateSubmit) {
             if (!this.device) throw new Error("device is null");
-            await deviceApi.changeModelMacvlan(this.device.android_sdk, modelId);
+            await deviceApi.changeModelMacvlan(this.device.android_sdk, modelId, source);
         }
-        this.close({ model_id: modelId, source: this.source, option: selectedOption });
+        this.close({ model_id: modelId, manufacturer, source, option: selectedOption, applyDimensions });
     }
 
     private openTool() {
@@ -437,8 +488,32 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                         </el-radio-group>
                     </el-form-item>
                     {this.modelType === "preset" ? this.renderPreset() : this.renderCustom()}
+                    {this.renderDimensions()}
                 </el-form>
             </div>
+        );
+    }
+
+    // 具体机型的屏幕参数展示 + 「覆盖到表单」按钮（仅创建/批量创建场景提供覆盖）
+    private renderDimensions(): VNode | null {
+        const dims = this.selectedDimensions;
+        if (!dims) return null;
+        const parts: string[] = [
+            `${this.$t("create.width")} ${dims.screen_width}`,
+            `${this.$t("create.height")} ${dims.screen_height}`,
+            `${this.$t("create.dpi")} ${dims.screen_density}`,
+        ];
+        if (dims.screen_xdpi !== undefined) parts.push(`${this.$t("create.x_dpi")} ${this.roundDpi(dims.screen_xdpi)}`);
+        if (dims.screen_ydpi !== undefined) parts.push(`${this.$t("create.y_dpi")} ${this.roundDpi(dims.screen_ydpi)}`);
+        return (
+            <el-form-item label={this.$t("modelSelector.dimensions")}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
+                    <span style={{ color: "#606266", fontSize: "13px", lineHeight: "1.6" }}>{parts.join(" / ")}</span>
+                    {!this.immediateSubmit && (
+                        <MyButton text={this.$t("modelSelector.overrideToForm") as string} type="primary" plain size="mini" onClick={() => this.confirmWithOverride()} />
+                    )}
+                </div>
+            </el-form-item>
         );
     }
 
@@ -560,6 +635,7 @@ interface IPorps {
     version?: "v2" | "v3";
     ip?: string;
     source?: string;
+    manufacturer?: string;
 }
 
 interface IModelDialogData {
@@ -567,10 +643,14 @@ interface IModelDialogData {
     version?: "v2" | "v3";
     ip?: string;
     source?: string;
+    manufacturer?: string;
 }
 
 interface IModelSelectResult {
     model_id: number;
+    manufacturer: string;
     source: string;
     option?: MobileModelOption;
+    // 是否将所选机型的屏幕参数覆盖到父表单
+    applyDimensions: boolean;
 }

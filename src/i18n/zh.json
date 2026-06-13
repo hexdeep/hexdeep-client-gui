@@ -64,6 +64,7 @@
         "success": "创建成功",
         "name": "名称",
         "sandbox": "沙盒",
+        "sandbox_tip": "例如创建64GB，不真实占用64GB，按需占用，可以提高仿真度。",
         "sandbox_size": "沙盒大小(GB)",
         "subnet": "子网",
         "memory": "内存",
@@ -79,11 +80,12 @@
         "dpi": "DPI",
         "x_dpi": "XDPI",
         "y_dpi": "YDPI",
+        "dpi_axis_tip": "v2.6.1及以后版本支持设置此参数，如不清楚，此参数保持和DPI数值一致，或不设置。",
         "fps": "FPS",
         "mobile_model_version": "机型版本",
         "model_id": "型号",
         "custom_model_path": "自定义型号路径",
-        "custom_model_path_placeholder": "输入网络下载路径或服务器上的绝对路径",
+        "custom_model_path_placeholder": "输入网络下载路径或服务器上的绝对路径（留空则由后端随机选取）",
         "enableS5Proxy": "启用代理",
         "enable": "启用",
         "disable": "禁用",
@@ -387,7 +389,8 @@
         "hostDetail": "主机详情"
     },
     "tree": {
-        "loading": "加载中"
+        "loading": "加载中",
+        "retry": "加载失败，点击重试"
     },
     "filter": {
         "running": "运行中云机",
@@ -434,7 +437,9 @@
         "uploadSuccess": "机型文件上传成功",
         "deleteConfirm": "确定删除机型文件「{0}」吗？",
         "deleteSuccess": "机型文件删除成功",
-        "download": "下载"
+        "download": "下载",
+        "dimensions": "屏幕参数",
+        "overrideToForm": "覆盖到表单"
     },
     "v2Tool": {
         "entry": "下载提取工具",

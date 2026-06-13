@@ -5,11 +5,11 @@ import { Row } from '../container';
 import "./create_form.less";
 import { ImageSelector2 } from "./image_selector2";
 import { ModelSelector } from "./model_selector";
-import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup, MobileModelOption, pickRandomMobileModelOption } from "./mobile_model_loader";
+import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup } from "./mobile_model_loader";
 import { S5FormItems } from "./s5_form_items";
 import { i18n } from "@/i18n/i18n";
 import { isImageVersionCompatibleByModelVersion } from "@/common/common";
-import Vue from 'vue';
+import Vue, { VNode } from 'vue';
 
 @Component
 export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
@@ -73,13 +73,17 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         }
         await this.loadModelList();
         this.ensureValidModelSelection();
-        this.syncModelDimensions();
         this.ensureCompatibleSelectedImage();
     }
 
     private fixNumber(key: string) {
         return (e: Event) => {
             const target = e.target as HTMLInputElement;
+            // x_dpi/y_dpi 允许留空，由后端处理空值
+            if ((key === "x_dpi" || key === "y_dpi") && target.value.trim() === "") {
+                this.$set(this.data, key, undefined);
+                return;
+            }
             let val = Number(target.value);
             let min = Number(target.min);
             let max = Number(target.max);
@@ -120,12 +124,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         await this.loadModelList();
         this.ensureValidModelSelection();
         this.ensureCompatibleSelectedImage();
-        this.syncModelDimensions();
-    }
-
-    @Watch("data.model_id")
-    onModelIdChange() {
-        this.syncModelDimensions();
     }
 
     private get currentModelId() {
@@ -160,26 +158,11 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         if (this.isUpdate || this.isCustomModelSelected) {
             return;
         }
-
-        if (this.currentModelId > 0 && this.hasModelValue(this.currentModelId)) {
-            return;
+        // 随机由后端完成，model_id<=0 保持「随机」即可，不再前端预抽具体机型。
+        // 仅当指定的具体机型在当前版本机型列表中不存在时，回退为随机(0)。
+        if (this.currentModelId > 0 && !this.hasModelValue(this.currentModelId)) {
+            this.$set(this.data, "model_id", 0);
         }
-
-        const option = pickRandomMobileModelOption(this.modelList);
-        if (option) {
-            this.$set(this.data, "model_id", option.value);
-        }
-    }
-
-    private get selectedModelOption(): MobileModelOption | undefined {
-        const value = this.currentModelId;
-        for (const group of this.modelList) {
-            const option = group.options.find(item => item.value === value);
-            if (option) {
-                return option;
-            }
-        }
-        return;
     }
 
     private applyModelDimensions(meta: MobileModelDimensions) {
@@ -198,20 +181,23 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         return Math.round(value * 1000) / 1000;
     }
 
-    private onModelSelected(option?: MobileModelOption) {
-        if (option?.meta) {
-            this.applyModelDimensions(option.meta);
-            return;
-        }
-        this.syncModelDimensions();
+    // 带信息图标 + 悬停提示的表单项标签
+    private labelWithTip(label: string, tip: string): VNode {
+        return (
+            <span>
+                {label}
+                <el-tooltip content={tip} placement="top" effect="dark" transition="">
+                    <i class="el-icon-info" style="margin-left: 4px; color: #909399; cursor: help;"></i>
+                </el-tooltip>
+            </span>
+        );
     }
 
-    private syncModelDimensions() {
-        if (this.isCustomModelSelected) return;
-        const option = this.selectedModelOption;
-        if (!option?.meta) return;
-
-        this.applyModelDimensions(option.meta);
+    // 用户在机型对话框点击「覆盖到表单」后，才用机型屏幕参数覆盖当前表单
+    private onApplyDimensions(meta?: MobileModelDimensions) {
+        if (meta) {
+            this.applyModelDimensions(meta);
+        }
     }
 
     private ensureCompatibleSelectedImage() {
@@ -264,7 +250,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
 
                 {!this.isUpdate && (
                     <Row>
-                        <el-form-item label={this.$t("create.sandbox")} prop="sandbox">
+                        <el-form-item label={this.$t("create.sandbox")} prop="sandbox" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.sandbox") as string, this.$t("create.sandbox_tip") as string) }}>
                             <el-switch v-model={this.data.sandbox} active-value={1} inactive-value={0} />
                         </el-form-item>
 
@@ -359,23 +345,20 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     <el-form-item label={this.$t("create.height")} prop="height">
                         <el-input v-model={this.data.height} onBlur={this.fixNumber("height")} min={600} max={4000} type="number" />
                     </el-form-item>
+                    <el-form-item label={this.$t("create.fps")} prop="fps">
+                        <el-input v-model={this.data.fps} onBlur={this.fixNumber("fps")} min={10} max={60} type="number" />
+                    </el-form-item>
                 </Row>
 
                 <Row>
                     <el-form-item label={this.$t("create.dpi")} prop="dpi">
                         <el-input v-model={this.data.dpi} onBlur={this.fixNumber("dpi")} min={100} max={600} type="number" />
                     </el-form-item>
-                    <el-form-item label={this.$t("create.x_dpi")} prop="x_dpi">
+                    <el-form-item label={this.$t("create.x_dpi")} prop="x_dpi" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.x_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
                         <el-input class="no-number-spinner" v-model={this.data.x_dpi} onBlur={this.fixNumber("x_dpi")} min={100} max={600} step={0.001} type="number" />
                     </el-form-item>
-                </Row>
-
-                <Row>
-                    <el-form-item label={this.$t("create.y_dpi")} prop="y_dpi">
+                    <el-form-item label={this.$t("create.y_dpi")} prop="y_dpi" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.y_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
                         <el-input class="no-number-spinner" v-model={this.data.y_dpi} onBlur={this.fixNumber("y_dpi")} min={100} max={600} step={0.001} type="number" />
-                    </el-form-item>
-                    <el-form-item label={this.$t("create.fps")} prop="fps">
-                        <el-input v-model={this.data.fps} onBlur={this.fixNumber("fps")} min={10} max={60} type="number" />
                     </el-form-item>
                 </Row>
 
@@ -394,9 +377,11 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                                 version={this.data.mobile_model_version || "v2"}
                                 ip={this.ip}
                                 source={this.data.mobile_model_source}
+                                manufacturer={this.data.model_manufacturer}
                                 on={{
                                     "update:source": (v: string) => this.$set(this.data, "mobile_model_source", v),
-                                    "model-selected": this.onModelSelected
+                                    "update:manufacturer": (v: string) => this.$set(this.data, "model_manufacturer", v),
+                                    "apply-dimensions": this.onApplyDimensions
                                 }}
                             />
                         </el-form-item>

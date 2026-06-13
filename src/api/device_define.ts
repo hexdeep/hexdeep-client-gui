@@ -66,6 +66,7 @@ export interface CreateParam extends S5setParam, DeviceDetail {
     mac_vlan?: number;  //	独立ip模式:0,禁用；1，启用
     ip?: string;    //	ip:mac_vlan模式为1时，必须指定
     model_id?: number;  //	机型id:值为0时，随机机型；大于0时，固定机型
+    model_manufacturer?: string;    //	机型品牌名:model_id<=0时，限定在该品牌内随机；为空时全部品牌随机
     subnet?: string;
     memory?: number; // 内存大小
     docker_registry?: string;

@@ -579,8 +579,10 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
-    public async changeModelMacvlan(android_sdk: string, model_id: number): Promise<void> {
-        const result = await fetch(makeMacvlanVmApiUrl("and_api/random_devinfo", android_sdk) + `?modelid=${model_id}`);
+    public async changeModelMacvlan(android_sdk: string, model_id: number, source: string = ""): Promise<void> {
+        let url = makeMacvlanVmApiUrl("and_api/random_devinfo", android_sdk) + `?modelid=${model_id}`;
+        if (source) url += `&mobile_model_source=${encodeURIComponent(source)}`;
+        const result = await fetch(url);
         return await this.handleError(result);
     }
 

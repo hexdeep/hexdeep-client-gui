@@ -8,12 +8,13 @@ import { ErrorProxy } from "@/lib/error_handle";
 import { VNode } from "vue";
 import { Watch } from "vue-property-decorator";
 import { CreateForm } from "../../../lib/component/create_form";
+import { normalizeModelSubmitFields } from "@/lib/component/mobile_model_loader";
 import { PullImageDialog } from './pull_image';
 import { VipHostSelectDialog } from "./vip_host_select";
 
 @Dialog
 export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
-    public override width: string = "700px";
+    public override width: string = "800px";
     protected images: ImageInfo[] = [];
     private dockerRegistries: string[] = [];
     private validInstance: number[] = [];
@@ -24,7 +25,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     private allHosts: HostInfo[] = [];
 
     private static readonly CACHE_KEY = "CreateFormCache";
-    private static readonly CACHE_FIELDS = ["name", "sandbox_size", "width", "height", "dpi", "x_dpi", "y_dpi", "fps", "mobile_model_version", "mobile_model_source"] as const;
+    private static readonly CACHE_FIELDS = ["name", "sandbox_size", "width", "height", "dpi", "x_dpi", "y_dpi", "fps", "mobile_model_version", "mobile_model_source", "model_id", "model_manufacturer"] as const;
 
     public override async show(data: DockerEditParam) {
         this.data = data;
@@ -178,9 +179,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         } else {
             delete data.obj.custom_image;
         }
-        if (Number(data.obj.model_id ?? 0) !== -1) {
-            delete data.obj.mobile_model_source;
-        }
+        normalizeModelSubmitFields(data.obj);
         if (this.data.isUpdate) {
             await deviceApi.update(data);
         } else {
@@ -265,9 +264,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                 { required: this.data.obj.isOpenProxy && this.data.obj.protocol_type == 1, message: i18n.t("notNull"), trigger: 'blur' },
                 { pattern: /^([0-9]|[1-9]\d{1,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$/, message: i18n.t("invalidPort"), trigger: 'blur' },
             ],
-            mobile_model_source: [
-                { required: Number(this.data.obj.model_id ?? 0) === -1, message: i18n.t("notNull"), trigger: 'blur' },
-            ]
+            // 自定义机型来源可留空（留空表示由后端随机选取一个自定义机型），故不再强制必填
         };
     }
 
