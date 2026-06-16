@@ -237,6 +237,21 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
             custom_image: [
                 { required: true, message: i18n.t("notNull"), trigger: 'change' }
             ],
+            width: [
+                { required: true, message: i18n.t("notNull"), trigger: 'blur' },
+            ],
+            height: [
+                { required: true, message: i18n.t("notNull"), trigger: 'blur' },
+            ],
+            fps: [
+                { required: true, message: i18n.t("notNull"), trigger: 'blur' },
+            ],
+            dpi: [
+                { required: true, message: i18n.t("notNull"), trigger: 'blur' },
+            ],
+            model_id: [
+                { required: true, message: i18n.t("notNull"), trigger: 'change' },
+            ],
             num: [
                 {
                     required: true, message: i18n.t("create.numRule", { 0: this.data.maxNum }), min: 1,
@@ -259,6 +274,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
                 { pattern: /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}\/([0-9]|[1-2][0-9]|3[0-2])$/, message: i18n.t("invalidSubnet"), trigger: 'blur' },
             ],
             dns_urls: [
+                { required: true, message: i18n.t("notNull"), trigger: 'blur' },
                 { pattern: /^(((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3})(,((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3})*$/, message: i18n.t("invalidDnsUrls"), trigger: 'blur' },
             ],
             // 自定义机型来源可留空（留空表示由后端随机选取一个自定义机型），故不再强制必填
