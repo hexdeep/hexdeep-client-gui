@@ -232,6 +232,8 @@
         "delete": "Are you sure you want to batch delete {0} VMs?",
         "reset": "Are you sure you want to batch reset {0} VMs?",
         "success": "Batch operation successful",
+        "partialFail": "Batch operation finished: {0} succeeded, {1} failed",
+        "allFail": "Batch operation failed ({0} items)",
         "switchFirmwareTitle": "Batch Switch Firmware",
         "switchFirmwareConfirm": "Are you sure you want to switch firmware for {0} hosts? Hosts will restart after switching.",
         "switchFirmwareSuccess": "Batch firmware switch successful, hosts are restarting...",

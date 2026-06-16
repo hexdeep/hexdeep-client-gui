@@ -233,6 +233,8 @@
         "delete": "您确定要批量删除 {0} 台云机吗？",
         "reset": "您确定要批量重置 {0} 台云机吗？",
         "success": "批量操作成功",
+        "partialFail": "批量操作完成：{0} 个成功，{1} 个失败",
+        "allFail": "批量操作失败（共 {0} 个）",
         "switchFirmwareTitle": "批量切换固件",
         "switchFirmwareConfirm": "确定要为 {0} 台主机切换固件版本吗？切换后主机将重启。",
         "switchFirmwareSuccess": "批量切换固件成功，主机正在重启...",
