@@ -254,7 +254,7 @@
         "createdAt": "创建时间",
         "rebootSDKSuccess": "重启SDK成功",
         "temperature": "温度",
-        "networkSpeed": "协商速率",
+        "networkSpeed": "网卡速度",
         "networkSpeedUnknown": "未连接",
         "uptime": "运行时长",
         "bootTime": "开机时间",
