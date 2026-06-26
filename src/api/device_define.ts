@@ -184,6 +184,7 @@ export interface HostDetailInfo {
     swap_percent: string,
     swap_total: number,
     temperature: string;
+    network_speed: number;
     git_commit_id: string;
     disk?: string;
     remark: string;

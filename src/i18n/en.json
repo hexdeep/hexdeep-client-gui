@@ -251,6 +251,8 @@
         "createdAt": "Created At",
         "rebootSDKSuccess": "Reboot SDK Successful",
         "temperature": "Temperature",
+        "networkSpeed": "Link Speed",
+        "networkSpeedUnknown": "Not connected",
         "uptime": "Uptime",
         "bootTime": "Boot Time",
         "uptimeHours": "h",
