@@ -621,8 +621,8 @@ class DeviceApi extends ApiBase {
             return j.err;
         } else if (j.code == 200) {
             return;
-        } else if (j.code == 1) {
-            // VIP镜像受限
+        } else if (j.code == 1 && typeof j.err === "string" && j.err.includes("VIP")) {
+            // VIP镜像受限，引导去开通VIP；其它 code==1 错误（如实例位过期/未续费）按普通错误抛出
             throw new VipImageRestrictedError(j.err);
         } else {
             throw j.err;

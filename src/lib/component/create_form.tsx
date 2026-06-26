@@ -79,8 +79,8 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     private fixNumber(key: string) {
         return (e: Event) => {
             const target = e.target as HTMLInputElement;
-            // x_dpi/y_dpi 允许留空，由后端处理空值
-            if ((key === "x_dpi" || key === "y_dpi") && target.value.trim() === "") {
+            // x_dpi/y_dpi/offset 允许留空：x_dpi/y_dpi 由后端处理空值，offset 留空则随机开机时间
+            if ((key === "x_dpi" || key === "y_dpi" || key === "offset") && target.value.trim() === "") {
                 this.$set(this.data, key, undefined);
                 return;
             }
@@ -396,6 +396,11 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                         />
                     </el-form-item>
                 )}
+
+                {/* 老板说先不做界面：开机时长(offset)输入框暂时注释掉，仅隐藏 UI，其余 JS 逻辑(类型/fixNumber 空值处理/请求透传)保持不变 */}
+                {/* <el-form-item label={this.$t("create.offset")} prop="offset" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.offset") as string, this.$t("create.offset_tip") as string) }}>
+                    <el-input class="no-number-spinner" v-model={this.data.offset} onBlur={this.fixNumber("offset")} min={0} type="number" placeholder={this.$t("create.offset_placeholder") as string} />
+                </el-form-item> */}
 
                 <el-form-item label={this.$t("create.dns_urls")} prop="dns_urls">
                     <el-input v-model={this.data.dns_urls} />

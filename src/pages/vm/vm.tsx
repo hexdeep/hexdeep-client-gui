@@ -342,15 +342,23 @@ export default class VMPage extends Vue {
             }
         }
 
-        let tasks: Promise<void>[] = [];
-
-        arr.forEach(e => {
-            tasks.push(callback(e));
-        });
-        await Promise.allSettled(tasks).catch(e => {
-            console.log(e);
-        });
+        const results = await Promise.allSettled(arr.map(e => callback(e)));
         this.refreshHost();
+
+        // 收集失败项，避免出现“全部失败仍提示成功”的问题（如过期实例位开机）
+        const failures = results
+            .map((r, i) => ({ r, item: arr[i] }))
+            .filter(x => x.r.status === "rejected") as { r: PromiseRejectedResult; item: DeviceInfo }[];
+
+        if (failures.length > 0) {
+            const reasons = Array.from(new Set(failures.map(({ r }) =>
+                r.reason instanceof Error ? r.reason.message : `${r.reason}`)));
+            const succeeded = results.length - failures.length;
+            const summary = succeeded > 0
+                ? i18n.t("batch.partialFail", [succeeded, failures.length])
+                : i18n.t("batch.allFail", [failures.length]);
+            throw new Error(`${summary}：${reasons.join("；")}`);
+        }
     }
 
     private async batchUpload() {
