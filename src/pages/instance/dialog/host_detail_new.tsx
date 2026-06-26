@@ -243,6 +243,9 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         )}
                     </div>
                 </el-descriptions-item>
+                <el-descriptions-item label={i18n.t("vmDetail.networkSpeed")}>
+                    {this.formatNetworkSpeed(this.detail?.network_speed)}
+                </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.hostOperate")}>
                     <div
                         style={{
@@ -377,6 +380,16 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         if (minutes > 0) parts.push(`${minutes}${this.$t("vmDetail.uptimeMinutes")}`);
         if (seconds > 0 || parts.length === 0) parts.push(`${seconds}${this.$t("vmDetail.uptimeSeconds")}`);
         return parts.join(' ');
+    }
+
+    private formatNetworkSpeed(speed: number | undefined): string {
+        if (!speed || speed <= 0) {
+            return this.$t("vmDetail.networkSpeedUnknown").toString();
+        }
+        if (speed >= 1000) {
+            return `${speed / 1000} Gbps (${speed} Mbps)`;
+        }
+        return `${speed} Mbps`;
     }
 
     private getStatus(percent: string | undefined): string | undefined {
