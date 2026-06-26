@@ -245,7 +245,7 @@
     },
     "vmDetail": {
         "title": "实例详情",
-        "getFirmwarePackage": "获取固件包",
+        "getFirmwarePackage": "完整刷机包",
         "getFirmwarePackageTooltip": "只有在主机无法开机，需手动刷机",
         "name": "名称",
         "index": "实例位",
@@ -312,7 +312,7 @@
         "currentVersion": "当前版本",
         "firmwareUpdateAvailable": "有新版本",
         "uploadCustomFirmware": "上传自定义固件",
-        "uploadCustomFirmwareTooltip": "上传自定义固件zip压缩包（需包含 kernel.img / resource.img / uboot.img），刷写完成后设备将重启",
+        "uploadCustomFirmwareTooltip": "上传自定义固件zip压缩包，刷写完成后设备将重启",
         "uploadFirmwareSuccess": "正在刷写自定义固件，请稍后重启设备",
         "unofficialModel": "非官方型号",
         "iscsi": {
