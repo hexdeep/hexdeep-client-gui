@@ -306,6 +306,9 @@
         "selectFirmwareVersion": "选择版本",
         "currentVersion": "当前版本",
         "firmwareUpdateAvailable": "有新版本",
+        "uploadCustomFirmware": "上传自定义固件",
+        "uploadCustomFirmwareTooltip": "上传自定义固件zip压缩包（需包含 kernel.img / resource.img / uboot.img），刷写完成后设备将重启",
+        "uploadFirmwareSuccess": "正在刷写自定义固件，请稍后重启设备",
         "unofficialModel": "非官方型号",
         "iscsi": {
             "ip": "iSCSI IP",

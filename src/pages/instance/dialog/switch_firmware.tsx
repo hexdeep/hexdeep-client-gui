@@ -17,6 +17,16 @@ export class SwitchFirmwareDialog extends CommonDialog<SwitchFirmwareData, boole
     protected selectedVersion: string = "";
     protected currentVersion: string = "";
     protected loading: boolean = true;
+    protected uploading: boolean = false;
+    protected uploadProgress: number = 0;
+    protected uploadTask: { promise: Promise<any>, cancel: () => void; } | null = null;
+
+    public override close(result?: boolean): Promise<boolean> {
+        if (this.uploadTask) {
+            this.uploadTask.cancel();
+        }
+        return super.close(result);
+    }
 
     public override async show(data: SwitchFirmwareData) {
         this.title = this.$t("vmDetail.switchFirmwareTitle").toString();
@@ -68,6 +78,47 @@ export class SwitchFirmwareDialog extends CommonDialog<SwitchFirmwareData, boole
         this.close(true);
     }
 
+    // el-upload 选择文件回调：弹出重启二次确认后上传并刷写自定义固件
+    private async onCustomFirmwareChange(file: any) {
+        const raw: File = file?.raw ?? file;
+        if (!raw) return;
+
+        // 二次确认：切换/刷写自定义固件需要重启设备，用户可取消
+        try {
+            await this.$confirm(
+                this.$t("vmDetail.switchFirmwareRebootConfirm").toString(),
+                this.$t("confirm.title").toString(),
+                {
+                    confirmButtonText: this.$t("confirm.ok").toString(),
+                    cancelButtonText: this.$t("confirm.cancel").toString(),
+                    type: "warning"
+                }
+            );
+        } catch {
+            return;
+        }
+
+        this.uploading = true;
+        this.uploadProgress = 0;
+        try {
+            this.uploadTask = deviceApi.uploadCustomFirmware(this.data.host.address, raw, (progressEvent) => {
+                if (progressEvent.total > 0) {
+                    this.uploadProgress = Math.round(progressEvent.loaded / progressEvent.total * 100);
+                }
+            });
+            await this.uploadTask.promise;
+            this.$message.success(this.$t("vmDetail.uploadFirmwareSuccess").toString());
+            this.close(true);
+        } catch (error) {
+            if (error !== "aborted") {
+                this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
+            }
+        } finally {
+            this.uploadTask = null;
+            this.uploading = false;
+        }
+    }
+
     protected renderDialog(): VNode {
         if (this.loading) {
             return (
@@ -97,9 +148,30 @@ export class SwitchFirmwareDialog extends CommonDialog<SwitchFirmwareData, boole
                               {this.$t("vmDetail.getFirmwarePackage")}
                           </a>
                         </el-tooltip>
+                        <el-tooltip content={this.$t("vmDetail.uploadCustomFirmwareTooltip")} placement="top">
+                          <el-upload
+                              class="ms-auto"
+                              action="#"
+                              accept=".zip"
+                              multiple={false}
+                              limit={1}
+                              attrs={{ "on-change": this.onCustomFirmwareChange }}
+                              show-file-list={false}
+                              auto-upload={false}
+                              disabled={this.uploading}
+                          >
+                              <a class="hover:underline" style={{ color: "#409EFF", cursor: this.uploading ? "not-allowed" : "pointer" }}>
+                                  {this.$t("vmDetail.uploadCustomFirmware")}
+                              </a>
+                          </el-upload>
+                        </el-tooltip>
                     </div>
+                    {this.uploading && (
+                        <el-progress percentage={this.uploadProgress} style={{ marginBottom: "10px" }} />
+                    )}
                     <el-select
                         v-model={this.selectedVersion}
+                        disabled={this.uploading}
                         placeholder={this.$t("vmDetail.selectFirmwareVersion")}
                         style={{ width: "100%" }}
                     >
