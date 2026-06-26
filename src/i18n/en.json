@@ -442,7 +442,7 @@
     "v2Tool": {
         "entry": "Download extraction tool",
         "title": "Model Extraction Tool",
-        "hint": "Scan to download the V2 model extraction tool, used to extract a phone model file and then upload it",
+        "hint": "Scan to download the V3 model extraction tool, used to extract a phone model file and then upload it",
         "copy": "Copy",
         "copySuccess": "Download link copied"
     },
