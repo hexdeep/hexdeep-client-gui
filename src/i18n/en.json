@@ -308,6 +308,9 @@
         "selectFirmwareVersion": "Select Version",
         "currentVersion": "Current",
         "firmwareUpdateAvailable": "New version",
+        "uploadCustomFirmware": "Upload Custom Firmware",
+        "uploadCustomFirmwareTooltip": "Upload a custom firmware .zip (containing kernel.img / resource.img / uboot.img); the device will reboot after flashing",
+        "uploadFirmwareSuccess": "Flashing custom firmware, please restart device later",
         "unofficialModel": "Unofficial Model",
         "iscsi": {
             "ip": "iSCSI IP",

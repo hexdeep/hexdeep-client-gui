@@ -734,6 +734,52 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    public uploadCustomFirmware(
+        ip: string,
+        file: File,
+        progress: (progressEvent: ProgressEvent) => void
+    ): { promise: Promise<any>, cancel: () => void; } {
+        const xhr = new XMLHttpRequest();
+
+        const promise = new Promise((resolve, reject) => {
+            const url = makeHostVmApiUrl("entry/upload_firmware", ip);
+            xhr.open("POST", url, true);
+
+            xhr.upload.onprogress = progress;
+
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const json = JSON.parse(xhr.responseText);
+                        if (json.code == 200) {
+                            resolve(json.data);
+                        } else {
+                            reject(new Error(json.err));
+                        }
+                    } catch (e) {
+                        reject(new Error("Invalid JSON response"));
+                    }
+                } else {
+                    reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+                }
+            };
+
+            xhr.onerror = () => reject(new Error("Network error during upload"));
+            xhr.onabort = () => reject("aborted");
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            xhr.send(formData);
+        });
+
+        const cancel = () => {
+            xhr.abort();
+        };
+
+        return { promise, cancel };
+    }
+
 }
 
 export const deviceApi = new DeviceApi();
