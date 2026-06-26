@@ -49,6 +49,7 @@ export interface DeviceDetail {
     x_dpi?: number; //	横向物理DPI
     y_dpi?: number; //	纵向物理DPI
     fps?: number;   //	分辨率
+    offset?: number; //	已开机时间(秒):留空则随机；指定时固定开机时长
     dns_urls?: string;  //	dns服务器地址,例如:223.5.5.5,8.8.8.8
     subnet?: string;
     memory?: number;
