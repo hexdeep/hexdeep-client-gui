@@ -314,6 +314,7 @@
         "uploadCustomFirmware": "上传自定义固件",
         "uploadCustomFirmwareTooltip": "上传自定义固件zip压缩包，刷写完成后设备将重启",
         "uploadFirmwareSuccess": "正在刷写自定义固件，请稍后重启设备",
+        "removeCustomFirmware": "移除",
         "unofficialModel": "非官方型号",
         "iscsi": {
             "ip": "iSCSI IP",
