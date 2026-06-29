@@ -89,7 +89,7 @@ export class ImageSelector2 extends tsx.Component<IPorps, IEvents, {}> {
                                 fontWeight: "bold"
                             }}
                         >{this.$t("vip.vipImage")}</el-tag>}
-                        {e.description && <el-tooltip content={e.description} placement="top" disabled={e.description.length < 20}>
+                        {e.description && <el-tooltip content={e.description} placement="top" disabled={e.description.length < 30}>
                           <span class="truncate text-sm ms-2">
                             {e.description}
                           </span>
