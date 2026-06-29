@@ -144,7 +144,11 @@ export class SwitchFirmwareDialog extends CommonDialog<SwitchFirmwareData, boole
                     </el-form-item>
                 )}
                 <el-form-item>
-                    <div slot="label" class="flex items-center gap-4">
+                    {/* 该头部行必须放在 form-item 内容区，不能放进 slot="label"：
+                        el-form-item 的 label 会被渲染成 <label> 元素，而 el-upload 的隐藏
+                        <input type="file"> 一旦成为 <label> 的后代，input.click() 会冒泡到
+                        <label> 并被浏览器原生地再次派发，导致文件选择框弹出两次。 */}
+                    <div class="flex items-center gap-4" style={{ marginBottom: "8px", color: "#606266", fontSize: "14px", lineHeight: "1.4" }}>
                         <span>{this.$t("vmDetail.selectFirmwareVersion")}</span>
                         <el-tooltip content={this.$t("vmDetail.getFirmwarePackageTooltip")} placement="top">
                           <a
