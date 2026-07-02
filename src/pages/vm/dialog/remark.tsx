@@ -33,7 +33,7 @@ export class RemarkDialog extends CommonDialog<HostInfo, string> {
         return (
             <el-form ref="formRef" props={{ model: this }} rules={this.formRules}>
                 <el-form-item label={this.$t("remark.hostRemark")} prop="newName">
-                    <el-input v-model={this.newName} maxlength={6} />
+                    <el-input v-model={this.newName} maxlength={6} nativeOnKeyup={(e: KeyboardEvent) => e.key === "Enter" && this.onConfirm()} />
                 </el-form-item>
             </el-form>
         );
