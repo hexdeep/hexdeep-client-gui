@@ -35,7 +35,7 @@ export class RenameDialog extends CommonDialog<DeviceInfo, string> {
         return (
             <el-form ref="formRef" props={{ model: this }} rules={this.formRules}>
                 <el-form-item label={this.$t("rename.deviceName")} prop="newName">
-                    <el-input v-model={this.newName} maxlength={20} />
+                    <el-input v-model={this.newName} maxlength={20} nativeOnKeyup={(e: KeyboardEvent) => e.key === "Enter" && this.onConfirm()} />
                 </el-form-item>
             </el-form>
         );
