@@ -11,6 +11,7 @@ import { SwitchSDKDialog } from "./switch_sdk";
 import { SwitchDiskDialog } from "./switch_disk";
 import { CleanGarbageDialog } from "./clean_garbage_dialog";
 import { SetSwapDialog } from "./set_swap";
+import { ResetHostConfirmDialog } from "./reset_host_confirm";
 import { DiscoverDialog } from "@/pages/vm/dialog/discover";
 import { VipHostSelectDialog } from "@/pages/vm/dialog/vip_host_select";
 import { orderApi } from "@/api/order_api";
@@ -317,8 +318,14 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         await deviceApi.pruneImages(this.data.address);
     }
 
-    @ErrorProxy({ confirm: i18n.t("vmDetail.resetConfirm"), success: i18n.t("vmDetail.resetSuccess"), loading: i18n.t("loading") })
     private async resetHost() {
+        const confirmed = await this.$dialog(ResetHostConfirmDialog).show(this.data);
+        if (!confirmed) return;
+        await this.doResetHost();
+    }
+
+    @ErrorProxy({ success: i18n.t("vmDetail.resetSuccess"), loading: i18n.t("loading") })
+    private async doResetHost() {
         await deviceApi.resetHost(this.data.address);
     }
 
