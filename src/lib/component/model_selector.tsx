@@ -581,9 +581,10 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                     )}
                     {this.uploadedModels.map((m) => (
                         <el-option key={m.path} label={m.name} value={m.path}>
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.name}</span>
                                 <el-button
+                                    class="ms-auto"
                                     type="text"
                                     size="mini"
                                     icon="el-icon-download"
