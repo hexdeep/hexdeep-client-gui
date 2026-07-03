@@ -36,7 +36,7 @@ export class ResetHostConfirmDialog extends CommonDialog<HostInfo, boolean> {
 
     protected renderDialog(): VNode {
         return (
-            <div style={{ lineHeight: "1.8", fontSize: "14px", color: "#606266", whiteSpace: "pre-line" }}>
+            <div style={{ lineHeight: "1.8", fontSize: "14px", color: "#606266", whiteSpace: "pre-line", padding: "8px 4px" }}>
                 {this.$t("vmDetail.resetConfirmDesc")}
             </div>
         );
