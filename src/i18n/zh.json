@@ -292,6 +292,7 @@
         "pruneImages": "清理镜像",
         "pruneImagesSuccess": "清理镜像成功",
         "rebootHostConfirm": "确定要重启主机吗？",
+        "rebootSDKConfirm": "确定要重启SDK吗？",
         "formatDiskConfirm": "确定要格式化当前存储吗？",
         "cleanGarbageConfirm": "确定要清理垃圾文件及镜像吗，请勿在任务执行期间进行任何安卓容器相关操作，以免容器数据丢失？",
         "updateFirmwareConfirm": "确定要升级固件吗?",

@@ -287,7 +287,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         );
     }
 
-    @ErrorProxy({ success: i18n.t("vmDetail.rebootSDKSuccess"), loading: i18n.t("loading") })
+    @ErrorProxy({ confirm: i18n.t("vmDetail.rebootSDKConfirm"), success: i18n.t("vmDetail.rebootSDKSuccess"), loading: i18n.t("loading") })
     private async rebootSDK() {
         await deviceApi.rebootSDK(this.data.address);
     }

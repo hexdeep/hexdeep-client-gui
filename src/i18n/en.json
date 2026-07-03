@@ -289,6 +289,7 @@
         "pruneImages": "Prune Images",
         "pruneImagesSuccess": "Prune Images Successful",
         "rebootHostConfirm": "Are you sure you want to reboot host?",
+        "rebootSDKConfirm": "Are you sure you want to reboot SDK?",
         "formatDiskConfirm": "Are you sure you want to format current disk?",
         "cleanGarbageConfirm": "Are you sure you want to clean up garbage files and images? Please refrain from performing any Android container-related operations during the task execution to avoid data loss in the containers?",
         "updateFirmwareConfirm": "Are you sure you want to update firmware?",
