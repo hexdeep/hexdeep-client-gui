@@ -32,6 +32,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected vipEndTime: string = '';
     protected firmwareList: FirmwareVersionInfo[] = [];
     protected firmwareUpdated: boolean = false;
+    protected currentFirmwareVersion: string = "";
     override width: string = "600px";
     public override async show(data: HostInfo) {
         this.data = data;
@@ -54,6 +55,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         this.loadVipInfo();
         // 获取固件列表
         this.loadFirmwareList();
+        this.loadCurrentFirmwareVersion();
         this.timer = setInterval(() => {
             deviceApi.getHostDetail(data.address).then(e => this.detail = e);
         }, 1000);
@@ -130,7 +132,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                                 size="small"
                                 onClick={this.switchFirmware}
                             >
-                                {this.$t("vmDetail.switchFirmware")}{this.firmwareVersion && `(${this.firmwareVersion})`}
+                                {this.$t("vmDetail.switchFirmware")}{this.currentFirmwareVersion && `(${this.currentFirmwareVersion})`}
                             </MyButton>
                         </Row>
                     </Row>
@@ -354,8 +356,9 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         }
     }
 
-    private get firmwareVersion(): string {
-        return this.detail?.git_commit_id?.split("-")[0] || "";
+    private async loadCurrentFirmwareVersion() {
+        const version = await deviceApi.getCurrentFirmwareVersion(this.data.address).catch(() => "");
+        this.currentFirmwareVersion = version?.split("-")[0] || "";
     }
 
     private async switchFirmware() {
@@ -363,6 +366,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         localStorage.setItem(FIRMWARE_STORAGE_KEY, JSON.stringify(this.firmwareList));
         this.firmwareUpdated = false;
         await this.$dialog(SwitchFirmwareDialog).show({ host: this.data, firmwareList: this.firmwareList });
+        this.loadCurrentFirmwareVersion();
     }
 
     private async showDiscover() {
