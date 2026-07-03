@@ -130,7 +130,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                                 size="small"
                                 onClick={this.switchFirmware}
                             >
-                                {this.$t("vmDetail.switchFirmware")}
+                                {this.$t("vmDetail.switchFirmware")}{this.firmwareVersion && `(${this.firmwareVersion})`}
                             </MyButton>
                         </Row>
                     </Row>
@@ -352,6 +352,10 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         } catch (e) {
             console.warn(e);
         }
+    }
+
+    private get firmwareVersion(): string {
+        return this.detail?.git_commit_id?.split("-")[0] || "";
     }
 
     private async switchFirmware() {
