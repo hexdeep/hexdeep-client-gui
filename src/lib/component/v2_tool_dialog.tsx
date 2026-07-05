@@ -26,10 +26,10 @@ export class MobileModelToolDownloadDialog extends CommonDialog<{ version: "v2" 
         return (
             <el-tabs value={this.activeTab} onInput={(v: string) => (this.activeTab = v)}>
                 <el-tab-pane label="V2" name="v2">
-                    {this.version === "v2" && this.renderQr(this.downloadUrl)}
+                    {this.version === "v2" && this.renderQr(this.downloadUrl, "V2")}
                 </el-tab-pane>
                 <el-tab-pane label="V3" name="v3">
-                    {this.version === "v3" && this.renderQr(this.downloadUrl)}
+                    {this.version === "v3" && this.renderQr(this.downloadUrl, "V3")}
                 </el-tab-pane>
             </el-tabs>
         );
@@ -68,7 +68,7 @@ export class MobileModelToolDownloadDialog extends CommonDialog<{ version: "v2" 
         }
     }
 
-    private renderQr(url: string): VNode {
+    private renderQr(url: string, versionLabel: string): VNode {
         return (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "14px", padding: "24px" }}>
                 <QrCode qrData={url} size={200} />
@@ -89,7 +89,7 @@ export class MobileModelToolDownloadDialog extends CommonDialog<{ version: "v2" 
                     {this.$t("v2Tool.copy")}
                 </el-button>
                 <div style={{ color: "#606266", fontSize: "13px", textAlign: "center", lineHeight: "1.6" }}>
-                    {this.$t("v2Tool.hint")}
+                    {this.$t("v2Tool.hint", { 0: versionLabel })}
                 </div>
             </div>
         );
