@@ -242,10 +242,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                                     if (!e) {
                                         return <span>{row.image_addr}</span>;
                                     }
-                                    // 镜像哈希比对逻辑存在 BUG，且该状态对用户不重要（绝大多数情况下本就应为最新），
-                                    // 故暂时硬编码为“已是最新”，恒显示对勾。保留原比对逻辑以便日后修复。
-                                    // const download = row.image_digest === e.id;
-                                    const download = true;
+                                    const download = row.image_digest === e.id;
                                     return <div>
                                         {e.android_version && <span
                                             style={{
