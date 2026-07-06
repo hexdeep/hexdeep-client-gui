@@ -311,7 +311,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                                                 </Row>
                                             </el-checkbox>
                                             <Row gap={5} crossAlign='center' style={{ flexShrink: 0 }}>
-                                                <span style={{ fontSize: '14px', color: '#606266' }}>{displayIp}</span>
+                                                <span
+                                                  class={this.getHostColorIndex(e.hostIp) % 2 === 0 ? 'text-green-600' : 'text-blue-600'}
+                                                  style={{ fontSize: '14px' }}
+                                                >
+                                                  {displayIp}
+                                                </span>
                                                 {this.renderAction(e, false)}
                                             </Row>
                                         </Row>
