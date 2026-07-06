@@ -332,8 +332,9 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     }
 
     private async switchSDK() {
-        await this.$dialog(SwitchSDKDialog).show(this.data);
-        deviceApi.getSDKImages(this.data.address).then(e => this.sdk = e);
+        const result = await this.$dialog(SwitchSDKDialog).show(this.data);
+        if (!result) return;
+        location.reload();
     }
 
     private async loadFirmwareList() {
