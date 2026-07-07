@@ -26,7 +26,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected sdk?: SDKImagesRes;
     protected model: string = "";
     protected isOfficialModel: boolean = true;
-    protected timer: any;
+    protected unsubscribeHostDetail?: () => void;
     protected vipInfo?: DeviceVipInfo;
     protected vipExpired: boolean = true;
     protected vipEndTime: string = '';
@@ -37,7 +37,6 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     public override async show(data: HostInfo) {
         this.data = data;
         this.title = this.$t("instance.hostDetail").toString() + ` (${data.address})`;
-        deviceApi.getHostDetail(data.address).then(e => this.detail = e);
         deviceApi.getWarehousingInfo(data.address).then(e => {
             if (e.code !== 200) {
                 this.isOfficialModel = false;
@@ -56,9 +55,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         // 获取固件列表
         this.loadFirmwareList();
         this.loadCurrentFirmwareVersion();
-        this.timer = setInterval(() => {
-            deviceApi.getHostDetail(data.address).then(e => this.detail = e);
-        }, 1000);
+        this.unsubscribeHostDetail = deviceApi.subscribeHostDetail(data.address, e => this.detail = e);
         return super.show(data);
     }
 
@@ -90,7 +87,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     }
 
     protected destroyed() {
-        clearInterval(this.timer);
+        this.unsubscribeHostDetail?.();
     }
 
     protected override renderFooter() {
