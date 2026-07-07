@@ -657,8 +657,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         <el-dropdown-item nativeOnClick={() => this.rename(row)}>{this.$t("menu.rename")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.updateVm(row)}>{this.$t("menu.updateVm")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.backupVm(row)}>{this.$t("menu.backup")}</el-dropdown-item>
+                        {
+                          /* V3版本不需要导入和导出机型的功能，走另外接口导出到sdcard
                         <el-dropdown-item nativeOnClick={() => this.exportModel(row)}>{this.$t("menu.exportModel")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.importModel(row)}>{this.$t("menu.importModel")}</el-dropdown-item>
+                          */
+                        }
                         <el-dropdown-item nativeOnClick={() => this.cloneVm(row)}>{this.$t("menu.clone")}</el-dropdown-item>
                         <el-dropdown-item disabled={row.state != 'running'} nativeOnClick={() => this.selectFile(row)}>{this.$t("menu.upload")}</el-dropdown-item>
                         <el-dropdown-item nativeOnClick={() => this.screenMirror(row)}>{this.$t("menu.screenMirror")}</el-dropdown-item>
