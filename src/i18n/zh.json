@@ -334,7 +334,7 @@
         "label": "镜像",
         "success": "镜像更换成功",
         "warning": "更换镜像后，不能确保云机正常启动，请谨慎操作！",
-        "versionMismatch": "镜像版本不兼容：v1/v2 镜像不能更新到 v3，v3 镜像也不能更新到 v1/v2。v1 和 v2 可以互相更新。"
+        "versionMismatch": "镜像版本不兼容：v2 镜像不能更新到 v3，v3 镜像也不能更新到 v2。v2 镜像之间可以互相更新。"
     },
     "changeSdk": {
       "label": "SDK版本"
