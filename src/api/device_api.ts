@@ -569,6 +569,38 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    /**
+     * 通过 SSE 持续订阅主机系统信息，避免客户端轮询。
+     * 返回取消订阅函数，调用后关闭底层 EventSource 连接。
+     */
+    public subscribeHostDetail(
+        ip: string,
+        onData: (detail: HostDetailInfo) => void,
+        onError?: (e: any) => void,
+    ): () => void {
+        const url = makeHostVmApiUrl("entry/system_info_sse", ip);
+        const source = new EventSource(url);
+
+        source.onmessage = (event) => {
+            try {
+                const msg = JSON.parse(event.data);
+                if (msg.code !== 200) {
+                    throw new Error(msg.err ?? "unknown error");
+                }
+                onData(msg.data as HostDetailInfo);
+            } catch (e) {
+                console.warn(e);
+                onError?.(e);
+            }
+        };
+
+        source.onerror = (e) => {
+            onError?.(e);
+        };
+
+        return () => source.close();
+    }
+
     public async getWarehousingInfo(ip: string): Promise<any> {
         const result = await fetch(makeHostVmApiUrl("entry/warehousing/get", ip));
         return await result.json();
