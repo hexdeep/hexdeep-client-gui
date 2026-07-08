@@ -25,7 +25,7 @@ class FeedbackApi extends ApiBase {
     public async submit(param: FeedbackSubmitParam): Promise<void> {
         const formData = new FormData();
         formData.append("description", param.description);
-        formData.append("machines", param.machines.map(m => m.address).join(","));
+        formData.append("machines", param.machines.map(m => m.device_id || m.address).join(","));
         formData.append("send_log", param.sendLog ? "1" : "0");
         param.files.forEach(file => formData.append("files", file));
 
