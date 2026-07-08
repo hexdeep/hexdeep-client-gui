@@ -9,6 +9,12 @@ import { FeedbackSubmitParam } from "./feedback_define";
 const HOST_SERVER_LOG_PATH = "/usr/bin/log/log.txt";
 const SUPER_SDK_LOG_PATH = "/st/log/log.txt";
 
+// hexdeep_server 只在 https://api.hexdeep.com 上直接暴露裸路径（如 /feedback/add），
+// 没有 "/server/" 前缀，http（非 tls）也不通（502）。makeVmApiUrl 是为按 IP 直连
+// H1/H49 设备自身的 host_server/super_sdk 设计的，拼出来的 URL 对 hexdeep_server 无效，
+// 因此这里改为直连真实后端域名。
+const HEXDEEP_SERVER_BASE = "https://api.hexdeep.com";
+
 class FeedbackApi extends ApiBase {
     /** 直接通过 /entry/get 获取主机列表，不做 device_id 回填 */
     public async getMachines(): Promise<HostInfo[]> {
@@ -27,7 +33,7 @@ class FeedbackApi extends ApiBase {
             await Promise.all(param.machines.map(host => this.appendHostLogs(formData, host)));
         }
 
-        const result = await fetch(makeVmApiUrl("server/feedback/add", Config.host), {
+        const result = await fetch(`${HEXDEEP_SERVER_BASE}/feedback/add`, {
             method: "POST",
             body: formData,
         });
