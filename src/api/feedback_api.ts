@@ -5,9 +5,11 @@ import { ApiBase } from "./api_base";
 import { FeedbackSubmitParam } from "./feedback_define";
 
 // 硬编码路径：host_server 部署在 /usr/bin/host_server，日志相对可执行文件目录；
-// super_sdk 容器固定把日志写到挂载进容器的 /st/log/log.txt。
+// super_sdk 容器固定把日志写到挂载进容器的 /st/log/log.txt；
+// docker.log 是宿主机 Docker 守护进程的日志，同样通过 host_server 的 entry/download 读取。
 const HOST_SERVER_LOG_PATH = "/usr/bin/log/log.txt";
 const SUPER_SDK_LOG_PATH = "/st/log/log.txt";
+const DOCKER_LOG_PATH = "/var/log/docker.log";
 
 // hexdeep_server 只在 https://api.hexdeep.com 上直接暴露裸路径（如 /feedback/add），
 // 没有 "/server/" 前缀，http（非 tls）也不通（502）。makeVmApiUrl 是为按 IP 直连
@@ -40,22 +42,33 @@ class FeedbackApi extends ApiBase {
         return await this.handleError(result);
     }
 
-    /** 采集单台机器的 host_server + super_sdk 日志，失败互不影响，只打印告警 */
+    /**
+     * 采集单台机器的 host_server + super_sdk + docker 日志，失败互不影响，只打印告警。
+     * 字段名即最终存储的文件名（不含扩展名），hexdeep_server 只负责补上 .log 后缀，
+     * 不做任何改名/归类，因此这里必须已经是规范化好的名字。
+     */
     private async appendHostLogs(formData: FormData, host: HostInfo) {
         const key = host.device_id || host.address;
 
         try {
             const blob = await this.downloadLogFile(makeHostVmApiUrl("entry/download", host.address), HOST_SERVER_LOG_PATH);
-            formData.append(`log_${key}_host_server`, blob, `${key}_host_server_log.txt`);
+            formData.append(`host_${key}`, blob, `host_${key}.log`);
         } catch (error) {
             console.warn(`获取主机${host.address}的host_server日志失败`, error);
         }
 
         try {
             const blob = await this.downloadLogFile(makeVmApiUrl("host/download", host.address), SUPER_SDK_LOG_PATH);
-            formData.append(`log_${key}_super_sdk`, blob, `${key}_super_sdk_log.txt`);
+            formData.append(`sdk_${key}`, blob, `sdk_${key}.log`);
         } catch (error) {
             console.warn(`获取主机${host.address}的super_sdk日志失败`, error);
+        }
+
+        try {
+            const blob = await this.downloadLogFile(makeHostVmApiUrl("entry/download", host.address), DOCKER_LOG_PATH);
+            formData.append(`docker_${key}`, blob, `docker_${key}.log`);
+        } catch (error) {
+            console.warn(`获取主机${host.address}的docker日志失败`, error);
         }
     }
 
