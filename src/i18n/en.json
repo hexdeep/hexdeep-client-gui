@@ -526,7 +526,7 @@
         "relatedMachines": "Related Machines",
         "relatedMachinesPlaceholder": "Select related machines (optional)",
         "attachment": "Attachment",
-        "attachmentTip": "Drag the file here, or click to select the file",
+        "attachmentTip": "Click + or paste (Ctrl+V) to add images/files",
         "sendLog": "Send Logs",
         "success": "Feedback submitted successfully, thank you!"
     }

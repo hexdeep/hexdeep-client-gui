@@ -18,12 +18,22 @@ export class FeedbackDialog extends CommonDialog<void, void> {
     private selectedMachines: string[] = [];
     private hosts: HostInfo[] = [];
     private hostsLoading = false;
-    private fileList: any[] = [];
+    private attachments: File[] = [];
+    private previewUrls = new Map<File, string>();
 
     public override async show() {
         this.title = this.$t("feedback.title").toString();
         this.loadHosts();
         return super.show();
+    }
+
+    protected mounted() {
+        document.addEventListener("paste", this.onPaste);
+    }
+
+    protected beforeDestroy() {
+        document.removeEventListener("paste", this.onPaste);
+        this.previewUrls.forEach(url => URL.revokeObjectURL(url));
     }
 
     private async loadHosts() {
@@ -63,17 +73,57 @@ export class FeedbackDialog extends CommonDialog<void, void> {
             description: this.item.description,
             machines,
             sendLog: this.item.sendLog,
-            files: this.fileList.map(f => f.raw),
+            files: this.attachments,
         });
         this.close();
     }
 
-    private handleChange(_file: any, fileList: any[]) {
-        this.fileList = fileList;
+    private isImage(file: File): boolean {
+        return file.type.startsWith("image/");
     }
 
-    private handleRemove(_file: any, fileList: any[]) {
-        this.fileList = fileList;
+    private addFiles(files: File[]) {
+        files.forEach(file => {
+            this.attachments.push(file);
+            if (this.isImage(file)) {
+                this.previewUrls.set(file, URL.createObjectURL(file));
+            }
+        });
+    }
+
+    private removeAttachment(index: number) {
+        const [file] = this.attachments.splice(index, 1);
+        const url = this.previewUrls.get(file);
+        if (url) {
+            URL.revokeObjectURL(url);
+            this.previewUrls.delete(file);
+        }
+    }
+
+    private openFilePicker() {
+        (this.$refs.fileInput as HTMLInputElement).click();
+    }
+
+    private onFileInputChange(e: Event) {
+        const input = e.target as HTMLInputElement;
+        if (input.files) {
+            this.addFiles(Array.from(input.files));
+        }
+        input.value = "";
+    }
+
+    private onPaste(e: ClipboardEvent) {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        const files: File[] = [];
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.kind === "file") {
+                const file = item.getAsFile();
+                if (file) files.push(file);
+            }
+        }
+        if (files.length) this.addFiles(files);
     }
 
     protected renderDialog(): VNode {
@@ -105,19 +155,33 @@ export class FeedbackDialog extends CommonDialog<void, void> {
                     </el-select>
                 </el-form-item>
                 <el-form-item label={this.$t("feedback.attachment")}>
-                    <el-upload
-                        drag
+                    <div class={s.attachmentGrid}>
+                        {this.attachments.map((file, index) => (
+                            <div class={s.attachmentItem} key={index}>
+                                {this.isImage(file)
+                                    ? <img class={s.attachmentImage} src={this.previewUrls.get(file)} />
+                                    : <div class={s.attachmentFile}>
+                                        <i class="el-icon-document" />
+                                        <span class={s.attachmentFileName}>{file.name}</span>
+                                    </div>
+                                }
+                                <div class={s.attachmentRemove} onClick={() => this.removeAttachment(index)}>
+                                    <i class="el-icon-close" />
+                                </div>
+                            </div>
+                        ))}
+                        <div class={s.attachmentAdd} onClick={this.openFilePicker}>
+                            <i class="el-icon-plus" />
+                        </div>
+                    </div>
+                    <div class={s.attachmentHint}>{this.$t("feedback.attachmentTip")}</div>
+                    <input
+                        ref="fileInput"
+                        type="file"
                         multiple
-                        action="#"
-                        attrs={{
-                            "on-change": this.handleChange,
-                            "on-remove": this.handleRemove,
-                        }}
-                        auto-upload={false}
-                    >
-                        <i class="el-icon-upload"></i>
-                        <div class="el-upload__text">{this.$t("feedback.attachmentTip")}</div>
-                    </el-upload>
+                        class={s.attachmentInput}
+                        onChange={this.onFileInputChange}
+                    />
                 </el-form-item>
                 <el-form-item>
                     <el-checkbox v-model={this.item.sendLog}>{this.$t("feedback.sendLog")}</el-checkbox>

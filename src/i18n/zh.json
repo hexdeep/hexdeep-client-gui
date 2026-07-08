@@ -530,7 +530,7 @@
         "relatedMachines": "相关机器",
         "relatedMachinesPlaceholder": "请选择相关机器（可选）",
         "attachment": "附件",
-        "attachmentTip": "将文件拖到此处，或点击选择文件",
+        "attachmentTip": "点击 + 或粘贴(Ctrl+V)添加图片/文件",
         "sendLog": "发送日志",
         "success": "反馈提交成功，感谢您的反馈！"
     }

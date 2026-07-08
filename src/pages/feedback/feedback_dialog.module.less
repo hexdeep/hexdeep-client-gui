@@ -1,26 +1,108 @@
 .body {
     :global {
-        .el-upload {
-            width: 100%;
-
-            .el-upload-dragger {
-                width: 100%;
-                height: 90px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-
-                .el-icon-upload {
-                    margin: 0 0 4px;
-                    font-size: 32px;
-                    line-height: 1;
-                }
-
-                .el-upload__text {
-                    font-size: 13px;
-                }
-            }
+        .el-form-item__content {
+            line-height: normal;
         }
     }
+}
+
+.attachmentGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 8px;
+}
+
+.attachmentItem {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #f5f7fa;
+}
+
+.attachmentImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.attachmentFile {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    box-sizing: border-box;
+
+    i {
+        font-size: 22px;
+        color: #909399;
+        margin-bottom: 4px;
+    }
+}
+
+.attachmentFileName {
+    width: 100%;
+    font-size: 11px;
+    color: #606266;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.attachmentRemove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.8);
+    }
+}
+
+.attachmentAdd {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border: 1px dashed #dcdfe6;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #8c939d;
+
+    i {
+        font-size: 22px;
+    }
+
+    &:hover {
+        border-color: var(--main-color);
+        color: var(--main-color);
+    }
+}
+
+.attachmentHint {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #909399;
+}
+
+.attachmentInput {
+    display: none;
 }
