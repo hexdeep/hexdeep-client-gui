@@ -529,7 +529,7 @@
         "descriptionRequired": "请填写问题描述",
         "relatedMachines": "相关机器",
         "relatedMachinesPlaceholder": "请选择相关机器（可选）",
-        "attachment": "附件",
+        "attachment": "图片或文件",
         "attachmentTip": "点击 + 或粘贴(Ctrl+V)添加图片/文件",
         "sendLog": "发送日志",
         "success": "反馈提交成功，感谢您的反馈！"

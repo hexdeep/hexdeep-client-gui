@@ -525,7 +525,7 @@
         "descriptionRequired": "Please enter a description",
         "relatedMachines": "Related Machines",
         "relatedMachinesPlaceholder": "Select related machines (optional)",
-        "attachment": "Attachment",
+        "attachment": "Images or Files",
         "attachmentTip": "Click + or paste (Ctrl+V) to add images/files",
         "sendLog": "Send Logs",
         "success": "Feedback submitted successfully, thank you!"
