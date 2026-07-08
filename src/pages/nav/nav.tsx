@@ -5,6 +5,7 @@ import { EditPassDialog } from "./edit_pass";
 import s from './nav.module.less';
 import { Config } from '@/common/Config';
 import { Menu } from 'element-ui';
+import { FeedbackDialog } from '../feedback/feedback_dialog';
 
 @Component
 export default class Nav extends Vue {
@@ -33,6 +34,10 @@ export default class Nav extends Vue {
             icon: 'icon-dingdan'
         },
     ];
+
+    private onFeedbackClick() {
+        this.$dialog(FeedbackDialog).show();
+    }
 
     private onCommand(cmd: string) {
         switch (cmd) {
@@ -130,6 +135,10 @@ export default class Nav extends Vue {
                             <i class={`iconfont icon-github-fill`} />
                             <span>{this.$t("nav.openSource")}</span>
                         </a>
+                        <div onClick={this.onFeedbackClick} onMouseenter={this.onMouseenter} onMouseleave={this.onMouseleave} class={s.menu} >
+                            <i class="el-icon-service" />
+                            <span>{this.$t("feedback.button")}</span>
+                        </div>
                     </div>
                     <el-dropdown onCommand={this.selectLang}>
                         <div class={s.tools}>

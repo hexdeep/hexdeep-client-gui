@@ -4,7 +4,6 @@ import s from "./styles/app.module.less";
 import "./styles/tabs.less";
 import "./styles/common.less";
 import { version } from "../package.json";
-import FeedbackButton from "./pages/feedback/feedback_button";
 
 @Component
 export class UIRoot extends Vue {
@@ -14,7 +13,6 @@ export class UIRoot extends Vue {
         <router-view name="nav" class="nav" />
         <router-view class={s.body} />
         <div class={s.version}>{version}</div>
-        <FeedbackButton />
       </div>
     );
   }
