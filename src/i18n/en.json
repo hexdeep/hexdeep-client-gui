@@ -516,5 +516,18 @@
         "back": "Back",
         "operation": "Operation",
         "goToPurchase": "Go to Purchase"
+    },
+    "feedback": {
+        "button": "Feedback",
+        "title": "Feedback",
+        "description": "Description",
+        "descriptionPlaceholder": "Please describe the problem you encountered in detail...",
+        "descriptionRequired": "Please enter a description",
+        "relatedMachines": "Related Machines",
+        "relatedMachinesPlaceholder": "Select related machines (optional)",
+        "attachment": "Attachment",
+        "attachmentTip": "Drag the file here, or click to select the file",
+        "sendLog": "Send Logs",
+        "success": "Feedback submitted successfully, thank you!"
     }
 }

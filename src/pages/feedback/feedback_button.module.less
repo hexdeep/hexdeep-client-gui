@@ -1,0 +1,29 @@
+.button {
+    position: fixed;
+    right: 24px;
+    bottom: 50px;
+    height: 44px;
+    padding: 0 18px;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: var(--main-color);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    user-select: none;
+
+    i {
+        font-size: 18px;
+    }
+
+    &:hover {
+        transform: scale(1.05);
+        opacity: 0.9;
+    }
+}
