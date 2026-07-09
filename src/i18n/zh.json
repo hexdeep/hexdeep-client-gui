@@ -82,6 +82,7 @@
         "y_dpi": "YDPI",
         "dpi_axis_tip": "v2.6.1及以后版本支持设置此参数，如不清楚，此参数保持和DPI数值一致，或不设置。",
         "fps": "FPS",
+        "fps_tip": "屏幕刷新率，建议设置为24或更低。",
         "mobile_model_version": "机型版本",
         "model_id": "型号",
         "custom_model_path": "自定义型号路径",

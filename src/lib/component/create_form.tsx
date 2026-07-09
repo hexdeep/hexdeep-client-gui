@@ -345,7 +345,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     <el-form-item label={this.$t("create.height")} prop="height">
                         <el-input v-model={this.data.height} onBlur={this.fixNumber("height")} min={600} max={4000} type="number" />
                     </el-form-item>
-                    <el-form-item label={this.$t("create.fps")} prop="fps">
+                    <el-form-item label={this.$t("create.fps")} prop="fps" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.fps") as string, this.$t("create.fps_tip") as string) }}>
                         <el-input v-model={this.data.fps} onBlur={this.fixNumber("fps")} min={10} max={60} type="number" />
                     </el-form-item>
                 </Row>
