@@ -564,7 +564,8 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
-    public async deleteDockerImages(ip: string, ids: string[]) {
+    /** 返回删除失败的镜像ID到失败原因的映射；未出现在结果中的ID视为删除成功，全部成功时返回空对象 */
+    public async deleteDockerImages(ip: string, ids: string[]): Promise<Record<string, string>> {
         const result = await fetch(
             makeVmApiUrl("image_api/remove", ip),
             {

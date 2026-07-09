@@ -303,6 +303,7 @@
         "deleteImagesConfirm": "Are you sure you want to delete the {0} selected image(s)? This action cannot be undone.",
         "deleteImagesSuccess": "Images deleted successfully",
         "noDeletableImages": "No downloaded images",
+        "deleteImagesPartialFailed": "Some images failed to delete",
         "rebootHostConfirm": "Are you sure you want to reboot host?",
         "rebootSDKConfirm": "Are you sure you want to reboot SDK?",
         "formatDiskConfirm": "Are you sure you want to format current disk?",

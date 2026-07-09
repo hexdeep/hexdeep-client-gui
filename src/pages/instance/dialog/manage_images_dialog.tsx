@@ -67,9 +67,19 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
     })
     private async deleteSelected() {
         if (this.selectedIds.length === 0) return;
-        await deviceApi.deleteDockerImages(this.data.address, this.selectedIds);
+        const failed = await deviceApi.deleteDockerImages(this.data.address, this.selectedIds);
         this.selectedIds = [];
         await this.loadImages();
+
+        const failedIds = Object.keys(failed);
+        if (failedIds.length > 0) {
+            this.$alert(
+                failedIds.map(id => `${id.slice(0, 12)}: ${failed[id]}`).join("; "),
+                this.$t("vmDetail.deleteImagesPartialFailed").toString(),
+                { type: "warning" }
+            );
+            return false;
+        }
     }
 
     protected override renderFooter() {

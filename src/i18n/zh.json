@@ -306,6 +306,7 @@
         "deleteImagesConfirm": "确定要删除选中的 {0} 个镜像吗？删除后不可恢复。",
         "deleteImagesSuccess": "镜像删除成功",
         "noDeletableImages": "暂无已下载的镜像",
+        "deleteImagesPartialFailed": "部分镜像删除失败",
         "rebootHostConfirm": "确定要重启主机吗？",
         "rebootSDKConfirm": "确定要重启SDK吗？",
         "formatDiskConfirm": "确定要格式化当前存储吗？",
