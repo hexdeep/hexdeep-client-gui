@@ -4,7 +4,7 @@ import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
-import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile } from "./device_define";
+import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile, DockerImageUsageInfo } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
@@ -556,6 +556,25 @@ class DeviceApi extends ApiBase {
 
     public async pruneImages(ip: string) {
         const result = await fetch(makeVmApiUrl("dc_api/prune_images", ip));
+        return await this.handleError(result);
+    }
+
+    public async getDockerImagesWithUsage(ip: string): Promise<DockerImageUsageInfo[]> {
+        const result = await fetch(makeVmApiUrl("image_api/list_with_usage", ip));
+        return await this.handleError(result);
+    }
+
+    public async deleteDockerImages(ip: string, ids: string[]) {
+        const result = await fetch(
+            makeVmApiUrl("image_api/remove", ip),
+            {
+                method: "POST",
+                body: qs.stringify({ ids }, { arrayFormat: "repeat" }),
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            }
+        );
         return await this.handleError(result);
     }
 

@@ -17,6 +17,7 @@ import { VipHostSelectDialog } from "@/pages/vm/dialog/vip_host_select";
 import { orderApi } from "@/api/order_api";
 import { DeviceVipInfo } from "@/api/order_define";
 import { SwitchFirmwareDialog } from "./switch_firmware";
+import { ManageImagesDialog } from "./manage_images_dialog";
 
 const FIRMWARE_STORAGE_KEY = "firmware_version_list";
 
@@ -281,6 +282,15 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         >
                             {this.$t("discover.title")}
                         </MyButton>
+
+                        <MyButton
+                            type="primary"
+                            size="small"
+                            style={{ whiteSpace: "nowrap" }}
+                            onClick={this.manageImages}
+                        >
+                            {this.$t("vmDetail.manageImages")}
+                        </MyButton>
                     </div>
                 </el-descriptions-item>
             </el-descriptions>
@@ -369,6 +379,10 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
 
     private async showDiscover() {
         await this.$dialog(DiscoverDialog).show(this.data.address);
+    }
+
+    private async manageImages() {
+        await this.$dialog(ManageImagesDialog).show(this.data);
     }
 
     private async onRenewVip() {

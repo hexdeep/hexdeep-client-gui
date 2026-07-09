@@ -92,6 +92,14 @@ export interface ImageInfo {
     model?: string; // 适用机型，CSV如"H1-1,H1-2"，空表示通用
 }
 
+export interface DockerImageUsageInfo {
+    id: string; // 镜像ID
+    tags: string[]; // RepoTags，可能为空（悬空镜像）
+    size: number; // 字节
+    created_at: string;
+    usage_count: number; // 正在使用该镜像的云机数量，0表示可删除
+}
+
 export interface SDKImageInfo {
     version: string;
     address: string;
