@@ -3,7 +3,7 @@ import { ErrorProxy } from "@/lib/error_handle";
 import { VNode } from "vue";
 import { deviceApi } from "@/api/device_api";
 import { i18n } from "@/i18n/i18n";
-import { HostInfo, DockerImageUsageInfo } from "@/api/device_define";
+import { HostInfo, DockerImageUsageInfo, ImageInfo } from "@/api/device_define";
 import { Column, Row } from "@/lib/container";
 import { MyButton } from "@/lib/my_button";
 import { Tools } from "@/common/common";
@@ -20,11 +20,14 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
     protected images: DockerImageUsageInfo[] = [];
     protected selectedIds: string[] = [];
     protected loading: boolean = false;
+    // 镜像地址 -> 名称，来自 /image_api/get（云机可用镜像目录），用于把地址翻译成可读名称
+    protected imageNameMap: Record<string, string> = {};
 
     public override async show(data: HostInfo) {
         this.title = this.$t("vmDetail.manageImagesTitle").toString();
         this.data = data;
         this.loadImages();
+        this.loadImageNames();
         return super.show(data);
     }
 
@@ -36,6 +39,18 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
             this.$message.error(`${e}`);
         } finally {
             this.loading = false;
+        }
+    }
+
+    private async loadImageNames() {
+        try {
+            const catalog: ImageInfo[] = await deviceApi.getImages(this.data.address);
+            const map: Record<string, string> = {};
+            catalog.forEach(img => { map[img.address] = img.name; });
+            this.imageNameMap = map;
+        } catch (e) {
+            // 翻译只是锦上添花，取不到名称目录时保留显示原始地址即可
+            console.warn(e);
         }
     }
 
@@ -56,7 +71,10 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
     }
 
     private formatName(img: DockerImageUsageInfo): string {
-        if (img.tags && img.tags.length > 0) return img.tags.join(", ");
+        if (img.tags && img.tags.length > 0) {
+            const names = img.tags.map(tag => this.imageNameMap[tag] ?? tag);
+            return names.join(", ");
+        }
         return img.id.replace(/^sha256:/, "").slice(0, 12);
     }
 
