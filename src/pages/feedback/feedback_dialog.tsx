@@ -1,10 +1,14 @@
 import { deviceApi } from "@/api/device_api";
 import { HostInfo } from "@/api/device_define";
 import { feedbackApi } from "@/api/feedback_api";
+import { Config } from "@/common/Config";
 import { i18n } from "@/i18n/i18n";
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
 import { ErrorProxy } from "@/lib/error_handle";
+import { MyButton } from "@/lib/my_button";
 import { VNode } from "vue";
+import { FeedbackHistoryDialog } from "./feedback_history_dialog";
+import { feedbackStorage } from "./feedback_storage";
 import s from './feedback_dialog.module.less';
 
 @Dialog
@@ -47,11 +51,20 @@ export class FeedbackDialog extends CommonDialog<void, void> {
                     this.$set(h, 'remark', remark);
                 }).catch(() => { });
             });
+            // 默认勾选当前前端直连的主机（即 super_sdk 所在机器），减少最常见场景下的手动选择
+            const current = this.hosts.find(h => h.address === Config.host);
+            if (current && this.selectedMachines.length === 0) {
+                this.selectedMachines = [current.address];
+            }
         } catch (error) {
             console.warn(error);
         } finally {
             this.hostsLoading = false;
         }
+    }
+
+    private openHistory() {
+        this.$dialog(FeedbackHistoryDialog).show();
     }
 
     private formatHostLabel(host: HostInfo): string {
@@ -69,12 +82,13 @@ export class FeedbackDialog extends CommonDialog<void, void> {
     @ErrorProxy({ success: i18n.t("feedback.success"), validatForm: "formRef", loading: i18n.t("loading") })
     protected override async onConfirm() {
         const machines = this.hosts.filter(h => this.selectedMachines.includes(h.address));
-        await feedbackApi.submit({
+        const uuid = await feedbackApi.submit({
             description: this.item.description,
             machines,
             sendLog: this.item.sendLog,
             files: this.attachments,
         });
+        feedbackStorage.add(uuid);
         this.close();
     }
 
@@ -124,6 +138,24 @@ export class FeedbackDialog extends CommonDialog<void, void> {
             }
         }
         if (files.length) this.addFiles(files);
+    }
+
+    protected override renderHeader(): any {
+        return (
+            <div class="dialog-header">
+                <div class="dialog-title">{this.title}</div>
+                <div class={s.headerActions}>
+                    <MyButton
+                        text={this.$t("feedback.historyButton").toString()}
+                        size="mini"
+                        color="#fff"
+                        bgColor="rgba(255, 255, 255, 0.18)"
+                        onClick={this.openHistory}
+                    />
+                    <div class="dialog-close el-icon-close" onClick={() => this.close()} />
+                </div>
+            </div>
+        );
     }
 
     protected renderDialog(): VNode {

@@ -544,6 +544,16 @@
         "attachment": "Images or Files",
         "attachmentTip": "Click + or paste (Ctrl+V) to add images/files",
         "sendLog": "Send Logs",
-        "success": "Feedback submitted successfully, thank you!"
+        "success": "Feedback submitted successfully, thank you!",
+        "historyButton": "My Feedback",
+        "historyTitle": "My Feedback",
+        "historyEmpty": "No feedback history yet",
+        "historySyncing": "Syncing latest status...",
+        "back": "Back",
+        "yes": "Yes",
+        "no": "No",
+        "reply": "Reply",
+        "noReply": "No reply yet",
+        "createdAt": "Submitted At"
     }
 }

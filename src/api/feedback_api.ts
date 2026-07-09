@@ -2,7 +2,7 @@ import { HostInfo } from "@/api/device_define";
 import { makeHostVmApiUrl, makeVmApiUrl } from "@/common/common";
 import { Config } from "@/common/Config";
 import { ApiBase } from "./api_base";
-import { FeedbackSubmitParam } from "./feedback_define";
+import { FeedbackPublicItem, FeedbackSubmitParam } from "./feedback_define";
 
 // 硬编码路径：host_server 部署在 /usr/bin/host_server，日志相对可执行文件目录；
 // super_sdk 容器固定把日志写到挂载进容器的 /st/log/log.txt；
@@ -24,7 +24,8 @@ class FeedbackApi extends ApiBase {
         return await this.handleError(result) ?? [];
     }
 
-    public async submit(param: FeedbackSubmitParam): Promise<void> {
+    /** @returns 服务端生成的 uuid，用于本地缓存以便日后在“我的反馈”里查询处理进度 */
+    public async submit(param: FeedbackSubmitParam): Promise<string> {
         const formData = new FormData();
         formData.append("description", param.description);
         formData.append("machines", param.machines.map(m => m.device_id || m.address).join(","));
@@ -39,7 +40,17 @@ class FeedbackApi extends ApiBase {
             method: "POST",
             body: formData,
         });
-        return await this.handleError(result);
+        const data = await this.handleError(result);
+        return data.uuid;
+    }
+
+    /** 按 uuid 批量查询反馈处理进度，用于“我的反馈”列表，不需要登录 */
+    public async queryByUuid(uuids: string[]): Promise<FeedbackPublicItem[]> {
+        if (uuids.isEmpty) return [];
+        const url = new URL(`${HEXDEEP_SERVER_BASE}/feedback/query_by_uuid`);
+        url.searchParams.set("uuids", uuids.join(","));
+        const result = await fetch(url.toString());
+        return (await this.handleError(result)) ?? [];
     }
 
     /**

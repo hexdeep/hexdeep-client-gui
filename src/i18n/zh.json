@@ -548,6 +548,16 @@
         "attachment": "图片或文件",
         "attachmentTip": "点击 + 或粘贴(Ctrl+V)添加图片/文件",
         "sendLog": "发送日志",
-        "success": "反馈提交成功，感谢您的反馈！"
+        "success": "反馈提交成功，感谢您的反馈！",
+        "historyButton": "我的反馈",
+        "historyTitle": "我的反馈",
+        "historyEmpty": "暂无反馈记录",
+        "historySyncing": "正在同步最新状态...",
+        "back": "返回",
+        "yes": "是",
+        "no": "否",
+        "reply": "回复",
+        "noReply": "暂无回复",
+        "createdAt": "提交时间"
     }
 }
