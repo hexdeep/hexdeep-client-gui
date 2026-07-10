@@ -509,6 +509,11 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    public async haltHost(ip: string) {
+        const result = await fetch(makeHostVmApiUrl("entry/halt", ip));
+        return await this.handleError(result);
+    }
+
     public async checkFirmware(ip: string): Promise<boolean> {
         const result = await fetch(makeHostVmApiUrl("entry/check_firmware", ip));
         return await this.handleError(result);

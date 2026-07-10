@@ -269,6 +269,15 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                             type="primary"
                             size="small"
                             style={{ whiteSpace: "nowrap" }}
+                            onClick={this.haltHost}
+                        >
+                            {this.$t("vmDetail.haltHost")}
+                        </MyButton>
+
+                        <MyButton
+                            type="primary"
+                            size="small"
+                            style={{ whiteSpace: "nowrap" }}
                             onClick={this.resetHost}
                         >
                             {this.$t("vmDetail.resetHost")}
@@ -305,6 +314,11 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     @ErrorProxy({ confirm: i18n.t("vmDetail.rebootHostConfirm"), success: i18n.t("vmDetail.rebootHostSuccess"), loading: i18n.t("loading") })
     private async rebootHost() {
         await deviceApi.rebootHost(this.data.address);
+    }
+
+    @ErrorProxy({ confirm: i18n.t("vmDetail.haltHostConfirm"), success: i18n.t("vmDetail.haltHostSuccess"), loading: i18n.t("loading") })
+    private async haltHost() {
+        await deviceApi.haltHost(this.data.address);
     }
 
 
