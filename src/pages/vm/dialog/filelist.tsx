@@ -128,7 +128,7 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
     private renderBreadcrumb() {
         if (this.isEditingPath) {
             return (
-                <Row gap={10} crossAlign="center" style={{ flex: 1 }}>
+                <Row gap={10} crossAlign="center">
                     <el-input
                         size="small"
                         v-model={this.editingPathValue}
@@ -146,8 +146,8 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
         const breadcrumb = this.currentDir.substring(1).split("/").filter(item => item);
         let path = "";
         return (
-            <Row crossAlign="center" gap={5} style={{ flex: 1 }}>
-                <Row style={{ flex: 1 }}>
+            <Row crossAlign="center" gap={5}>
+                <Row>
                     <TextButton onClick={() => this.goto("/")}>root</TextButton>/
                     {breadcrumb.map(item => {
                         let p = path = path + `/${item}`;
@@ -189,7 +189,7 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
             <Column gap={10} style={{ margin: 0, padding: "10px", backgroundColor: "#fff" }}>
                 <Row crossAlign="center" height={"40px"} padding="10px" gap={10} >
                     {this.renderBreadcrumb()}
-                    <MyButton text={this.$t("upload.upload")} onClick={this.selectFile} />
+                    <MyButton class="ms-auto" text={this.$t("upload.upload")} onClick={this.selectFile} />
                     <MyButton text={this.$t("upload.refresh")} onClick={this.ls} />
                 </Row>
                 <el-table empty-text=" " v-loading={this.isLoading} data={this.files} style="width: 100%" height="100%">
