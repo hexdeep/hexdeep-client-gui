@@ -242,7 +242,10 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                                     if (!e) {
                                         return <span>{row.image_addr}</span>;
                                     }
-                                    const download = row.image_digest === e.id;
+                                    // 临时修复：跨主机合并镜像列表时 e.id 可能被未拉取该镜像的主机记录覆盖为 ""，
+                                    // 此时无法判断真实下载状态，暂按"已是最新"处理，避免误报叉号。
+                                    // 根因见 /root/vm_image_cross_investigation.md，需要按 host 隔离镜像列表后移除。
+                                    const download = e.id === "" || row.image_digest === e.id;
                                     return <div>
                                         {e.android_version && <span
                                             style={{
