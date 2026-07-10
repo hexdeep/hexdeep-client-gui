@@ -180,7 +180,7 @@ export class FeedbackHistoryDialog extends CommonDialog<void, void> {
         return (
             <div class={s.detail}>
                 <div class={s.detailRow}>
-                    <div class={s.detailLabel}>UUID</div>
+                    <div class={s.detailLabel}>{this.$t("feedback.ticketId")}</div>
                     <div class={s.uuidRow}>
                         <el-input value={item.uuid} readonly />
                         <el-button icon="el-icon-document-copy" onClick={() => this.copyUuid(item.uuid)}>
