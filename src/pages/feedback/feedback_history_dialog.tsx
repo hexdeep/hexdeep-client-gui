@@ -14,6 +14,8 @@ export class FeedbackHistoryDialog extends CommonDialog<void, void> {
     private items: FeedbackPublicItem[] = [];
     private loading = false;
     private selected: FeedbackPublicItem | null = null;
+    private searchUuid = "";
+    private searching = false;
 
     public override async show() {
         this.title = this.$t("feedback.historyTitle").toString();
@@ -34,6 +36,25 @@ export class FeedbackHistoryDialog extends CommonDialog<void, void> {
             console.warn(error);
         } finally {
             this.loading = false;
+        }
+    }
+
+    // 支持凭 uuid 直接查找反馈（例如用户在别的设备提交、只保留了提交成功弹窗里的 uuid）
+    private async searchByUuid() {
+        const uuid = this.searchUuid.trim();
+        if (!uuid) return;
+        this.searching = true;
+        try {
+            const result = await feedbackApi.queryByUuid([uuid]);
+            if (result.length === 0) {
+                this.$message.warning(this.$t("feedback.searchUuidNotFound").toString());
+                return;
+            }
+            this.selected = result[0];
+        } catch (error) {
+            console.warn(error);
+        } finally {
+            this.searching = false;
         }
     }
 
@@ -60,12 +81,39 @@ export class FeedbackHistoryDialog extends CommonDialog<void, void> {
         );
     }
 
+    private renderSearchBar(): VNode {
+        return (
+            <div class={s.searchBar}>
+                <el-input
+                    v-model={this.searchUuid}
+                    placeholder={this.$t("feedback.searchUuidPlaceholder").toString()}
+                    clearable
+                    onKeyup={(e: KeyboardEvent) => { if (e.key === "Enter") this.searchByUuid(); }}
+                />
+                <el-button
+                    type="primary"
+                    icon="el-icon-search"
+                    loading={this.searching}
+                    onClick={() => this.searchByUuid()}
+                >
+                    {this.$t("feedback.searchUuidButton")}
+                </el-button>
+            </div>
+        );
+    }
+
     private renderList(): VNode {
         if (this.historyEntries.length === 0) {
-            return <div class={s.empty}>{this.$t("feedback.historyEmpty")}</div>;
+            return (
+                <div>
+                    {this.renderSearchBar()}
+                    <div class={s.empty}>{this.$t("feedback.historyEmpty")}</div>
+                </div>
+            );
         }
         return (
             <div>
+                {this.renderSearchBar()}
                 {this.loading && <div class={s.syncing}>{this.$t("feedback.historySyncing")}</div>}
                 <div class={s.list}>
                     {this.historyEntries.map(entry => {
@@ -116,6 +164,10 @@ export class FeedbackHistoryDialog extends CommonDialog<void, void> {
     }
 
     protected renderDialog(): VNode {
-        return this.selected ? this.renderDetail(this.selected) : this.renderList();
+        return (
+            <div class={s.dialogBody}>
+                {this.selected ? this.renderDetail(this.selected) : this.renderList()}
+            </div>
+        );
     }
 }

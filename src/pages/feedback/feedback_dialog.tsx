@@ -8,6 +8,7 @@ import { ErrorProxy } from "@/lib/error_handle";
 import { MyButton } from "@/lib/my_button";
 import { VNode } from "vue";
 import { FeedbackHistoryDialog } from "./feedback_history_dialog";
+import { FeedbackSuccessDialog } from "./feedback_success_dialog";
 import { feedbackStorage } from "./feedback_storage";
 import s from './feedback_dialog.module.less';
 
@@ -79,7 +80,7 @@ export class FeedbackDialog extends CommonDialog<void, void> {
         };
     }
 
-    @ErrorProxy({ success: i18n.t("feedback.success"), validatForm: "formRef", loading: i18n.t("loading") })
+    @ErrorProxy({ validatForm: "formRef", loading: i18n.t("loading") })
     protected override async onConfirm() {
         const machines = this.hosts.filter(h => this.selectedMachines.includes(h.address));
         const uuid = await feedbackApi.submit({
@@ -89,6 +90,8 @@ export class FeedbackDialog extends CommonDialog<void, void> {
             files: this.attachments,
         });
         feedbackStorage.add(uuid);
+        // 提交成功后展示可复制的 uuid，方便用户日后在“我的反馈”里凭 uuid 找回该条反馈
+        await this.$dialog(FeedbackSuccessDialog).show(uuid);
         this.close();
     }
 

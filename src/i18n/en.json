@@ -554,6 +554,13 @@
         "no": "No",
         "reply": "Reply",
         "noReply": "No reply yet",
-        "createdAt": "Submitted At"
+        "createdAt": "Submitted At",
+        "successTitle": "Submitted",
+        "successHint": "Please keep the feedback ID below — you can use it to check progress in \"My Feedback\"",
+        "copy": "Copy",
+        "copySuccess": "Copied to clipboard",
+        "searchUuidPlaceholder": "Enter a feedback ID to search",
+        "searchUuidButton": "Search",
+        "searchUuidNotFound": "No matching feedback found"
     }
 }
