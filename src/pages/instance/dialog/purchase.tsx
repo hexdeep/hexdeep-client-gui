@@ -75,9 +75,6 @@ export class PurchaseDialog extends CommonDialog<PurchaseInfo, boolean> {
     protected renderDialog(): VNode {
         return (
             <Column gap={20} style={{ padding: "20px" }} class={s.PurchaseDialog}>
-                <div style={{ fontSize: "12px", padding: "6px 20px 4px", lineHeight: "1.5" }} class="text-gray-600">
-                    切换云机存储后，需要重新下载镜像，导致服务器流量成本增加，实例位费目前绑定nvme序列号。
-                </div>
                 <el-card class="box-card">
                     <div slot="header" class="clearfix">
                         <span>{this.$t("instance.selectPackage")}</span>
