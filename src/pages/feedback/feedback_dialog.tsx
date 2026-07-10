@@ -90,9 +90,11 @@ export class FeedbackDialog extends CommonDialog<void, void> {
             files: this.attachments,
         });
         feedbackStorage.add(uuid);
-        // 提交成功后展示可复制的 uuid，方便用户日后在“我的反馈”里凭 uuid 找回该条反馈
-        await this.$dialog(FeedbackSuccessDialog).show(uuid);
         this.close();
+        // 提交成功后展示可复制的 uuid，方便用户日后在“我的反馈”里凭 uuid 找回该条反馈。
+        // 不能 await：@ErrorProxy 的全屏 loading 要等 onConfirm 返回才关闭，
+        // await 会让 loading 盖住成功弹窗且永远无法结束
+        this.$dialog(FeedbackSuccessDialog).show(uuid);
     }
 
     private isImage(file: File): boolean {
