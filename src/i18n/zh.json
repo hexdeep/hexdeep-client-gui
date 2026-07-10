@@ -565,6 +565,9 @@
         "copySuccess": "已复制到剪贴板",
         "searchUuidPlaceholder": "输入反馈编号查找",
         "searchUuidButton": "查找",
-        "searchUuidNotFound": "未找到对应的反馈记录"
+        "searchUuidNotFound": "未找到对应的反馈记录",
+        "searchUuidSaveButton": "存到我的反馈",
+        "searchUuidSaved": "已存到我的反馈",
+        "searchUuidAlreadySaved": "该反馈已在我的反馈列表中"
     }
 }

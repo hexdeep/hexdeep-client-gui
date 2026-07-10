@@ -10,6 +10,7 @@ export interface FeedbackHistoryEntry {
 export const feedbackStorage = {
     add(uuid: string) {
         const list = feedbackStorage.getAll();
+        if (list.some(e => e.uuid === uuid)) return;
         list.unshift({ uuid, createdAt: Date.now() });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     },

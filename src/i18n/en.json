@@ -561,6 +561,9 @@
         "copySuccess": "Copied to clipboard",
         "searchUuidPlaceholder": "Enter a feedback ID to search",
         "searchUuidButton": "Search",
-        "searchUuidNotFound": "No matching feedback found"
+        "searchUuidNotFound": "No matching feedback found",
+        "searchUuidSaveButton": "Save to My Feedback",
+        "searchUuidSaved": "Saved to My Feedback",
+        "searchUuidAlreadySaved": "This feedback is already in My Feedback"
     }
 }

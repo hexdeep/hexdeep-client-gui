@@ -58,6 +58,33 @@ export class FeedbackHistoryDialog extends CommonDialog<void, void> {
         }
     }
 
+    // 把手动输入的 uuid 存进本地历史，方便下次打开时不用再手动查找
+    // （例如用户在另一台设备提交、把 uuid 记在别处后想同步回本机）
+    private async saveSearchedUuid() {
+        const uuid = this.searchUuid.trim();
+        if (!uuid) return;
+        if (this.historyEntries.some(e => e.uuid === uuid)) {
+            this.$message.warning(this.$t("feedback.searchUuidAlreadySaved").toString());
+            return;
+        }
+        this.searching = true;
+        try {
+            const result = await feedbackApi.queryByUuid([uuid]);
+            if (result.length === 0) {
+                this.$message.warning(this.$t("feedback.searchUuidNotFound").toString());
+                return;
+            }
+            feedbackStorage.add(uuid);
+            this.historyEntries = feedbackStorage.getAll();
+            this.items.push(result[0]);
+            this.$message.success(this.$t("feedback.searchUuidSaved").toString());
+        } catch (error) {
+            console.warn(error);
+        } finally {
+            this.searching = false;
+        }
+    }
+
     private truncate(text: string): string {
         return text.length > 36 ? text.slice(0, 36) + "…" : text;
     }
@@ -97,6 +124,13 @@ export class FeedbackHistoryDialog extends CommonDialog<void, void> {
                     onClick={() => this.searchByUuid()}
                 >
                     {this.$t("feedback.searchUuidButton")}
+                </el-button>
+                <el-button
+                    icon="el-icon-plus"
+                    loading={this.searching}
+                    onClick={() => this.saveSearchedUuid()}
+                >
+                    {this.$t("feedback.searchUuidSaveButton")}
                 </el-button>
             </div>
         );
