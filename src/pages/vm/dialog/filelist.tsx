@@ -17,6 +17,8 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
     private isLoading: boolean = false;
     private currentDir = "/sdcard";
     private deviceInfo!: DeviceInfo;
+    private isEditingPath: boolean = false;
+    private editingPathValue: string = "";
 
     @Watch("currentDir")
     private async ls() {
@@ -78,6 +80,45 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
         this.currentDir = dir;
     }
 
+    private downloadFile(path: string) {
+        const url = makeMacvlanVmApiUrl("and_api/down_file", this.deviceInfo.android_sdk) + `?path=${path}`;
+        const filename = path.substring(path.lastIndexOf("/") + 1) || path;
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    private startEditPath() {
+        this.editingPathValue = this.currentDir;
+        this.isEditingPath = true;
+    }
+
+    private cancelEditPath() {
+        this.isEditingPath = false;
+    }
+
+    private async confirmEditPath() {
+        let path = this.editingPathValue.trim();
+        if (!path) return;
+        if (!path.startsWith("/")) path = "/" + path;
+        if (path !== "/") path = path.replace(/\/+$/, "");
+        this.isEditingPath = false;
+
+        try {
+            const files = await deviceApi.getFilelistMacvlan(this.deviceInfo.android_sdk, path);
+            if (files && Array.isArray(files)) {
+                this.goto(path);
+                return;
+            }
+        } catch (error) {
+            // 不是目录（或不存在），当作文件尝试下载
+        }
+        this.downloadFile(path);
+    }
+
     // @ErrorProxy({ success: i18n.t("success") })
     // private async download(row: FilelistInfo) {
     //     const url = makeVmApiUrl("and_api/down_file", this.data.hostIp, this.data.name) + `?path=${row.file}`;
@@ -85,15 +126,35 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
     // }
 
     private renderBreadcrumb() {
+        if (this.isEditingPath) {
+            return (
+                <Row gap={10} crossAlign="center" style={{ flex: 1 }}>
+                    <el-input
+                        size="small"
+                        v-model={this.editingPathValue}
+                        nativeOnKeyup={(e: KeyboardEvent) => {
+                            if (e.key === "Enter") this.confirmEditPath();
+                            else if (e.key === "Escape") this.cancelEditPath();
+                        }}
+                    />
+                    <i class="el-icon-check" style={{ cursor: "pointer" }} onClick={() => this.confirmEditPath()} />
+                    <i class="el-icon-close" style={{ cursor: "pointer" }} onClick={() => this.cancelEditPath()} />
+                </Row>
+            );
+        }
+
         const breadcrumb = this.currentDir.substring(1).split("/").filter(item => item);
         let path = "";
         return (
-            <Row style={{ flex: 1 }}>
-                <TextButton onClick={() => this.goto("/")}>root</TextButton>/
-                {breadcrumb.map(item => {
-                    let p = path = path + `/${item}`;
-                    return <TextButton title={p} onClick={() => this.goto(p)}>{item}</TextButton>;
-                }).joinElement("/")}
+            <Row crossAlign="center" gap={5} style={{ flex: 1 }}>
+                <Row style={{ flex: 1 }}>
+                    <TextButton onClick={() => this.goto("/")}>root</TextButton>/
+                    {breadcrumb.map(item => {
+                        let p = path = path + `/${item}`;
+                        return <TextButton title={p} onClick={() => this.goto(p)}>{item}</TextButton>;
+                    }).joinElement("/")}
+                </Row>
+                <i class="el-icon-edit-outline" style={{ cursor: "pointer" }} onClick={() => this.startEditPath()} />
             </Row>
         );
     }

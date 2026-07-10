@@ -155,7 +155,7 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
                             default: ({ row }: { row: DockerImageUsageInfo; }) => {
                                 const name = this.formatName(row);
                                 return (
-                                    <el-tooltip effect="dark" content={name} placement="top" disabled={name.length <= 30}>
+                                    <el-tooltip effect="dark" content={name} placement="top" open-delay={2000} disabled={name.length <= 30}>
                                         <div class="truncate">{name}</div>
                                     </el-tooltip>
                                 );
