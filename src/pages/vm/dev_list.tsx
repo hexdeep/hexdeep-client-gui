@@ -10,6 +10,7 @@ import { ElTable } from 'element-ui/types/table';
 import { Component, InjectReactive, Prop, Ref, Watch } from 'vue-property-decorator';
 import * as tsx from 'vue-tsx-support';
 import s from './dev_list.module.less';
+import { AdbShellDialog } from './dialog/adb_shell';
 import { CloneVmDialog } from './dialog/clone_vm';
 import { ExportModelDialog } from './dialog/export_model';
 import { ImportModelDialog } from './dialog/import_model';
@@ -282,7 +283,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                                     const displayIp = (name.length > 12 && ipParts.length > 1) ? ipParts[1] : ipFragment;
 
                                     return <Column key={`parent_${e.key}`} class={[s.img_box, e.state == "running" ? s.running : s.no_run]}>
-                                        <div style="position: relative; display: inline-block; padding: 0;">
+                                        <div style="position: relative; display: inline-block; padding: 0;" nativeOnDblclick={() => this.openAdbShell(e)}>
                                             <Screenshot data-key={e.key} key={e.key} device={e} />
                                             {e.state !== 'running' &&
                                                 <div class={s.power_overlay}>
@@ -554,6 +555,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
     private async hostDetails(data: DeviceInfo) {
         await this.$dialog(VmDetailDialog).show(data);
+    }
+
+    // 隐藏功能：预览图连续双击弹出交互式 adb shell 终端，仅在云机运行中生效
+    private openAdbShell(data: DeviceInfo) {
+        if (data.state !== 'running') return;
+        this.$dialog(AdbShellDialog).show(data);
     }
 
     private async showVipDialog() {
