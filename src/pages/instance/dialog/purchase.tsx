@@ -38,6 +38,9 @@ export class PurchaseDialog extends CommonDialog<PurchaseInfo, boolean> {
                 <div style={{ fontSize: "12px", padding: "6px 20px 4px", lineHeight: "1.5" }} class="text-gray-600">
                     注：用户需理解本服务为虚拟商品，购买成功后，不支持退款。
                 </div>
+                <div style={{ fontSize: "12px", padding: "6px 20px 4px", lineHeight: "1.5" }} class="text-gray-600">
+                    切换云机存储后，需要重新下载镜像，导致服务器流量成本增加，实例位费目前绑定nvme序列号。
+                </div>
                 <Row class={s.footer} crossAlign="center" mainAlign="space-between">
                     <span>{this.$t("instance.total")}</span>
                     <span class={s.calc}>{this.$t("instance.calc", {
@@ -72,6 +75,9 @@ export class PurchaseDialog extends CommonDialog<PurchaseInfo, boolean> {
     protected renderDialog(): VNode {
         return (
             <Column gap={20} style={{ padding: "20px" }} class={s.PurchaseDialog}>
+                <div style={{ fontSize: "12px", padding: "6px 20px 4px", lineHeight: "1.5" }} class="text-gray-600">
+                    切换云机存储后，需要重新下载镜像，导致服务器流量成本增加，实例位费目前绑定nvme序列号。
+                </div>
                 <el-card class="box-card">
                     <div slot="header" class="clearfix">
                         <span>{this.$t("instance.selectPackage")}</span>
