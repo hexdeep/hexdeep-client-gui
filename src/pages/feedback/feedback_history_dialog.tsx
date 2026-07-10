@@ -1,5 +1,6 @@
 import { feedbackApi } from "@/api/feedback_api";
 import { FeedbackPublicItem } from "@/api/feedback_define";
+import { Tools } from "@/common/common";
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
 import { MyButton } from "@/lib/my_button";
 import { VNode } from "vue";
@@ -93,6 +94,11 @@ export class FeedbackHistoryDialog extends CommonDialog<void, void> {
         this.selected = null;
     }
 
+    private async copyUuid(uuid: string) {
+        await Tools.copyText(uuid);
+        this.$message.success(this.$t("feedback.copySuccess").toString());
+    }
+
     protected override renderFooter(): any {
         if (this.selected) {
             return (
@@ -173,6 +179,15 @@ export class FeedbackHistoryDialog extends CommonDialog<void, void> {
     private renderDetail(item: FeedbackPublicItem): VNode {
         return (
             <div class={s.detail}>
+                <div class={s.detailRow}>
+                    <div class={s.detailLabel}>UUID</div>
+                    <div class={s.uuidRow}>
+                        <el-input value={item.uuid} readonly />
+                        <el-button icon="el-icon-document-copy" onClick={() => this.copyUuid(item.uuid)}>
+                            {this.$t("feedback.copy")}
+                        </el-button>
+                    </div>
+                </div>
                 <div class={s.detailRow}>
                     <div class={s.detailLabel}>{this.$t("feedback.description")}</div>
                     <div class={s.detailValue}>{item.description}</div>
