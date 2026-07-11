@@ -37,6 +37,7 @@ export class AdbShellDialog extends CommonDialog<DeviceInfo, void> {
             cursorBlink: true,
             convertEol: true,
             fontSize: 13,
+            scrollback: 10000,
             theme: { background: "#1e1e1e" },
         });
         const fitAddon = new FitAddon();
