@@ -43,6 +43,7 @@ export class AdbShellDialog extends CommonDialog<DeviceInfo, void> {
         term.loadAddon(fitAddon);
         term.open(this.termRef);
         fitAddon.fit();
+        term.focus();
         this.term = term;
         this.fitAddon = fitAddon;
 
