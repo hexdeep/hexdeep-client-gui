@@ -58,14 +58,25 @@ export class AdbShellDialog extends CommonDialog<DeviceInfo, void> {
         this.resizeObserver = new ResizeObserver(() => this.fitAddon?.fit());
         this.resizeObserver.observe(this.termRef);
 
+        // 除非窗口被显式关闭，否则终端始终保持 focus，点击弹窗内外其他地方都不应打断输入
+        document.addEventListener("focusin", this.keepFocus);
+
         this.connect();
     }
 
     protected beforeDestroy() {
+        document.removeEventListener("focusin", this.keepFocus);
         this.resizeObserver?.disconnect();
         this.ws?.close();
         this.term?.dispose();
     }
+
+    private keepFocus = (e: FocusEvent) => {
+        const target = e.target as Node | null;
+        if (target && !this.termRef?.contains(target)) {
+            requestAnimationFrame(() => this.term?.focus());
+        }
+    };
 
     private connect() {
         const url = makeVmWsApiUrl("and_api/shell_ws", this.data.hostIp, this.data.name);
