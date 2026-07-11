@@ -17,7 +17,7 @@ interface ResizeMsg {
 /** 隐藏功能：在预览图上连续双击弹出的交互式 adb shell 终端，对接 super_sdk 的 /and_api/shell_ws */
 @Dialog
 export class AdbShellDialog extends CommonDialog<DeviceInfo, void> {
-    public override width = "820px";
+    public override width = "1100px";
     public override height = "560px";
 
     @Ref() private termRef!: HTMLDivElement;
