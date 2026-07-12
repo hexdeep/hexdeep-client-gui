@@ -58,20 +58,33 @@ export class AdbShellDialog extends CommonDialog<DeviceInfo, void> {
         this.resizeObserver = new ResizeObserver(() => this.fitAddon?.fit());
         this.resizeObserver.observe(this.termRef);
 
-        // 除非窗口被显式关闭，否则终端始终保持 focus，点击弹窗内外其他地方都不应打断输入
-        document.addEventListener("focusin", this.keepFocus);
+        // 除非窗口被显式关闭，否则终端始终保持 focus，点击弹窗内外其他地方都不应打断输入。
+        // 注意：点击一个不可获焦的元素（如 dialog 遮罩）时，浏览器会在 mousedown 阶段直接把
+        // 当前 focus 元素 blur 掉，且不会有任何元素获得 focus，因此 focusin 事件根本不会触发，
+        // 必须在 mousedown 阶段 preventDefault 来阻止这次默认的 blur 行为。
+        document.addEventListener("mousedown", this.keepFocus, true);
+        document.addEventListener("focusin", this.keepFocus2);
 
         this.connect();
     }
 
     protected beforeDestroy() {
-        document.removeEventListener("focusin", this.keepFocus);
+        document.removeEventListener("mousedown", this.keepFocus, true);
+        document.removeEventListener("focusin", this.keepFocus2);
         this.resizeObserver?.disconnect();
         this.ws?.close();
         this.term?.dispose();
     }
 
-    private keepFocus = (e: FocusEvent) => {
+    private keepFocus = (e: MouseEvent) => {
+        const target = e.target as Node | null;
+        if (target && !this.termRef?.contains(target)) {
+            e.preventDefault();
+            this.term?.focus();
+        }
+    };
+
+    private keepFocus2 = (e: FocusEvent) => {
         const target = e.target as Node | null;
         if (target && !this.termRef?.contains(target)) {
             requestAnimationFrame(() => this.term?.focus());
