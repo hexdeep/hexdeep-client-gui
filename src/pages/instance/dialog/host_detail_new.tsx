@@ -269,9 +269,9 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                             type="primary"
                             size="small"
                             style={{ whiteSpace: "nowrap" }}
-                            onClick={this.haltHost}
+                            onClick={this.shutdownHost}
                         >
-                            {this.$t("vmDetail.haltHost")}
+                            {this.$t("vmDetail.shutdownHost")}
                         </MyButton>
 
                         <MyButton
@@ -316,9 +316,9 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         await deviceApi.rebootHost(this.data.address);
     }
 
-    @ErrorProxy({ confirm: i18n.t("vmDetail.haltHostConfirm"), success: i18n.t("vmDetail.haltHostSuccess"), loading: i18n.t("loading") })
-    private async haltHost() {
-        await deviceApi.haltHost(this.data.address);
+    @ErrorProxy({ confirm: i18n.t("vmDetail.shutdownHostConfirm"), success: i18n.t("vmDetail.shutdownHostSuccess"), loading: i18n.t("loading") })
+    private async shutdownHost() {
+        await deviceApi.shutdownHost(this.data.address);
     }
 
 
