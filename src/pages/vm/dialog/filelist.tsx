@@ -137,6 +137,7 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
                     <el-input
                         ref="pathInputRef"
                         size="small"
+                        style={{ width: "400px" }}
                         v-model={this.editingPathValue}
                         nativeOnKeyup={(e: KeyboardEvent) => {
                             if (e.key === "Enter") this.confirmEditPath();
