@@ -1,11 +1,13 @@
 import { DeviceInfo } from "@/api/device_define";
 import { getSuffixName, makeVmWsApiUrl } from "@/common/common";
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
+import { MyButton } from "@/lib/my_button";
 import { FitAddon } from "@xterm/addon-fit";
 import { Terminal } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
 import { VNode } from "vue";
 import { Ref } from "vue-property-decorator";
+import { FilelistDialog } from "./filelist";
 
 /** 前端发往后端的 resize 控制帧，与 super_sdk adb_handler.go 的 resizeMsg 对应 */
 interface ResizeMsg {
@@ -58,38 +60,18 @@ export class AdbShellDialog extends CommonDialog<DeviceInfo, void> {
         this.resizeObserver = new ResizeObserver(() => this.fitAddon?.fit());
         this.resizeObserver.observe(this.termRef);
 
-        // 除非窗口被显式关闭，否则终端始终保持 focus，点击弹窗内外其他地方都不应打断输入。
-        // 注意：点击一个不可获焦的元素（如 dialog 遮罩）时，浏览器会在 mousedown 阶段直接把
-        // 当前 focus 元素 blur 掉，且不会有任何元素获得 focus，因此 focusin 事件根本不会触发，
-        // 必须在 mousedown 阶段 preventDefault 来阻止这次默认的 blur 行为。
-        document.addEventListener("mousedown", this.keepFocus, true);
-        document.addEventListener("focusin", this.keepFocus2);
-
         this.connect();
     }
 
     protected beforeDestroy() {
-        document.removeEventListener("mousedown", this.keepFocus, true);
-        document.removeEventListener("focusin", this.keepFocus2);
         this.resizeObserver?.disconnect();
         this.ws?.close();
         this.term?.dispose();
     }
 
-    private keepFocus = (e: MouseEvent) => {
-        const target = e.target as Node | null;
-        if (target && !this.termRef?.contains(target)) {
-            e.preventDefault();
-            this.term?.focus();
-        }
-    };
-
-    private keepFocus2 = (e: FocusEvent) => {
-        const target = e.target as Node | null;
-        if (target && !this.termRef?.contains(target)) {
-            requestAnimationFrame(() => this.term?.focus());
-        }
-    };
+    private openFilelist() {
+        this.$dialog(FilelistDialog).show(this.data);
+    }
 
     private connect() {
         const url = makeVmWsApiUrl("and_api/shell_ws", this.data.hostIp, this.data.name);
@@ -120,6 +102,16 @@ export class AdbShellDialog extends CommonDialog<DeviceInfo, void> {
             const msg: ResizeMsg = { type: "resize", cols, rows };
             this.ws.send(JSON.stringify(msg));
         }
+    }
+
+    protected override renderHeader() {
+        return (
+            <div class="dialog-header">
+                <div class="dialog-title">{this.title}</div>
+                <MyButton class="ms-auto" text={this.$t("upload.fileBrowser")} onClick={() => this.openFilelist()} />
+                <div class="dialog-close el-icon-close" style={{ marginLeft: "10px" }} onClick={() => this.close()} />
+            </div>
+        );
     }
 
     protected override renderFooter() {
