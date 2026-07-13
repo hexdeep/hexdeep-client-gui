@@ -8,7 +8,7 @@ import { ErrorProxy } from '@/lib/error_handle';
 import { MyButton, TextButton } from "@/lib/my_button";
 import * as p from "path";
 import { VNode } from "vue";
-import { Watch } from "vue-property-decorator";
+import { Ref, Watch } from "vue-property-decorator";
 
 @Dialog
 export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
@@ -19,6 +19,7 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
     private deviceInfo!: DeviceInfo;
     private isEditingPath: boolean = false;
     private editingPathValue: string = "";
+    @Ref() private pathInputRef?: any;
 
     @Watch("currentDir")
     private async ls() {
@@ -94,6 +95,10 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
     private startEditPath() {
         this.editingPathValue = this.currentDir;
         this.isEditingPath = true;
+        this.$nextTick(() => {
+            this.pathInputRef?.focus();
+            this.pathInputRef?.select();
+        });
     }
 
     private cancelEditPath() {
@@ -130,6 +135,7 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
             return (
                 <Row gap={10} crossAlign="center">
                     <el-input
+                        ref="pathInputRef"
                         size="small"
                         v-model={this.editingPathValue}
                         nativeOnKeyup={(e: KeyboardEvent) => {
@@ -148,7 +154,7 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
         return (
             <Row crossAlign="center" gap={5}>
                 <Row>
-                    <TextButton onClick={() => this.goto("/")}>root</TextButton>/
+                    <TextButton onClick={() => this.goto("/")}>/</TextButton>
                     {breadcrumb.map(item => {
                         let p = path = path + `/${item}`;
                         return <TextButton title={p} onClick={() => this.goto(p)}>{item}</TextButton>;
