@@ -21,6 +21,7 @@ interface ResizeMsg {
 export class AdbShellDialog extends CommonDialog<DeviceInfo, void> {
     public override width = "1100px";
     public override height = "560px";
+    public override allowEscape: boolean = false;
 
     @Ref() private termRef!: HTMLDivElement;
 

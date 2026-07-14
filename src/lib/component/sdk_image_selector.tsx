@@ -39,16 +39,7 @@ export class SDKImageSelector extends tsx.Component<IPorps, {}, {}> {
         return (
             <el-select ref="elSelectRef" filterable value={this.value} style={{ width: "100%" }} onInput={this.onInput}>
                 <el-option label={this.$t("customSdk")} value="[customImage]" />
-                {this.images.map((e) => <el-option key={e.address} label={"[" + e.version + "] " + e.address} value={e.address}>
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <span>[{e.version}] {e.address}</span>
-                        {e.description && <el-tooltip content={e.description} placement="top" disabled={e.description.length < 30}>
-                          <span class="truncate text-sm ms-2">
-                            {e.description}
-                          </span>
-                        </el-tooltip>}
-                    </div>
-                </el-option>)}
+                {this.images.map((e) => <el-option key={e.address} label={"[" + e.version + "]" + (e.description ? " " + e.description : "")} value={e.address} />)}
             </el-select>
         );
     }

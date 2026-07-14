@@ -12,6 +12,7 @@ import { Ref, Watch } from "vue-property-decorator";
 
 @Dialog
 export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
+    public override allowEscape: boolean = false;
     private files: FilelistInfo[] = [];
     private delayShowLoadingTimer: any;
     private isLoading: boolean = false;
