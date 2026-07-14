@@ -104,6 +104,7 @@ export interface SDKImageInfo {
     version: string;
     address: string;
     id: string;
+    description?: string;
     created_at: string;
     updated_at: string;
 }
