@@ -6,9 +6,10 @@ import { ModelSelectotDialog } from '@/lib/component/model_selector';
 import { Column, Row } from '@/lib/container';
 import { ErrorProxy } from '@/lib/error_handle';
 import { TextButton } from '@/lib/my_button';
-import { ElTable } from 'element-ui/types/table';
 import { Component, InjectReactive, Prop, Ref, Watch } from 'vue-property-decorator';
 import * as tsx from 'vue-tsx-support';
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller';
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import s from './dev_list.module.less';
 import { AdbShellDialog } from './dialog/adb_shell';
 import { CloneVmDialog } from './dialog/clone_vm';
@@ -53,6 +54,11 @@ class OverflowTooltip extends tsx.Component<{ content: string }> {
     }
 }
 
+interface GridRow {
+    _key: string;
+    devices: DeviceInfo[];
+}
+
 @Component
 export class DeviceList extends tsx.Component<IProps, IEvents> {
     @InjectReactive() protected hostTree!: MyTreeNode[];
@@ -61,7 +67,15 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     @InjectReactive() private hosts!: HostInfo[];
     @InjectReactive() private config!: MyConfig;
     @InjectReactive() private images!: ImageInfo[];
-    @Ref() private tb!: ElTable;
+    @Ref() private gridContainer?: HTMLDivElement;
+
+    // 网格卡片尺寸需与 dev_list.module.less 中 .v_img/.h_img 的宽度保持一致，用于按容器宽度计算每行可容纳的卡片数
+    private static readonly CARD_WIDTH: Record<string, number> = { vertical: 176 + 2, horizontal: 301 + 2 };
+    private static readonly GRID_GAP = 10;
+
+    private containerWidth = 0;
+    private resizeObserver?: ResizeObserver;
+    private observedEl?: HTMLElement;
 
     private get data2(): DeviceInfo[] {
         var re = this.hostTree.flatMap(x => x.children?.filter(y => {
@@ -71,6 +85,22 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         re = sortDevicesByHostIp(re);
         this.fillGitCommitId(re);
         return re;
+    }
+
+    private get itemsPerRow(): number {
+        if (this.config.view !== 'vertical' && this.config.view !== 'horizontal') return 1;
+        const step = DeviceList.CARD_WIDTH[this.config.view] + DeviceList.GRID_GAP;
+        return Math.max(1, Math.floor((this.containerWidth + DeviceList.GRID_GAP) / step));
+    }
+
+    private get gridRows(): GridRow[] {
+        const n = this.itemsPerRow;
+        const rows: GridRow[] = [];
+        for (let i = 0; i < this.data2.length; i += n) {
+            const devices = this.data2.slice(i, i + n);
+            rows.push({ _key: devices[0]?.key ?? `row-${i}`, devices });
+        }
+        return rows;
     }
 
     // 计算主机IP到颜色索引的映射，同一主机颜色相同，不同主机交替颜色
@@ -92,6 +122,26 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     protected async created() {
     }
 
+    protected mounted() {
+        this.resizeObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                this.containerWidth = entry.contentRect.width;
+            }
+        });
+    }
+
+    protected updated() {
+        if (this.gridContainer && this.observedEl !== this.gridContainer) {
+            this.resizeObserver?.disconnect();
+            this.resizeObserver?.observe(this.gridContainer);
+            this.observedEl = this.gridContainer;
+        }
+    }
+
+    protected beforeDestroy() {
+        this.resizeObserver?.disconnect();
+    }
+
     private async fillGitCommitId(devices: DeviceInfo[]) {
         devices.forEach(async (device) => {
 
@@ -111,59 +161,22 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
 
     public selectAll() {
-        if (this.config.view == "list") {
-            this.tb.toggleAllSelection();
+        if (this.rightChecked.length == this.data2.length) {
+            this.rightChecked.clear();
         } else {
-            if (this.rightChecked.length == this.data2.length) {
-                this.rightChecked.clear();
-            } else {
-                this.rightChecked.clear();
-                this.rightChecked.push(...this.data2.map(e => e.key!));
-            }
+            this.rightChecked.clear();
+            this.rightChecked.push(...this.data2.map(e => e.key!));
         }
         this.$emit("selectChange", this.rightChecked);
     }
 
-    @Watch("config", { deep: true })
-    protected viewChange() {
-        if (this.config.view == "list") {
-            this.toggleRowSelection();
-        }
-    }
-
-    private toggleRowSelection() {
-        if (this.data2.length == 0) {
-            this.rightChecked.clear();
-            this.tb?.clearSelection();
-            return;
-        }
+    @Watch("data2", { deep: true })
+    public selectedDevicesChange() {
         for (let i = this.rightChecked.length - 1; i >= 0; i--) {
             const element = this.rightChecked[i];
             if (this.data2.find(x => x.key == element) == null) {
                 this.rightChecked.splice(i, 1);
             }
-        }
-        var tmp = [...this.rightChecked];
-        this.$nextTick(() => {
-            this.data2.forEach(x => {
-                var t = (tmp.find(y => x.key == y) != null);
-                // console.log("设置选中项", x, t);
-                this.tb?.toggleRowSelection(x, t);
-            });
-        });
-    }
-
-    @Watch("data2", { deep: true })
-    public async selectedDevicesChange() {
-        this.toggleRowSelection();
-    }
-
-
-    private handleSelectionChange(selectedRows: any[]) {
-        if (this.data2.length > 0) {
-            this.rightChecked.clear();
-            this.rightChecked.push(...selectedRows.map(e => e.key));
-            this.$emit("selectChange", this.rightChecked);
         }
     }
 
@@ -173,6 +186,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         } else {
             this.rightChecked.push(e2.key!);
         }
+        this.$emit("selectChange", this.rightChecked);
     }
 
     protected renderStatus(r: DeviceInfo) {
@@ -194,144 +208,182 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     protected render() {
         return (
             <div class={[s.deviceList, "contentBox"]}>
-                <div class={s.table} style={{ display: this.config.view == "list" ? "block" : "none" }}>
-                    <el-table default-expand-all data={this.data2} width="100%" height="100%" row-key="key"
-                        ref="tb" on-selection-change={this.handleSelectionChange} empty-text={this.$t("table.emptyText")}>
-                        <el-table-column type="selection" width="45" reserve-selection={true} />
-                        <el-table-column prop="index" label={"No"} width="40" align="center" />
-                        <el-table-column
-                            prop="name"
-                            label={this.$t("name")}
-                            scopedSlots={{
-                                default: ({ row }: { row: DeviceInfo; }) => {
-                                    const name = getSuffixName(row.name);
-                                    if (name === "开通VIP显示全部") {
-                                        return <OverflowTooltip 
-                                            content={name} 
-                                            style="color: var(--main-color); cursor: pointer; text-decoration: underline;"
-                                            nativeOnClick={() => this.showVipDialog()}
-                                        />;
-                                    }
-                                    return <OverflowTooltip content={name} />;
-                                }
-                            }}
-                        />
-                        {/* <el-table-column prop="ip" label="IP" width="130" formatter={(r) => r.state == "running" ? r.ip : ""} /> */}
-                        {/* <el-table-column prop="imgVer" label={this.$t("systemVersion")} width="120" /> */}
-                        <el-table-column prop="adb" label={this.$t("vmDetail.adb")} width="140" show-overflow-tooltip
-                            scopedSlots={{
-                                default: ({ row }: { row: DeviceInfo; }) => {
-                                    const colorIndex = this.getHostColorIndex(row.hostIp);
-                                    const colorClass = colorIndex % 2 === 0 ? 'text-green-600' : 'text-blue-600';
-                                    return <span class={colorClass}>{this.formatAdb(row.adb)}</span>;
-                                }
-                            }}
-                        />
-                        <el-table-column prop="created_at" formatter={(row: DeviceInfo) => this.formatCreatedAt(row.created_at)} label={this.$t("createdAt")} width="90" />
-                        <el-table-column prop="git_commit_id" label={this.$t("vmDetail.containerGitCommitId")} width="110" show-overflow-tooltip />
-                        <el-table-column
-                            width="180"
-                            show-overflow-tooltip
-                            label={this.$t("vmImage")}
-                            // prop="image_addr" label={this.$t("vmImage")} show-overflow-tooltip formatter={(r) => {
-                            //     const img = this.renderVmImage(r);
-                            //     return img ? img.name : r.image_addr;
-                            // }}
-                            scopedSlots={{
-                                default: ({ row }: { row: DeviceInfo; }) => {
-                                    const e = this.renderVmImage(row);
-                                    if (!e) {
-                                        return <span>{row.image_addr}</span>;
-                                    }
-                                    // 临时修复：跨主机合并镜像列表时 e.id 可能被未拉取该镜像的主机记录覆盖为 ""，
-                                    // 此时无法判断真实下载状态，暂按"已是最新"处理，避免误报叉号。
-                                    // 根因见 /root/vm_image_cross_investigation.md，需要按 host 隔离镜像列表后移除。
-                                    const download = e.id === "" || row.image_digest === e.id;
-                                    return <div>
-                                        {e.android_version && <span
-                                            style={{
-                                                lineHeight: "20px",
-                                                padding: "0 3px",
-                                                marginRight: "5px",
-                                                backgroundColor: download ? "#f0f9eb" : "#fef0f0",
-                                                borderColor: download ? "#e1f3d8" : "#fde2e2",
-                                                color: download ? "#67c23a" : "#f56c6c",
-                                                borderRadius: "3px",
-                                            }}
-                                            title={download ? this.$t("create.already_latest").toString() : this.$t("create.need_update").toString()}
-                                            type={download ? "success" : "danger"}>
-                                            {download && <i class="el-icon-check" />}
-                                            {!download && <i class="el-icon-close" />}
-                                        </span>}
-                                        {<span>{e.name}</span>}
-                                    </div>;
-                                }
-                            }}
-                        />
-                        <el-table-column prop="state" label={this.$t("state")} width="90" formatter={this.renderStatus} align="center" />
-                        <el-table-column label={this.$t("action")} width="120" formatter={this.renderAction} />
-                    </el-table>
-                </div>
-                {(this.config.view == "horizontal" || this.config.view == "vertical") &&
-                    <el-checkbox-group value={this.rightChecked}>
-                        <div class={s[this.config.view]}>
-                            {
-                                this.data2.map(e => {
-                                    const name = getSuffixName(e.name);
-                                    const ipFragment = e.hostIp.split('.').slice(-2).join('.');
-                                    const ipParts = ipFragment.split('.');
-                                    const displayIp = (name.length > 12 && ipParts.length > 1) ? ipParts[1] : ipFragment;
-
-                                    return <Column key={`parent_${e.key}`} class={[s.img_box, e.state == "running" ? s.running : s.no_run]}>
-                                        <div style="position: relative; display: inline-block; padding: 0;" onDblclick={() => this.openAdbShell(e)}>
-                                            <Screenshot data-key={e.key} key={e.key} device={e} />
-                                            {e.state !== 'running' &&
-                                                <div class={s.power_overlay}>
-                                                    <el-button type="primary" icon="el-icon-switch-button" circle style="font-size: 24px; padding: 15px;" nativeOnClick={(event: Event) => {
-                                                        event.stopPropagation();
-                                                        this.start(e);
-                                                    }}></el-button>
-                                                </div>
-                                            }
-                                        </div>
-                                        <Row mainAlign='space-between' crossAlign='center'>
-                                            <el-checkbox class={s.checkbox} label={e.key} onChange={(c, event) => this.checkboxChanged(c, e)} >
-                                                <Row gap={5} flex crossAlign='center'>
-                                                    <span>{`${e.index}`}</span>
-                                                    {name === "开通VIP显示全部" ? (
-                                                        <span 
-                                                            class={["ellipsis", s.checkbox_label]} 
-                                                            style="color: var(--main-color); cursor: pointer; text-decoration: underline;"
-                                                            title={`${name} ${e.hostIp}`}
-                                                            onClick={(event: Event) => {
-                                                                event.stopPropagation();
-                                                                event.preventDefault();
-                                                                this.showVipDialog();
-                                                            }}
-                                                        >{name}</span>
-                                                    ) : (
-                                                        <span class={["ellipsis", s.checkbox_label]} title={`${name} ${e.hostIp}`}>{name}</span>
-                                                    )}
-                                                </Row>
-                                            </el-checkbox>
-                                            <Row gap={5} crossAlign='center' style={{ flexShrink: 0 }}>
-                                                <span
-                                                  class={this.getHostColorIndex(e.hostIp) % 2 === 0 ? 'text-green-600' : 'text-blue-600'}
-                                                  style={{ fontSize: '14px' }}
-                                                >
-                                                  {displayIp}
-                                                </span>
-                                                {this.renderAction(e, false)}
-                                            </Row>
-                                        </Row>
-                                    </Column>;
-                                })
-                            }
-                        </div>
-                    </el-checkbox-group>
-                }
+                {this.config.view == "list" && this.renderListView()}
+                {(this.config.view == "horizontal" || this.config.view == "vertical") && this.renderGridView()}
             </div>
         );
+    }
+
+    private renderListView() {
+        return (
+            <div class={s.table}>
+                <div class={s.listHeader}>
+                    <div class={[s.listCell, s.colSelection]}>
+                        <el-checkbox
+                            value={this.data2.length > 0 && this.rightChecked.length == this.data2.length}
+                            indeterminate={this.rightChecked.length > 0 && this.rightChecked.length < this.data2.length}
+                            onChange={() => this.selectAll()}
+                        />
+                    </div>
+                    <div class={[s.listCell, s.colNo]}>No</div>
+                    <div class={[s.listCell, s.colName]}>{this.$t("name")}</div>
+                    <div class={[s.listCell, s.colAdb]}>{this.$t("vmDetail.adb")}</div>
+                    <div class={[s.listCell, s.colCreatedAt]}>{this.$t("createdAt")}</div>
+                    <div class={[s.listCell, s.colGit]}>{this.$t("vmDetail.containerGitCommitId")}</div>
+                    <div class={[s.listCell, s.colImage]}>{this.$t("vmImage")}</div>
+                    <div class={[s.listCell, s.colState]}>{this.$t("state")}</div>
+                    <div class={[s.listCell, s.colAction]}>{this.$t("action")}</div>
+                </div>
+                {this.data2.length == 0 ? (
+                    <div class={s.emptyText}>{this.$t("table.emptyText")}</div>
+                ) : (
+                    <el-checkbox-group value={this.rightChecked} class={s.listBody}>
+                        <DynamicScroller
+                            items={this.data2}
+                            minItemSize={48}
+                            keyField="key"
+                            class={s.scroller}
+                            scopedSlots={{
+                                default: ({ item, index, active }: { item: DeviceInfo; index: number; active: boolean; }) => (
+                                    <DynamicScrollerItem item={item} active={active} dataIndex={index} class={s.listRow}>
+                                        {this.renderListRow(item)}
+                                    </DynamicScrollerItem>
+                                )
+                            }}
+                        />
+                    </el-checkbox-group>
+                )}
+            </div>
+        );
+    }
+
+    private renderListRow(row: DeviceInfo) {
+        const name = getSuffixName(row.name);
+        const colorClass = this.getHostColorIndex(row.hostIp) % 2 === 0 ? 'text-green-600' : 'text-blue-600';
+        const img = this.renderVmImage(row);
+        // 临时修复：跨主机合并镜像列表时 e.id 可能被未拉取该镜像的主机记录覆盖为 ""，
+        // 此时无法判断真实下载状态，暂按"已是最新"处理，避免误报叉号。
+        // 根因见 /root/vm_image_cross_investigation.md，需要按 host 隔离镜像列表后移除。
+        const download = img ? (img.id === "" || row.image_digest === img.id) : false;
+        return [
+            <div class={[s.listCell, s.colSelection]}>
+                {/* el-checkbox 在没有默认插槽内容时会把 label 当作可见文本回退显示，这里传入空 span 阻止该行为 */}
+                <el-checkbox label={row.key} onChange={(c: boolean) => this.checkboxChanged(c, row)}><span /></el-checkbox>
+            </div>,
+            <div class={[s.listCell, s.colNo]}>{row.index}</div>,
+            <div class={[s.listCell, s.colName]}>
+                {name === "开通VIP显示全部" ? (
+                    <OverflowTooltip
+                        content={name}
+                        style="color: var(--main-color); cursor: pointer; text-decoration: underline;"
+                        nativeOnClick={() => this.showVipDialog()}
+                    />
+                ) : (
+                    <OverflowTooltip content={name} />
+                )}
+            </div>,
+            <div class={[s.listCell, s.colAdb]} attrs={{ title: row.adb }}>
+                <span class={colorClass}>{this.formatAdb(row.adb)}</span>
+            </div>,
+            <div class={[s.listCell, s.colCreatedAt]}>{this.formatCreatedAt(row.created_at)}</div>,
+            <div class={[s.listCell, s.colGit]} attrs={{ title: row.git_commit_id }}>{row.git_commit_id}</div>,
+            <div class={[s.listCell, s.colImage]}>
+                {!img ? <span>{row.image_addr}</span> : (
+                    <div>
+                        {img.android_version && <span
+                            style={{
+                                lineHeight: "20px",
+                                padding: "0 3px",
+                                marginRight: "5px",
+                                backgroundColor: download ? "#f0f9eb" : "#fef0f0",
+                                borderColor: download ? "#e1f3d8" : "#fde2e2",
+                                color: download ? "#67c23a" : "#f56c6c",
+                                borderRadius: "3px",
+                            }}
+                            title={download ? this.$t("create.already_latest").toString() : this.$t("create.need_update").toString()}>
+                            {download && <i class="el-icon-check" />}
+                            {!download && <i class="el-icon-close" />}
+                        </span>}
+                        <span>{img.name}</span>
+                    </div>
+                )}
+            </div>,
+            <div class={[s.listCell, s.colState]}>{this.renderStatus(row)}</div>,
+            <div class={[s.listCell, s.colAction]}>{this.renderAction(row)}</div>,
+        ];
+    }
+
+    private renderGridView() {
+        return (
+            <el-checkbox-group value={this.rightChecked}>
+                <div ref="gridContainer" class={s[this.config.view]}>
+                    <DynamicScroller
+                        items={this.gridRows}
+                        minItemSize={this.config.view == "vertical" ? 350 : 205}
+                        keyField="_key"
+                        class={s.scroller}
+                        scopedSlots={{
+                            default: ({ item, index, active }: { item: GridRow; index: number; active: boolean; }) => (
+                                <DynamicScrollerItem item={item} active={active} dataIndex={index} class={s.gridRow}>
+                                    {item.devices.map(e => this.renderGridCard(e))}
+                                </DynamicScrollerItem>
+                            )
+                        }}
+                    />
+                </div>
+            </el-checkbox-group>
+        );
+    }
+
+    private renderGridCard(e: DeviceInfo) {
+        const name = getSuffixName(e.name);
+        const ipFragment = e.hostIp.split('.').slice(-2).join('.');
+        const ipParts = ipFragment.split('.');
+        const displayIp = (name.length > 12 && ipParts.length > 1) ? ipParts[1] : ipFragment;
+
+        return <Column key={`parent_${e.key}`} class={[s.img_box, e.state == "running" ? s.running : s.no_run]}>
+            <div style="position: relative; display: inline-block; padding: 0;" onDblclick={() => this.openAdbShell(e)}>
+                <Screenshot data-key={e.key} key={e.key} device={e} />
+                {e.state !== 'running' &&
+                    <div class={s.power_overlay}>
+                        <el-button type="primary" icon="el-icon-switch-button" circle style="font-size: 24px; padding: 15px;" nativeOnClick={(event: Event) => {
+                            event.stopPropagation();
+                            this.start(e);
+                        }}></el-button>
+                    </div>
+                }
+            </div>
+            <Row mainAlign='space-between' crossAlign='center'>
+                <el-checkbox class={s.checkbox} label={e.key} onChange={(c, event) => this.checkboxChanged(c, e)} >
+                    <Row gap={5} flex crossAlign='center'>
+                        <span>{`${e.index}`}</span>
+                        {name === "开通VIP显示全部" ? (
+                            <span
+                                class={["ellipsis", s.checkbox_label]}
+                                style="color: var(--main-color); cursor: pointer; text-decoration: underline;"
+                                title={`${name} ${e.hostIp}`}
+                                onClick={(event: Event) => {
+                                    event.stopPropagation();
+                                    event.preventDefault();
+                                    this.showVipDialog();
+                                }}
+                            >{name}</span>
+                        ) : (
+                            <span class={["ellipsis", s.checkbox_label]} title={`${name} ${e.hostIp}`}>{name}</span>
+                        )}
+                    </Row>
+                </el-checkbox>
+                <Row gap={5} crossAlign='center' style={{ flexShrink: 0 }}>
+                    <span
+                        class={this.getHostColorIndex(e.hostIp) % 2 === 0 ? 'text-green-600' : 'text-blue-600'}
+                        style={{ fontSize: '14px' }}
+                    >
+                        {displayIp}
+                    </span>
+                    {this.renderAction(e, false)}
+                </Row>
+            </Row>
+        </Column>;
     }
 
     protected renderMenu(e: DeviceInfo) {
@@ -512,7 +564,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         if (re) {
             var index = this.rightChecked.findIndex(x => x == data.key);
             if (index > -1) {
-                this.tb?.toggleRowSelection(data, false);
+                this.rightChecked.splice(index, 1);
                 (async () => {
                     const newKey = `${data.hostIp}-${data.index}-${re}`;
                     let newData: DeviceInfo | undefined = undefined;
@@ -523,7 +575,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         count++;
                     } while (!newData && count < 20);
                     if (newData) {
-                        this.tb?.toggleRowSelection(newData, true);
+                        this.rightChecked.push(newData.key!);
                     }
                 })();
             }

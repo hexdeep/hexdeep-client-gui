@@ -8,16 +8,117 @@
         left: 13px;
         right: 13px;
         bottom: 13px;
+        display: flex;
+        flex-direction: column;
+        // 与 el-table 默认样式保持一致（重写前的表格字号/字色），否则会继承外层 16px 的默认字号
+        font-size: 12px;
+        color: #606266;
+    }
 
-        :global {
+    .listHeader,
+    .listRow {
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
+    }
 
-            .el-table_1_column_1,
-            .el-table_1_column_2 {
-                .cell {
-                    padding: 0;
-                }
-            }
+    .listHeader {
+        flex-shrink: 0;
+        font-weight: 500;
+        color: #909399;
+        background: #fafafa;
+        border-bottom: 1px solid #ebeef5;
+    }
+
+    .listRow {
+        border-bottom: 1px solid #ebeef5;
+
+        &:hover {
+            background: #f5f7fa;
         }
+    }
+
+    .listCell {
+        padding: 0 10px;
+        height: 48px;
+        line-height: 48px;
+        overflow: hidden;
+        white-space: nowrap;
+        box-sizing: border-box;
+        flex-shrink: 0;
+    }
+
+    .colSelection {
+        width: 45px;
+        text-align: center;
+    }
+
+    .colNo {
+        width: 40px;
+        text-align: center;
+    }
+
+    .colName {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .colAdb {
+        width: 140px;
+        text-overflow: ellipsis;
+    }
+
+    .colCreatedAt {
+        width: 90px;
+    }
+
+    .colGit {
+        width: 110px;
+        text-overflow: ellipsis;
+    }
+
+    .colImage {
+        width: 180px;
+        text-overflow: ellipsis;
+    }
+
+    .colState {
+        width: 90px;
+        text-align: center;
+    }
+
+    .colAction {
+        width: 120px;
+    }
+
+    .emptyText {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #909399;
+    }
+
+    .listBody {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        // el-checkbox-group 自带 font-size:0（用于消除内联勾选框间的空白间隙），
+        // 但这里把它当作整个虚拟列表的外层容器，需要覆盖掉，否则所有单元格文字都会被继承为 0px 而不可见
+        font-size: 12px;
+    }
+
+    .scroller {
+        flex: 1;
+        min-height: 0;
+    }
+
+    .gridRow {
+        display: flex;
+        gap: 10px;
+        padding-bottom: 10px;
+        box-sizing: border-box;
     }
 
     .vertical,
@@ -28,11 +129,9 @@
         right: 0;
         bottom: 13px;
         display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        overflow-y: auto;
-        align-content: flex-start;
-
+        flex-direction: column;
+        // 同 .listBody：覆盖 el-checkbox-group 的 font-size:0
+        font-size: 12px;
     }
 
     .vertical {

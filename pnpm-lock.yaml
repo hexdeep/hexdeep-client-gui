@@ -80,6 +80,9 @@ importers:
       vue-router:
         specifier: 3.5.3
         version: 3.5.3(vue@2.6.14)
+      vue-virtual-scroller:
+        specifier: 1.1.2
+        version: 1.1.2(vue@2.6.14)
     devDependencies:
       '@iconify-icons/bi':
         specifier: ^1.2.19
@@ -2087,6 +2090,9 @@ packages:
   sax@1.4.1:
     resolution: {integrity: sha512-+aWOz7yVScEGoKNd4PA10LZ8sk0A/z5+nXQG5giUO5rprX9jgYsTdov9qCchZiPIZezbZH+jRut8nPodFAX4Jg==}
 
+  scrollparent@2.1.0:
+    resolution: {integrity: sha512-bnnvJL28/Rtz/kz2+4wpBjHzWoEzXhVg/TE8BeVGJHUqE8THNIRnDxDWMktwM+qahvlRdvlLdsQfYe+cuqfZeA==}
+
   semver@5.7.2:
     resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
     hasBin: true
@@ -2359,11 +2365,19 @@ packages:
     peerDependencies:
       vue: ^2
 
+  vue-observe-visibility@0.4.6:
+    resolution: {integrity: sha512-xo0CEVdkjSjhJoDdLSvoZoQrw/H2BlzB5jrCBKGZNXN2zdZgMuZ9BKrxXDjNP2AxlcCoKc8OahI3F3r3JGLv2Q==}
+
   vue-property-decorator@9.1.2:
     resolution: {integrity: sha512-xYA8MkZynPBGd/w5QFJ2d/NM0z/YeegMqYTphy7NJQXbZcuU6FC6AOdUAcy4SXP+YnkerC6AfH+ldg7PDk9ESQ==}
     peerDependencies:
       vue: '*'
       vue-class-component: '*'
+
+  vue-resize@0.4.5:
+    resolution: {integrity: sha512-bhP7MlgJQ8TIkZJXAfDf78uJO+mEI3CaLABLjv0WNzr4CcGRGPIAItyWYnP6LsPA4Oq0WE+suidNs6dgpO4RHg==}
+    peerDependencies:
+      vue: ^2.3.0
 
   vue-router@3.5.3:
     resolution: {integrity: sha512-FUlILrW3DGitS2h+Xaw8aRNvGTwtuaxrRkNSHWTizOfLUie7wuYwezeZ50iflRn8YPV5kxmU2LQuu3nM/b3Zsg==}
@@ -2387,6 +2401,11 @@ packages:
     peerDependencies:
       typescript: '>=3.8.0'
       vue: '>=2.6.0'
+
+  vue-virtual-scroller@1.1.2:
+    resolution: {integrity: sha512-SkUyc7QHCJFB5h1Fya7LxVizlVzOZZuFVipBGHYoTK8dwLs08bIz/tclvRApYhksaJIm/nn51inzO2UjpGJPMQ==}
+    peerDependencies:
+      vue: ^2.6.11
 
   vue@2.6.14:
     resolution: {integrity: sha512-x2284lgYvjOMj3Za7kqzRcUSxBboHqtgRE2zlos1qWaOye5yUmHn42LB1250NJBLRwEcdrB0JRwyPTEPhfQjiQ==}
@@ -4042,6 +4061,8 @@ snapshots:
   sax@1.4.1:
     optional: true
 
+  scrollparent@2.1.0: {}
+
   semver@5.7.2:
     optional: true
 
@@ -4395,10 +4416,16 @@ snapshots:
     dependencies:
       vue: 2.6.14
 
+  vue-observe-visibility@0.4.6: {}
+
   vue-property-decorator@9.1.2(vue-class-component@7.2.6(vue@2.6.14))(vue@2.6.14):
     dependencies:
       vue: 2.6.14
       vue-class-component: 7.2.6(vue@2.6.14)
+
+  vue-resize@0.4.5(vue@2.6.14):
+    dependencies:
+      vue: 2.6.14
 
   vue-router@3.5.3(vue@2.6.14):
     dependencies:
@@ -4420,6 +4447,13 @@ snapshots:
     dependencies:
       typescript: 5.8.3
       vue: 2.6.14
+
+  vue-virtual-scroller@1.1.2(vue@2.6.14):
+    dependencies:
+      scrollparent: 2.1.0
+      vue: 2.6.14
+      vue-observe-visibility: 0.4.6
+      vue-resize: 0.4.5(vue@2.6.14)
 
   vue@2.6.14: {}
 
