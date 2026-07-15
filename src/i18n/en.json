@@ -286,6 +286,7 @@
         "swapSize": "Virtual Memory Size",
         "cleanupGarbageSuccess": "Clean up Garbage Success",
         "currentDisk": "Current Disk",
+        "nvmeSerial": "NVMe Serial",
         "rebootHostSuccess": "Host is restarting...",
         "shutdownHostSuccess": "Host is shutting down...",
         "updateFirmwareSuccess": "Firmware update successful, host is restarting...",

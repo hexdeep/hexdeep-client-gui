@@ -262,6 +262,19 @@ export interface DiskItem {
     name: string;
 }
 
+export interface NvmeInfo {
+    model: string;
+    firmware: string;
+    serial: string;
+    capacity_bytes: number;
+    temperature_celsius: number;
+    health_percent: number;
+    percentage_used: number;
+    available_spare: number;
+    critical_warning: number;
+    [property: string]: any;
+}
+
 export interface IscsiInfo {
     /**
      * iscsi服务ip

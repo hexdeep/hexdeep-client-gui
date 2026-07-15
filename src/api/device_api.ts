@@ -4,7 +4,7 @@ import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
-import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile, DockerImageUsageInfo } from "./device_define";
+import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile, DockerImageUsageInfo, NvmeInfo } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
@@ -373,6 +373,11 @@ class DeviceApi extends ApiBase {
 
     public async getDisks(ip: string): Promise<DiskListInfo> {
         const result = await fetch(makeHostVmApiUrl("entry/get_disk", ip));
+        return await this.handleError(result);
+    }
+
+    public async getNvmeInfo(ip: string): Promise<NvmeInfo> {
+        const result = await fetch(makeHostVmApiUrl("entry/nvme_info", ip));
         return await this.handleError(result);
     }
 
