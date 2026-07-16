@@ -54,6 +54,17 @@ class FeedbackApi extends ApiBase {
     }
 
     /**
+     * 管理员回复附件（图片）的直链，公开无需鉴权（与用户自己上传的 attachments
+     * 不同，那些走 /feedback/download，需要管理员 token），可以直接当 <img src> 用。
+     */
+    public replyAttachmentUrl(uuid: string, path: string): string {
+        const url = new URL(`${HEXDEEP_SERVER_BASE}/feedback/reply_attachment`);
+        url.searchParams.set("uuid", uuid);
+        url.searchParams.set("path", path);
+        return url.toString();
+    }
+
+    /**
      * 采集单台机器的 host_server + super_sdk + docker 日志，失败互不影响，只打印告警。
      * 字段名即最终存储的文件名（不含扩展名），hexdeep_server 只负责补上 .log 后缀，
      * 不做任何改名/归类，因此这里必须已经是规范化好的名字。

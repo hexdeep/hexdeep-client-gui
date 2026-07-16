@@ -14,6 +14,8 @@ export interface FeedbackPublicItem {
     machines: string;
     send_log: boolean;
     reply: string;
+    /** 管理员回复时附带的图片，相对 data 目录的路径数组，用 feedbackApi.replyAttachmentUrl 拼直链 */
+    reply_attachments: string[];
     created_at: string;
     uuid: string;
 }

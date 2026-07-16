@@ -225,6 +225,18 @@ export class FeedbackHistoryDialog extends CommonDialog<void, void> {
                         ? <div class={s.replyBox}>{item.reply}</div>
                         : <div class={s.noReply}>{this.$t("feedback.noReply")}</div>
                     }
+                    {item.reply_attachments?.isNotEmpty && (
+                        <div class={s.replyAttachments}>
+                            {item.reply_attachments.map(path => (
+                                <img
+                                    key={path}
+                                    class={s.replyAttachmentThumb}
+                                    src={feedbackApi.replyAttachmentUrl(item.uuid, path)}
+                                    onClick={() => window.open(feedbackApi.replyAttachmentUrl(item.uuid, path), "_blank")}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         );
