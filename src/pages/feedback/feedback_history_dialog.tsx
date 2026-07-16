@@ -94,8 +94,8 @@ export class FeedbackHistoryDialog extends CommonDialog<void, void> {
         this.selected = null;
     }
 
-    private async copyUuid(uuid: string) {
-        await Tools.copyText(uuid);
+    private async copyText(text: string) {
+        await Tools.copyText(text);
         this.$message.success(this.$t("feedback.copySuccess").toString());
     }
 
@@ -177,36 +177,54 @@ export class FeedbackHistoryDialog extends CommonDialog<void, void> {
     }
 
     private renderDetail(item: FeedbackPublicItem): VNode {
+        const machines = item.machines ? item.machines.split(",").map(m => m.trim()).filter(Boolean) : [];
         return (
             <div class={s.detail}>
-                <div class={s.detailRow}>
-                    <div class={s.detailLabel}>{this.$t("feedback.ticketId")}</div>
-                    <div class={s.uuidRow}>
-                        <el-input value={item.uuid} readonly />
-                        <el-button icon="el-icon-document-copy" onClick={() => this.copyUuid(item.uuid)}>
-                            {this.$t("feedback.copy")}
-                        </el-button>
+                <div class={s.topRow}>
+                    <div class={s.inlineGroup}>
+                        <div class={s.inlineLabel}>{this.$t("feedback.createdAt")}</div>
+                        <div class={s.detailValue}>{item.created_at}</div>
+                    </div>
+                    <div class={s.inlineGroup}>
+                        <div class={s.inlineLabel}>{this.$t("feedback.sendLog")}</div>
+                        <el-tag size="mini" type={item.send_log ? "success" : "info"}>
+                            {item.send_log ? this.$t("feedback.yes") : this.$t("feedback.no")}
+                        </el-tag>
                     </div>
                 </div>
+
+                <div class={s.fieldRow}>
+                    <div class={s.inlineLabel}>{this.$t("feedback.ticketId")}</div>
+                    <div class={s.tagCopyRow}>
+                        <el-tag size="mini" type="warning">{item.uuid}</el-tag>
+                        <el-button type="text" icon="el-icon-document-copy" onClick={() => this.copyText(item.uuid)} />
+                    </div>
+                </div>
+
+                <div class={s.fieldRow}>
+                    <div class={s.inlineLabel}>{this.$t("feedback.relatedMachines")}</div>
+                    {machines.length
+                        ? <div class={s.tagCopyRow}>
+                            <div class={s.machineTags}>
+                                {machines.map(m => <el-tag key={m} size="mini">{m}</el-tag>)}
+                            </div>
+                            <el-button type="text" icon="el-icon-document-copy" onClick={() => this.copyText(machines.join("\n"))} />
+                        </div>
+                        : <div class={s.detailValue}>-</div>
+                    }
+                </div>
+
                 <div class={s.detailRow}>
                     <div class={s.detailLabel}>{this.$t("feedback.description")}</div>
-                    <div class={s.detailValue}>{item.description}</div>
+                    <div class={s.descriptionBox}>{item.description}</div>
                 </div>
-                <div class={s.detailRow}>
-                    <div class={s.detailLabel}>{this.$t("feedback.relatedMachines")}</div>
-                    <div class={s.detailValue}>{item.machines || "-"}</div>
-                </div>
-                <div class={s.detailRow}>
-                    <div class={s.detailLabel}>{this.$t("feedback.sendLog")}</div>
-                    <div class={s.detailValue}>{item.send_log ? this.$t("feedback.yes") : this.$t("feedback.no")}</div>
-                </div>
+
                 <div class={s.detailRow}>
                     <div class={s.detailLabel}>{this.$t("feedback.reply")}</div>
-                    <div class={s.detailValue}>{item.reply || this.$t("feedback.noReply")}</div>
-                </div>
-                <div class={s.detailRow}>
-                    <div class={s.detailLabel}>{this.$t("feedback.createdAt")}</div>
-                    <div class={s.detailValue}>{item.created_at}</div>
+                    {item.reply
+                        ? <div class={s.replyBox}>{item.reply}</div>
+                        : <div class={s.noReply}>{this.$t("feedback.noReply")}</div>
+                    }
                 </div>
             </div>
         );
