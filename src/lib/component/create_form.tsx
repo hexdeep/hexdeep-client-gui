@@ -35,10 +35,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
             ? this.images
             : this.images.filter(img => img.name && img.name.includes(`-${type}-`));
 
-        if (this.isUpdate) {
-            return byType;
-        }
-
         return byType.filter(img => isImageVersionCompatibleByModelVersion(this.data.mobile_model_version, img.major_version));
     }
 

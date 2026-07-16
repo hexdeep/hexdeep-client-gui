@@ -39,6 +39,13 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
         return super.show(data);
     }
 
+    // 只保留和所有被选中云机的 mobile_model_version 都兼容的镜像，避免选出提交时才会被拦下的组合
+    private get filteredImages() {
+        return this.images.filter(img =>
+            this.data.every(item => isImageVersionCompatibleByModelVersion(item.create_req?.mobile_model_version, img.major_version))
+        );
+    }
+
     private async checkVipStatus() {
         try {
             const hostId = this.data.first.hostId;
@@ -157,8 +164,8 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
             <el-form ref="formRef" label-position="top" props={{ model: this.obj }} rules={this.formRules}>
                 <div style="color: red; margin-bottom: 10px;">{this.$t("changeImage.warning")}</div>
                 <el-form-item label={this.$t("changeImage.label")} prop="image_addr"  >
-                    <ImageSelector2 
-                        images={this.images} 
+                    <ImageSelector2
+                        images={this.filteredImages}
                         v-model={this.obj.image_addr} 
                         hasVip={this.hasVip}
                         on={{ "vip-required": () => this.onVipRequired() }}
