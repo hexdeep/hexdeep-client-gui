@@ -246,16 +246,16 @@ export function sortDevicesByHostIp<T extends { hostIp: string; index: number; c
 
 type ImageVersionFamily = "legacy" | "v3" | undefined;
 
-export function getImageVersionFamily(imageAddr?: string): ImageVersionFamily {
-    if (!imageAddr) return;
-    if (imageAddr.includes("-v3.") || imageAddr.includes(":3.")) return "v3";
-    if (imageAddr.includes("-v2.") || imageAddr.includes("-v1.") || imageAddr.includes(":2.") || imageAddr.includes(":1.")) return "legacy";
+export function getImageVersionFamily(majorVersion?: string): ImageVersionFamily {
+    if (!majorVersion) return;
+    if (majorVersion === "v3") return "v3";
+    if (majorVersion === "v2" || majorVersion === "v1") return "legacy";
     return;
 }
 
-export function isImageVersionCompatible(currentImageAddr?: string, targetImageAddr?: string) {
-    const current = getImageVersionFamily(currentImageAddr);
-    const target = getImageVersionFamily(targetImageAddr);
+export function isImageVersionCompatible(currentMajorVersion?: string, targetMajorVersion?: string) {
+    const current = getImageVersionFamily(currentMajorVersion);
+    const target = getImageVersionFamily(targetMajorVersion);
     if (!current || !target) return true;
     return current === target;
 }
@@ -264,9 +264,9 @@ export function normalizeMobileModelVersion(version?: string): "v2" | "v3" {
     return version === "v3" ? "v3" : "v2";
 }
 
-export function isImageVersionCompatibleByModelVersion(mobileModelVersion: string | undefined, targetImageAddr?: string) {
+export function isImageVersionCompatibleByModelVersion(mobileModelVersion: string | undefined, targetMajorVersion?: string) {
     const version = normalizeMobileModelVersion(mobileModelVersion);
-    const target = getImageVersionFamily(targetImageAddr);
+    const target = getImageVersionFamily(targetMajorVersion);
     if (!target) return true;
     if (version === "v3") {
         return target === "v3";

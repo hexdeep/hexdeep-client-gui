@@ -39,7 +39,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
             return byType;
         }
 
-        return byType.filter(img => isImageVersionCompatibleByModelVersion(this.data.mobile_model_version, img.address));
+        return byType.filter(img => isImageVersionCompatibleByModelVersion(this.data.mobile_model_version, img.major_version));
     }
 
     private inputNumber(key: string, min: number, max: number) {
@@ -204,7 +204,8 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         if (!this.data.image_addr || this.data.image_addr === "[customImage]") {
             return;
         }
-        if (!isImageVersionCompatibleByModelVersion(this.data.mobile_model_version, this.data.image_addr)) {
+        const selectedImage = this.images.find(img => img.address === this.data.image_addr);
+        if (!isImageVersionCompatibleByModelVersion(this.data.mobile_model_version, selectedImage?.major_version)) {
             this.$set(this.data, "image_addr", "");
         }
     }

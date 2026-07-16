@@ -120,7 +120,8 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
     @ErrorProxy({ validatForm: "formRef" })
     protected override async onConfirm() {
         const image_addr = this.data.obj.image_addr == "[customImage]" ? this.data.obj.custom_image : this.data.obj.image_addr;
-        if (!isImageVersionCompatibleByModelVersion(this.data.obj.mobile_model_version, image_addr)) {
+        const selectedImage = this.images.find(x => x.address === image_addr);
+        if (!isImageVersionCompatibleByModelVersion(this.data.obj.mobile_model_version, selectedImage?.major_version)) {
             throw new Error(this.$t("changeImage.versionMismatch").toString());
         }
         if (image_addr && ((image_addr.includes('.') && image_addr.includes('/')))) {

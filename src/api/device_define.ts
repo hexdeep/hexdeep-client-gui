@@ -90,6 +90,7 @@ export interface ImageInfo {
     updated_at: string;
     is_vip?: boolean;
     model?: string; // 适用机型，CSV如"H1-1,H1-2"，空表示通用
+    major_version?: string; // 镜像大版本，如"v2"/"v3"，用于和 mobile_model_version 做兼容性校验
 }
 
 export interface DockerImageUsageInfo {

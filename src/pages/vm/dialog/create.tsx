@@ -148,11 +148,11 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             return;
         };
         const image_addr = this.data.obj.image_addr == "[customImage]" ? this.data.obj.custom_image : this.data.obj.image_addr;
-        if (!isImageVersionCompatibleByModelVersion(normalizedModelVersion, image_addr)) {
+        var image = this.images.find(x => x.address == image_addr);
+        if (!isImageVersionCompatibleByModelVersion(normalizedModelVersion, image?.major_version)) {
             throw new Error(this.$t("changeImage.versionMismatch").toString());
         }
         if (image_addr && ((image_addr.includes('.') && image_addr.includes('/')))) {
-            var image = this.images.find(x => x.address == image_addr);
             if (!image || !image.download) {
                 const err = await this.$dialog(PullImageDialog).show({
                     hostIp: this.data.info.hostIp,

@@ -77,7 +77,8 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
     @ErrorProxy({ validatForm: "formRef" })
     protected override async onConfirm() {
         const image_addr = this.obj.image_addr == "[customImage]" ? this.obj.custom_image : this.obj.image_addr;
-        const incompatible = this.data.find(item => !isImageVersionCompatibleByModelVersion(item.create_req?.mobile_model_version, image_addr));
+        const selectedImage = this.images.find(x => x.address === image_addr);
+        const incompatible = this.data.find(item => !isImageVersionCompatibleByModelVersion(item.create_req?.mobile_model_version, selectedImage?.major_version));
         if (incompatible) {
             throw new Error(this.$t("changeImage.versionMismatch").toString());
         }
