@@ -228,11 +228,12 @@ export class FeedbackHistoryDialog extends CommonDialog<void, void> {
                     {item.reply_attachments?.isNotEmpty && (
                         <div class={s.replyAttachments}>
                             {item.reply_attachments.map(path => (
-                                <img
+                                <el-image
                                     key={path}
                                     class={s.replyAttachmentThumb}
                                     src={feedbackApi.replyAttachmentUrl(item.uuid, path)}
-                                    onClick={() => window.open(feedbackApi.replyAttachmentUrl(item.uuid, path), "_blank")}
+                                    preview-src-list={item.reply_attachments.map(p => feedbackApi.replyAttachmentUrl(item.uuid, p))}
+                                    fit="cover"
                                 />
                             ))}
                         </div>
