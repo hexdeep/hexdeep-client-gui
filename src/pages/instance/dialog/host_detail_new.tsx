@@ -24,11 +24,11 @@ const FIRMWARE_STORAGE_KEY = "firmware_version_list";
 @Dialog
 export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected detail: HostDetailInfo = {} as HostDetailInfo;
-    protected sdk?: SDKImagesRes;
+    protected sdk: SDKImagesRes | null = null;
     protected model: string = "";
     protected isOfficialModel: boolean = true;
     protected unsubscribeHostDetail?: () => void;
-    protected vipInfo?: DeviceVipInfo;
+    protected vipInfo: DeviceVipInfo | null = null;
     protected vipExpired: boolean = true;
     protected vipEndTime: string = '';
     protected firmwareList: FirmwareVersionInfo[] = [];

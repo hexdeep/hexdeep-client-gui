@@ -402,7 +402,7 @@ export default class VMPage extends Vue {
                         <Row flex gap={8}>
                             <MyButton type="primary" text={this.$t("selectAll")} onClick={() => this.selectAll()} />
                             <el-dropdown  >
-                                <MyButton plain text={this.$t("batchOperations")} />
+                                <MyButton plain text={`${this.$t("batchOperations")} (${this.selectedItems.length})`} />
                                 <el-dropdown-menu slot="dropdown">
                                     {/* <el-dropdown-item disabled={this.selectedItems.isEmpty} nativeOnClick={this.batchCreate}>{this.$t("createVm")}</el-dropdown-item> */}
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={() => this.batchOperate(async row => {

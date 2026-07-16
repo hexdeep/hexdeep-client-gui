@@ -188,15 +188,16 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
                                         （{this.$t("vmDetail.currentDisk")}）
                                     </span>
                                 ) : null}
-                                {disk.name === "nvme" && this.form.disk === "nvme" && this.nvmeSerial ? (
-                                    <span style={{ color: "#999", marginLeft: "8px" }}>
-                                        {this.$t("vmDetail.nvmeSerial")}: {this.nvmeSerial}
-                                    </span>
-                                ) : null}
                             </el-radio>
                         ))}
                     </el-radio-group>
                 </div>
+
+                {this.form.disk === 'nvme' && this.nvmeSerial ? (
+                    <div style={{ marginBottom: "20px", color: "#999" }}>
+                        {this.$t("vmDetail.nvmeSerial")}：{this.nvmeSerial}
+                    </div>
+                ) : null}
 
                 {this.form.disk === 'iscsi' ? (
                     <el-form
