@@ -271,6 +271,41 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     </el-form-item>
                 </Row>
 
+                {!this.isUpdate && (
+                    <Row>
+                        <el-form-item label={this.$t("create.mobile_model_version")} prop="mobile_model_version">
+                            <el-radio-group v-model={this.data.mobile_model_version}>
+                                <el-radio label="v2">v2</el-radio>
+                                {/* v3 暂未完成，先隐藏 */}
+                                <el-radio label="v3">v3</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label={this.$t("create.model_id")} prop="model_id"  >
+                            <ModelSelector
+                                v-model={this.data.model_id}
+                                version={this.data.mobile_model_version || "v2"}
+                                ip={this.ip}
+                                source={this.data.mobile_model_source}
+                                manufacturer={this.data.model_manufacturer}
+                                on={{
+                                    "update:source": (v: string) => this.$set(this.data, "mobile_model_source", v),
+                                    "update:manufacturer": (v: string) => this.$set(this.data, "model_manufacturer", v),
+                                    "apply-dimensions": this.onApplyDimensions
+                                }}
+                            />
+                        </el-form-item>
+                    </Row>
+                )}
+
+                {!this.isUpdate && this.isCustomModelSelected && (
+                    <el-form-item label={this.$t("create.custom_model_path")} prop="mobile_model_source">
+                        <el-input
+                            v-model={this.data.mobile_model_source}
+                            placeholder={this.$t("create.custom_model_path_placeholder")}
+                        />
+                    </el-form-item>
+                )}
+
                 <el-form-item label={this.$t("create.image_type")}>
                     <el-radio-group v-model={this.filterState.imageType}>
                         {/*<el-radio label="all">{this.$t("create.image_type_all")}</el-radio>*/}
@@ -358,41 +393,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                         <el-input class="no-number-spinner" v-model={this.data.y_dpi} onBlur={this.fixNumber("y_dpi")} min={100} max={600} step={0.001} type="number" />
                     </el-form-item>
                 </Row>
-
-                {!this.isUpdate && (
-                    <Row>
-                        <el-form-item label={this.$t("create.mobile_model_version")} prop="mobile_model_version">
-                            <el-radio-group v-model={this.data.mobile_model_version}>
-                                <el-radio label="v2">v2</el-radio>
-                                {/* v3 暂未完成，先隐藏 */}
-                                <el-radio label="v3">v3</el-radio>
-                            </el-radio-group>
-                        </el-form-item>
-                        <el-form-item label={this.$t("create.model_id")} prop="model_id"  >
-                            <ModelSelector
-                                v-model={this.data.model_id}
-                                version={this.data.mobile_model_version || "v2"}
-                                ip={this.ip}
-                                source={this.data.mobile_model_source}
-                                manufacturer={this.data.model_manufacturer}
-                                on={{
-                                    "update:source": (v: string) => this.$set(this.data, "mobile_model_source", v),
-                                    "update:manufacturer": (v: string) => this.$set(this.data, "model_manufacturer", v),
-                                    "apply-dimensions": this.onApplyDimensions
-                                }}
-                            />
-                        </el-form-item>
-                    </Row>
-                )}
-
-                {!this.isUpdate && this.isCustomModelSelected && (
-                    <el-form-item label={this.$t("create.custom_model_path")} prop="mobile_model_source">
-                        <el-input
-                            v-model={this.data.mobile_model_source}
-                            placeholder={this.$t("create.custom_model_path_placeholder")}
-                        />
-                    </el-form-item>
-                )}
 
                 {/* 老板说先不做界面：开机时长(offset)输入框暂时注释掉，仅隐藏 UI，其余 JS 逻辑(类型/fixNumber 空值处理/请求透传)保持不变 */}
                 {/* <el-form-item label={this.$t("create.offset")} prop="offset" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.offset") as string, this.$t("create.offset_tip") as string) }}>
