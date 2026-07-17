@@ -288,36 +288,34 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             <div class={[s.listCell, s.colCreatedAt]}>{this.formatCreatedAt(row.created_at)}</div>,
             <div class={[s.listCell, s.colGit]} attrs={{ title: row.git_commit_id }}>{row.git_commit_id}</div>,
             <div class={[s.listCell, s.colImage]}>
-                {!img ? <span>{row.image_addr}</span> : (
-                    <div>
-                        {img.android_version && <span
-                            style={{
-                                lineHeight: "20px",
-                                padding: "0 3px",
-                                marginRight: "5px",
-                                backgroundColor: download ? "#f0f9eb" : "#fef0f0",
-                                borderColor: download ? "#e1f3d8" : "#fde2e2",
-                                color: download ? "#67c23a" : "#f56c6c",
-                                borderRadius: "3px",
-                            }}
-                            title={download ? this.$t("create.already_latest").toString() : this.$t("create.need_update").toString()}>
-                            {download && <i class="el-icon-check" />}
-                            {!download && <i class="el-icon-close" />}
-                        </span>}
-                        {row.create_req?.mobile_model_version === "v3" && <el-tag
-                            size="mini"
-                            effect="dark"
-                            style={{
-                                marginRight: "5px",
-                                background: "linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)",
-                                border: "none",
-                                color: "#fff",
-                                fontWeight: "bold",
-                            }}
-                        >v3</el-tag>}
-                        <span>{img.name}</span>
-                    </div>
-                )}
+                <div>
+                    {img?.android_version && <span
+                        style={{
+                            lineHeight: "20px",
+                            padding: "0 3px",
+                            marginRight: "5px",
+                            backgroundColor: download ? "#f0f9eb" : "#fef0f0",
+                            borderColor: download ? "#e1f3d8" : "#fde2e2",
+                            color: download ? "#67c23a" : "#f56c6c",
+                            borderRadius: "3px",
+                        }}
+                        title={download ? this.$t("create.already_latest").toString() : this.$t("create.need_update").toString()}>
+                        {download && <i class="el-icon-check" />}
+                        {!download && <i class="el-icon-close" />}
+                    </span>}
+                    {row.create_req?.mobile_model_version === "v3" && <el-tag
+                        size="mini"
+                        effect="dark"
+                        style={{
+                            marginRight: "5px",
+                            background: "linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)",
+                            border: "none",
+                            color: "#fff",
+                            fontWeight: "bold",
+                        }}
+                    >v3</el-tag>}
+                    <span>{img ? img.name : row.image_addr}</span>
+                </div>
             </div>,
             <div class={[s.listCell, s.colState]}>{this.renderStatus(row)}</div>,
             <div class={[s.listCell, s.colAction]}>{this.renderAction(row)}</div>,

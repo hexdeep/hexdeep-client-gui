@@ -54,10 +54,28 @@ class FeedbackApi extends ApiBase {
     }
 
     /**
-     * 管理员回复附件（图片）的直链，公开无需鉴权（与用户自己上传的 attachments
-     * 不同，那些走 /feedback/download，需要管理员 token），可以直接当 <img src> 用。
+     * 发送一条后续消息（多轮对话），可选附带图片/文件。公开无需鉴权，与 submit
+     * 一样按 uuid 归属到已有工单，用于“我的反馈”里追加提问。
      */
-    public replyAttachmentUrl(uuid: string, path: string): string {
+    public async sendMessage(uuid: string, message: string, files: File[] = []): Promise<void> {
+        const formData = new FormData();
+        formData.append("uuid", uuid);
+        formData.append("message", message);
+        files.forEach(file => formData.append("files", file));
+
+        const result = await fetch(`${HEXDEEP_SERVER_BASE}/feedback/message/add`, {
+            method: "POST",
+            body: formData,
+        });
+        await this.handleError(result);
+    }
+
+    /**
+     * 对话线程中某条消息附件（图片/文件）的直链，公开无需鉴权（与用户自己上传的
+     * attachments 不同，那些走 /feedback/download，需要管理员 token），可以直接
+     * 当 <img src> 用。同一路由既服务客户自己的附件也服务管理员回复的附件。
+     */
+    public messageAttachmentUrl(uuid: string, path: string): string {
         const url = new URL(`${HEXDEEP_SERVER_BASE}/feedback/reply_attachment`);
         url.searchParams.set("uuid", uuid);
         url.searchParams.set("path", path);
