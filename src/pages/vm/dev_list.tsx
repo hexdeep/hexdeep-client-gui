@@ -290,6 +290,17 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             <div class={[s.listCell, s.colImage]}>
                 {!img ? <span>{row.image_addr}</span> : (
                     <div>
+                        {row.create_req?.mobile_model_version === "v3" && <el-tag
+                            size="mini"
+                            effect="dark"
+                            style={{
+                                marginRight: "5px",
+                                background: "linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)",
+                                border: "none",
+                                color: "#fff",
+                                fontWeight: "bold",
+                            }}
+                        >v3</el-tag>}
                         {img.android_version && <span
                             style={{
                                 lineHeight: "20px",
