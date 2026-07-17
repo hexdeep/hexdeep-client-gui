@@ -12,6 +12,7 @@ import { Ref, Watch } from "vue-property-decorator";
 
 @Dialog
 export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
+    private static readonly LAST_DIR_KEY = "FilelistLastDir";
     public override allowEscape: boolean = false;
     private files: FilelistInfo[] = [];
     private delayShowLoadingTimer: any;
@@ -70,8 +71,21 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
         this.deviceInfo = data; // 初始化deviceInfo
         const vmInfo = `${data.hostIp}(${data.index}-${getSuffixName(data.name)})`;
         this.title = `${this.$t("upload.fileBrowser")} ${vmInfo}`;
-        this.ls();
+        const lastDir = localStorage.getItem(FilelistDialog.LAST_DIR_KEY);
+        if (lastDir && lastDir !== this.currentDir) {
+            this.currentDir = lastDir;
+        } else {
+            this.ls();
+        }
         return super.show(data);
+    }
+
+    protected override onClosed() {
+        try {
+            localStorage.setItem(FilelistDialog.LAST_DIR_KEY, this.currentDir);
+        } catch (e) {
+            console.warn("Failed to save last dir:", e);
+        }
     }
 
     private goto(dir: string) {
