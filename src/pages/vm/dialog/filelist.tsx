@@ -137,6 +137,8 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
             // 不是目录（或不存在），当作文件尝试下载
         }
         this.downloadFile(path);
+        const dir = p.dirname(path).replaceAll("\\", "/");
+        if (dir !== this.currentDir) this.goto(dir);
     }
 
     // @ErrorProxy({ success: i18n.t("success") })
