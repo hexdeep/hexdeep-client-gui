@@ -5,9 +5,17 @@ import s from './dev_list.module.less';
 import Vue from 'vue';
 import { DeviceInfo, MyConfig } from '@/api/device_define';
 
+interface ScreenshotCacheEntry {
+    blob: Blob;
+    time: number;
+}
+
 @Component
 export class Screenshot extends tsx.Component<IProps> {
     private static eventBus = new Vue();
+    // 按云机缓存最近一次截图。勾选变化会导致网格重排、Screenshot 组件被销毁重建，
+    // 缓存让重建的组件能立即重绘旧图，避免整屏闪烁，同时跳过多余的重复请求。
+    private static cache = new Map<string, ScreenshotCacheEntry>();
     public static refresh() {
         this.eventBus.$emit("refresh");
     }
@@ -15,6 +23,10 @@ export class Screenshot extends tsx.Component<IProps> {
     @Prop() private device!: DeviceInfo;
     @Ref() private canvasRef!: HTMLCanvasElement;
     private busy = false;
+
+    private get cacheKey(): string {
+        return this.device.key ?? this.device.android_sdk;
+    }
 
     protected async created() {
         this.refresh = async () => {
@@ -31,6 +43,7 @@ export class Screenshot extends tsx.Component<IProps> {
                 this.busy = true;
                 var b = await deviceApi.screenshotMacvlan(this.device.android_sdk);
                 if (b?.size > 100) {
+                    Screenshot.cache.set(this.cacheKey, { blob: b, time: Date.now() });
                     this.updateImg(b);
                 }
             } catch (error) {
@@ -40,6 +53,15 @@ export class Screenshot extends tsx.Component<IProps> {
             }
         };
         Screenshot.eventBus.$on("refresh", this.refresh);
+
+        // 优先使用缓存立即绘制（等 canvas 挂载后），消除重排导致的闪烁；
+        // 缓存足够新时直接复用，不再发起网络请求，避免整个列表同时重新拉取截图。
+        const cached = Screenshot.cache.get(this.cacheKey);
+        if (cached && this.device.state == "running") {
+            const freshMs = (this.config?.refreshDuration ?? 15) * 1000;
+            this.$nextTick(() => this.updateImg(cached.blob));
+            if (Date.now() - cached.time < freshMs) return;
+        }
         this.refresh();
     }
 
