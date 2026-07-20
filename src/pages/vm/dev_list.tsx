@@ -303,18 +303,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         {download && <i class="el-icon-check" />}
                         {!download && <i class="el-icon-close" />}
                     </span>}
-                    {row.create_req?.mobile_model_version === "v3" && <el-tag
-                        size="mini"
-                        effect="dark"
-                        style={{
-                            marginRight: "5px",
-                            background: "linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)",
-                            border: "none",
-                            color: "#fff",
-                            fontWeight: "bold",
-                        }}
-                    >v3</el-tag>}
-                    <span>{img ? img.name : row.image_addr}</span>
+                    <span>{row.create_req?.mobile_model_version === "v3" ? "[v3]" : ""}{img ? img.name : row.image_addr}</span>
                 </div>
             </div>,
             <div class={[s.listCell, s.colState]}>{this.renderStatus(row)}</div>,
