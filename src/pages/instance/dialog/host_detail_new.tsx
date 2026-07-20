@@ -228,10 +228,15 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                             <el-progress text-inside={true} percentage={this.getPercent(this.detail?.disk_percent)}
                                 stroke-width={26} status={this.getStatus(this.detail?.disk_percent)}></el-progress>
-                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            {this.detail?.disk === "nvme" && this.nvmeInfo ? (
                                 <span style={{ color: "#999", fontSize: "12px" }}>
+                                    {this.$t("vmDetail.nvmeSerial")}: {this.nvmeInfo.serial}
+                                </span>
+                            ) : null}
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                <span>
                                     {this.detail?.disk === "nvme" && this.nvmeInfo
-                                        ? `${this.$t("vmDetail.nvmeSerial")}: ${this.nvmeInfo.serial}  ${this.$t("vmDetail.nvmeHealth")}: ${this.nvmeInfo.health_percent}%`
+                                        ? `${this.$t("vmDetail.nvmeHealth")}: ${this.nvmeInfo.health_percent}%`
                                         : ""}
                                 </span>
                                 <span>
