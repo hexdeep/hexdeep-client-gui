@@ -78,6 +78,18 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
         return img.id.replace(/^sha256:/, "").slice(0, 12);
     }
 
+    private formatAddress(img: DockerImageUsageInfo): string {
+        if (img.tags && img.tags.length > 0) {
+            return img.tags.join(", ");
+        }
+        return img.id;
+    }
+
+    private async copyAddress(img: DockerImageUsageInfo) {
+        await Tools.copyText(this.formatAddress(img));
+        this.$message.success(this.$t("vmDetail.copySuccess").toString());
+    }
+
     @ErrorProxy({
         confirm: (self: ManageImagesDialog) => i18n.t("vmDetail.deleteImagesConfirm", [self.selectedIds.length]),
         success: i18n.t("vmDetail.deleteImagesSuccess"),
@@ -155,9 +167,17 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
                             default: ({ row }: { row: DockerImageUsageInfo; }) => {
                                 const name = this.formatName(row);
                                 return (
-                                    <el-tooltip effect="dark" content={name} placement="top" open-delay={2000} disabled={name.length <= 30}>
-                                        <div class="truncate">{name}</div>
-                                    </el-tooltip>
+                                    <Row crossAlign="center" gap={2}>
+                                        <el-tooltip effect="dark" content={name} placement="top" open-delay={2000} disabled={name.length <= 30}>
+                                            <div class="truncate">{name}</div>
+                                        </el-tooltip>
+                                        <el-button
+                                            type="text"
+                                            icon="el-icon-document-copy"
+                                            class="shrink-0"
+                                            onClick={() => this.copyAddress(row)}
+                                        />
+                                    </Row>
                                 );
                             }
                         }}

@@ -153,7 +153,15 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                     </Row>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.id")}>
-                    {this.data.device_id}
+                    <Row crossAlign="center" gap={2}>
+                        <span>{this.data.device_id}</span>
+                        <el-button
+                            type="text"
+                            icon="el-icon-document-copy"
+                            class="shrink-0"
+                            onClick={this.copyDeviceId}
+                        />
+                    </Row>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.cpu")}>
                     <el-progress text-inside={true} percentage={this.getPercent(this.detail?.cpu)} stroke-width={26}
@@ -397,6 +405,11 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
 
     private async manageImages() {
         await this.$dialog(ManageImagesDialog).show(this.data);
+    }
+
+    private async copyDeviceId() {
+        await Tools.copyText(this.data.device_id);
+        this.$message.success(this.$t("vmDetail.copySuccess").toString());
     }
 
     private async onRenewVip() {

@@ -245,6 +245,7 @@
     },
     "vmDetail": {
         "title": "VM Detail",
+        "copySuccess": "Copy successful",
         "name": "Name",
         "index": "Index",
         "ip": "IP",
