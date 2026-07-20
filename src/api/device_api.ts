@@ -393,8 +393,42 @@ class DeviceApi extends ApiBase {
 
 
     public async pullImages(ip: string, addr: string) {
-        const result = await fetch(makeVmApiUrl("image_api/pull", ip) + `?address=${addr}`);
+        const url = new URL(makeVmApiUrl("image_api/pull", ip).toString());
+        url.searchParams.set("address", addr);
+        const result = await fetch(url);
         return await this.handleError(result);
+    }
+
+    public loadDockerImage(
+        ip: string,
+        file: File,
+        progress: (progressEvent: ProgressEvent) => void
+    ): { promise: Promise<any>, cancel: () => void; } {
+        const xhr = new XMLHttpRequest();
+        const promise = new Promise((resolve, reject) => {
+            xhr.open("POST", makeVmApiUrl("image_api/load", ip), true);
+            xhr.upload.onprogress = progress;
+            xhr.onload = () => {
+                try {
+                    const json = JSON.parse(xhr.responseText);
+                    if (xhr.status >= 200 && xhr.status < 300 && json.code === 200) {
+                        resolve(json.data);
+                    } else {
+                        reject(new Error(json.err || `Upload failed: ${xhr.status} ${xhr.statusText}`));
+                    }
+                } catch {
+                    reject(new Error(`Invalid response: ${xhr.status} ${xhr.statusText}`));
+                }
+            };
+            xhr.onerror = () => reject(new Error("Network error during image upload"));
+            xhr.onabort = () => reject("aborted");
+
+            const formData = new FormData();
+            formData.append("file", file);
+            xhr.send(formData);
+        });
+
+        return { promise, cancel: () => xhr.abort() };
     }
 
     public async pullImageProgress(ip: string, addr: string, dockerRegistry: string, progressCb: (progress: number) => void) {

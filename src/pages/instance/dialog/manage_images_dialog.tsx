@@ -12,6 +12,135 @@ interface ImageTable {
     toggleRowSelection(row: DockerImageUsageInfo, selected: boolean): void;
 }
 
+type AddImageMode = "reference" | "upload";
+
+interface AddImageDialogData {
+    host: HostInfo;
+}
+
+@Dialog
+export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
+    public override width: string = "500px";
+    protected mode: AddImageMode = "reference";
+    protected imageReference: string = "";
+    protected imageFile: File | null = null;
+    protected submitting: boolean = false;
+    protected uploadProgress: number = 0;
+    protected uploadTask: { promise: Promise<any>, cancel: () => void; } | null = null;
+
+    public override show(data: AddImageDialogData) {
+        this.title = this.$t("vmDetail.addImageTitle").toString();
+        return super.show(data);
+    }
+
+    public override close(result?: boolean): Promise<boolean> {
+        if (this.uploadTask) this.uploadTask.cancel();
+        return super.close(result);
+    }
+
+    private onModeChange() {
+        this.imageReference = "";
+        this.imageFile = null;
+        this.uploadProgress = 0;
+    }
+
+    private onFileChange(file: any) {
+        this.imageFile = file?.raw ?? file ?? null;
+    }
+
+    protected override async onConfirm() {
+        if (this.submitting) return;
+        if (this.mode === "reference" && !this.imageReference.trim()) {
+            this.$message.error(this.$t("vmDetail.imageReferenceRequired").toString());
+            return;
+        }
+        if (this.mode === "upload" && !this.imageFile) {
+            this.$message.error(this.$t("vmDetail.imageFileRequired").toString());
+            return;
+        }
+
+        this.submitting = true;
+        try {
+            if (this.mode === "reference") {
+                await deviceApi.pullImages(this.data.host.address, this.imageReference.trim());
+            } else {
+                this.uploadTask = deviceApi.loadDockerImage(this.data.host.address, this.imageFile!, event => {
+                    if (event.lengthComputable) {
+                        this.uploadProgress = Math.round(event.loaded / event.total * 100);
+                    }
+                });
+                await this.uploadTask.promise;
+            }
+            this.$message.success(this.$t("vmDetail.addImageSuccess").toString());
+            await this.close(true);
+        } catch (error) {
+            if (error !== "aborted") {
+                this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
+            }
+        } finally {
+            this.uploadTask = null;
+            this.submitting = false;
+        }
+    }
+
+    protected renderDialog(): VNode {
+        return (
+            <el-form label-position="top" style={{ padding: "20px" }}>
+                <el-form-item label={this.$t("vmDetail.imageImportMode")}>
+                    <el-select
+                        v-model={this.mode}
+                        disabled={this.submitting}
+                        style={{ width: "100%" }}
+                        on-change={this.onModeChange}
+                    >
+                        <el-option value="reference" label={this.$t("vmDetail.customImage").toString()} />
+                        <el-option value="upload" label={this.$t("vmDetail.uploadImage").toString()} />
+                    </el-select>
+                </el-form-item>
+                {this.mode === "reference" ? (
+                    <el-form-item label={this.$t("vmDetail.imageReference")}>
+                        <el-input
+                            v-model={this.imageReference}
+                            disabled={this.submitting}
+                            placeholder={this.$t("vmDetail.imageReferencePlaceholder")}
+                        />
+                    </el-form-item>
+                ) : (
+                    <el-form-item label={this.$t("vmDetail.imageTarFile")}>
+                        <el-upload
+                            action="#"
+                            accept=".tar,application/x-tar"
+                            multiple={false}
+                            limit={1}
+                            auto-upload={false}
+                            disabled={this.submitting}
+                            attrs={{ "on-change": this.onFileChange }}
+                            on-remove={() => { this.imageFile = null; }}
+                        >
+                            <MyButton size="small" disabled={this.submitting} text={this.$t("vmDetail.selectImageFile")} />
+                        </el-upload>
+                        {this.submitting && <el-progress percentage={this.uploadProgress} />}
+                    </el-form-item>
+                )}
+            </el-form>
+        );
+    }
+
+    protected override renderFooter() {
+        return (
+            <div class="dialog-footer">
+                <MyButton
+                    type="primary"
+                    disabled={this.submitting}
+                    text={this.submitting ? this.$t("loading") : this.$t("confirm.ok")}
+                    onClick={() => this.onConfirm()}
+                />
+                <MyButton disabled={this.submitting} text={this.$t("confirm.cancel")} onClick={() => this.close()} />
+            </div>
+        );
+    }
+}
+
 @Dialog
 export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
     public override width: string = "800px";
@@ -68,6 +197,11 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
         this.images.forEach(img => {
             table.toggleRowSelection(img, img.usage_count === 0);
         });
+    }
+
+    private async addImage() {
+        const added = await this.$dialog(AddImageDialog).show({ host: this.data });
+        if (added) await this.loadImages();
     }
 
     private formatName(img: DockerImageUsageInfo): string {
@@ -144,6 +278,9 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
                         onClick={this.selectAllDeletable}
                     >
                         {this.$t("vmDetail.selectAllDeletableImages")}
+                    </MyButton>
+                    <MyButton type="primary" size="small" onClick={this.addImage}>
+                        {this.$t("vmDetail.addImage")}
                     </MyButton>
                 </Row>
                 <el-table
