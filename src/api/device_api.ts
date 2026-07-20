@@ -431,6 +431,18 @@ class DeviceApi extends ApiBase {
         return { promise, cancel: () => xhr.abort() };
     }
 
+    public async getImageReferenceConflicts(ip: string, references: string[]): Promise<string[]> {
+        const result = await fetch(
+            makeVmApiUrl("image_api/reference_conflicts", ip),
+            {
+                method: "POST",
+                body: qs.stringify({ references }, { arrayFormat: "repeat" }),
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            }
+        );
+        return await this.handleError(result);
+    }
+
     public async pullImageProgress(ip: string, addr: string, dockerRegistry: string, progressCb: (progress: number) => void) {
         return new Promise<void>((resolve, reject) => {
             const xhr = new XMLHttpRequest();

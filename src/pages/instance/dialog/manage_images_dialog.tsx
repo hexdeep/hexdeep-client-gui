@@ -18,6 +18,48 @@ interface AddImageDialogData {
     host: HostInfo;
 }
 
+function readTarString(bytes: Uint8Array, start: number, length: number): string {
+    const end = bytes.indexOf(0, start);
+    const actualEnd = end >= start && end < start + length ? end : start + length;
+    return new TextDecoder().decode(bytes.slice(start, actualEnd)).trim();
+}
+
+async function getDockerArchiveReferences(file: File): Promise<string[]> {
+    const references = new Set<string>();
+    let offset = 0;
+
+    while (offset + 512 <= file.size) {
+        const header = new Uint8Array(await file.slice(offset, offset + 512).arrayBuffer());
+        if (header.every(value => value === 0)) break;
+
+        const name = readTarString(header, 0, 100);
+        const prefix = readTarString(header, 345, 155);
+        const path = prefix ? `${prefix}/${name}` : name;
+        const sizeText = readTarString(header, 124, 12).replace(/\0/g, "").trim();
+        const size = parseInt(sizeText || "0", 8);
+        if (!Number.isFinite(size) || size < 0) {
+            throw new Error(i18n.t("vmDetail.invalidImageTar").toString());
+        }
+
+        if (path === "manifest.json") {
+            const manifest = JSON.parse(await file.slice(offset + 512, offset + 512 + size).text());
+            (manifest as Array<{ RepoTags?: string[]; }>).forEach(item =>
+                (item.RepoTags ?? []).forEach(tag => references.add(tag))
+            );
+        } else if (path === "index.json") {
+            const index = JSON.parse(await file.slice(offset + 512, offset + 512 + size).text());
+            (index.manifests ?? []).forEach((item: { annotations?: Record<string, string>; }) => {
+                const tag = item.annotations?.["org.opencontainers.image.ref.name"];
+                if (tag) references.add(tag);
+            });
+        }
+
+        offset += 512 + Math.ceil(size / 512) * 512;
+    }
+
+    return Array.from(references);
+}
+
 @Dialog
 export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
     public override width: string = "500px";
@@ -48,6 +90,27 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
         this.imageFile = file?.raw ?? file ?? null;
     }
 
+    private async confirmUploadOverwrite(file: File): Promise<boolean> {
+        const references = await getDockerArchiveReferences(file);
+        const conflicts = await deviceApi.getImageReferenceConflicts(this.data.host.address, references);
+        if (conflicts.length === 0) return true;
+
+        try {
+            await this.$confirm(
+                this.$t("vmDetail.imageReferenceConflictConfirm", [conflicts.join(", ")]).toString(),
+                this.$t("confirm.title").toString(),
+                {
+                    confirmButtonText: this.$t("vmDetail.overwriteImage").toString(),
+                    cancelButtonText: this.$t("confirm.cancel").toString(),
+                    type: "warning"
+                }
+            );
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     protected override async onConfirm() {
         if (this.submitting) return;
         if (this.mode === "reference" && !this.imageReference.trim()) {
@@ -64,6 +127,7 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
             if (this.mode === "reference") {
                 await deviceApi.pullImages(this.data.host.address, this.imageReference.trim());
             } else {
+                if (!await this.confirmUploadOverwrite(this.imageFile!)) return;
                 this.uploadTask = deviceApi.loadDockerImage(this.data.host.address, this.imageFile!, event => {
                     if (event.lengthComputable) {
                         this.uploadProgress = Math.round(event.loaded / event.total * 100);
