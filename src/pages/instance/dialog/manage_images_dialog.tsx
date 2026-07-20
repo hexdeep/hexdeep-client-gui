@@ -312,7 +312,7 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
 
     protected override renderFooter() {
         return (
-            <div class="dialog-footer">
+            <div class="dialog-footer" style={{ paddingLeft: "20px", paddingRight: "20px" }}>
                 <Row crossAlign="center" gap={10} class="w-full">
                     <span style={{ color: "#909399", fontSize: "12px" }}>
                         {this.$t("vmDetail.manageImagesTip")}
@@ -320,6 +320,7 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
                     <Row gap={10} class="ms-auto shrink-0">
                         <MyButton
                             type="danger"
+                            plain
                             disabled={this.selectedIds.length === 0}
                             text={`${this.$t("vmDetail.deleteSelectedImages", [this.selectedIds.length])}`}
                             onClick={this.deleteSelected}
@@ -362,7 +363,13 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
                         selectable={(row: DockerImageUsageInfo) => row.usage_count === 0}
                     />
                     <el-table-column
-                        label={this.$t("vmDetail.imageColumnName")}
+                        type="index"
+                        label={this.$t("vmDetail.imageColumnIndex")}
+                        width="70"
+                        align="center"
+                    />
+                    <el-table-column
+                        label={this.$t("vmDetail.imageColumnNameWithCount", [this.images.length])}
                         min-width="220"
                         scopedSlots={{
                             default: ({ row }: { row: DockerImageUsageInfo; }) => {
