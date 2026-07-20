@@ -308,7 +308,7 @@
         "imageInUse": "使用中（{0}）",
         "imageNotInUse": "未使用",
         "selectAllDeletableImages": "全选可删除镜像",
-        "addImage": "添加镜像",
+        "addImage": "导入镜像",
         "addImageTitle": "添加 Docker 镜像",
         "imageImportMode": "导入方式",
         "customImage": "自定义镜像",
