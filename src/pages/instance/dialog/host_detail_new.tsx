@@ -1,5 +1,5 @@
 import { deviceApi } from "@/api/device_api";
-import { HostDetailInfo, HostInfo, SDKImagesRes, FirmwareVersionInfo } from "@/api/device_define";
+import { HostDetailInfo, HostInfo, SDKImagesRes, FirmwareVersionInfo, NvmeInfo } from "@/api/device_define";
 import { Tools, timeDiff } from "@/common/common";
 import { i18n } from "@/i18n/i18n";
 import { Row } from "@/lib/container";
@@ -34,6 +34,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected firmwareList: FirmwareVersionInfo[] = [];
     protected firmwareUpdated: boolean = false;
     protected currentFirmwareVersion: string = "";
+    protected nvmeInfo: NvmeInfo | null = null;
     override width: string = "600px";
     public override async show(data: HostInfo) {
         this.data = data;
@@ -57,7 +58,17 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         this.loadFirmwareList();
         this.loadCurrentFirmwareVersion();
         this.unsubscribeHostDetail = deviceApi.subscribeHostDetail(data.address, e => this.detail = e);
+        this.loadNvmeInfo();
         return super.show(data);
+    }
+
+    private async loadNvmeInfo() {
+        try {
+            this.nvmeInfo = await deviceApi.getNvmeInfo(this.data.address);
+        } catch (e) {
+            console.log(e);
+            this.nvmeInfo = null;
+        }
     }
 
     private async loadVipInfo() {
@@ -217,8 +228,15 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                             <el-progress text-inside={true} percentage={this.getPercent(this.detail?.disk_percent)}
                                 stroke-width={26} status={this.getStatus(this.detail?.disk_percent)}></el-progress>
-                            <div style={{ "text-align": "right" }}>
-                                {Tools.getFileSize((this.detail?.disk_total || 0) * this.getPercent(this.detail?.disk_percent) / 100)} / {Tools.getFileSize(this.detail?.disk_total || 0)}
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                <span style={{ color: "#999", fontSize: "12px" }}>
+                                    {this.detail?.disk === "nvme" && this.nvmeInfo
+                                        ? `${this.$t("vmDetail.nvmeSerial")}: ${this.nvmeInfo.serial}  ${this.$t("vmDetail.nvmeHealth")}: ${this.nvmeInfo.health_percent}%`
+                                        : ""}
+                                </span>
+                                <span>
+                                    {Tools.getFileSize((this.detail?.disk_total || 0) * this.getPercent(this.detail?.disk_percent) / 100)} / {Tools.getFileSize(this.detail?.disk_total || 0)}
+                                </span>
                             </div>
                         </div>
                         <div style={{ marginLeft: "10px", display: "flex", gap: "10px" }}>

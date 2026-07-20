@@ -292,6 +292,7 @@
         "cleanupGarbageSuccess": "清理垃圾文件成功",
         "currentDisk": "当前存储",
         "nvmeSerial": "NVMe序列号",
+        "nvmeHealth": "健康度",
         "rebootHostSuccess": "主机正在重启...",
         "shutdownHostSuccess": "主机正在关机...",
         "updateFirmwareSuccess": "固件更新成功，主机正在重启...",

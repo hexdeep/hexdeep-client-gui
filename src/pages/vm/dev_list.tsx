@@ -8,7 +8,7 @@ import { ErrorProxy } from '@/lib/error_handle';
 import { TextButton } from '@/lib/my_button';
 import { Component, InjectReactive, Prop, Ref, Watch } from 'vue-property-decorator';
 import * as tsx from 'vue-tsx-support';
-import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller';
+import { DynamicScroller, DynamicScrollerItem, RecycleScroller } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import s from './dev_list.module.less';
 import { AdbShellDialog } from './dialog/adb_shell';
@@ -54,11 +54,6 @@ class OverflowTooltip extends tsx.Component<{ content: string }> {
     }
 }
 
-interface GridRow {
-    _key: string;
-    devices: DeviceInfo[];
-}
-
 @Component
 export class DeviceList extends tsx.Component<IProps, IEvents> {
     @InjectReactive() protected hostTree!: MyTreeNode[];
@@ -72,6 +67,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     // 网格卡片尺寸需与 dev_list.module.less 中 .v_img/.h_img 的宽度保持一致，用于按容器宽度计算每行可容纳的卡片数
     private static readonly CARD_WIDTH: Record<string, number> = { vertical: 176 + 2, horizontal: 301 + 2 };
     private static readonly GRID_GAP = 10;
+    // 网格单行（RecycleScroller 主轴）高度：截图区（.v_img/.h_img 固定高）+ 勾选/操作行 + 行间距，须 >= 卡片实际高度以免重叠
+    private static readonly ROW_HEIGHT: Record<string, number> = { vertical: 365, horizontal: 220 };
 
     private containerWidth = 0;
     private resizeObserver?: ResizeObserver;
@@ -83,8 +80,18 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         }) || []).map(t => t.value);
         // 应用排序算法：先按主机IP排序，再按index排序，最后按创建时间降序排序
         re = sortDevicesByHostIp(re);
-        this.fillGitCommitId(re);
         return re;
+    }
+
+    // 当前展示的云机集合签名（key + 运行状态）。仅当集合或某台云机的运行状态变化时才变，
+    // 用于触发 git commit id 拉取，避免把网络请求放进 data2 getter 里导致每次重算都重新请求。
+    private get deviceGitSignature(): string {
+        return this.data2.map(d => `${d.key}:${d.state}`).join(",");
+    }
+
+    @Watch("deviceGitSignature", { immediate: true })
+    private onDeviceSetChange() {
+        this.fillGitCommitId(this.data2);
     }
 
     private get itemsPerRow(): number {
@@ -93,14 +100,17 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         return Math.max(1, Math.floor((this.containerWidth + DeviceList.GRID_GAP) / step));
     }
 
-    private get gridRows(): GridRow[] {
-        const n = this.itemsPerRow;
-        const rows: GridRow[] = [];
-        for (let i = 0; i < this.data2.length; i += n) {
-            const devices = this.data2.slice(i, i + n);
-            rows.push({ _key: devices[0]?.key ?? `row-${i}`, devices });
-        }
-        return rows;
+    // RecycleScroller 网格模式的单元格宽度（含右侧间距），与 itemsPerRow 的步长一致
+    private get gridItemSecondarySize(): number {
+        const view = this.config.view;
+        if (view !== 'vertical' && view !== 'horizontal') return DeviceList.CARD_WIDTH.vertical + DeviceList.GRID_GAP;
+        return DeviceList.CARD_WIDTH[view] + DeviceList.GRID_GAP;
+    }
+
+    private get gridRowHeight(): number {
+        const view = this.config.view;
+        if (view !== 'vertical' && view !== 'horizontal') return DeviceList.ROW_HEIGHT.vertical;
+        return DeviceList.ROW_HEIGHT[view];
     }
 
     // 计算主机IP到颜色索引的映射，同一主机颜色相同，不同主机交替颜色
@@ -146,6 +156,11 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         devices.forEach(async (device) => {
 
             if (device.state != "running") {
+                return;
+            }
+
+            // 已拿到 git commit id 的云机不再重复请求，避免勾选变化时整屏重新拉取
+            if (device.git_commit_id) {
                 return;
             }
 
@@ -315,17 +330,17 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         return (
             <el-checkbox-group value={this.rightChecked}>
                 <div ref="gridContainer" class={s[this.config.view]}>
-                    <DynamicScroller
-                        items={this.gridRows}
-                        minItemSize={this.config.view == "vertical" ? 350 : 205}
-                        keyField="_key"
+                    {/* 网格感知的虚拟滚动：扁平列表按 device.key 稳定标识，勾选变化只增删对应卡片，
+                        其余卡片实例（含截图 canvas）原地保留，不再整屏重建，从根本上消除闪烁 */}
+                    <RecycleScroller
+                        items={this.data2}
+                        keyField="key"
+                        gridItems={this.itemsPerRow}
+                        itemSize={this.gridRowHeight}
+                        itemSecondarySize={this.gridItemSecondarySize}
                         class={s.scroller}
                         scopedSlots={{
-                            default: ({ item, index, active }: { item: GridRow; index: number; active: boolean; }) => (
-                                <DynamicScrollerItem item={item} active={active} dataIndex={index} class={s.gridRow}>
-                                    {item.devices.map(e => this.renderGridCard(e))}
-                                </DynamicScrollerItem>
-                            )
+                            default: ({ item }: { item: DeviceInfo; }) => this.renderGridCard(item)
                         }}
                     />
                 </div>

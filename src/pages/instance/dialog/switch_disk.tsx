@@ -7,7 +7,6 @@ import { sleep } from "@/common/common";
 import { HostInfo, DiskItem, IscsiInfo } from "@/api/device_define";
 import { MyButton } from "@/lib/my_button";
 import { Icon } from '@iconify/vue2';
-import { Watch } from "vue-property-decorator";
 import hardDiskRounded from '@iconify-icons/material-symbols/hard-drive';
 import usbPlugFill from '@iconify-icons/bi/usb-plug-fill';
 import chip from '@iconify-icons/mdi/chip';
@@ -21,7 +20,6 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
 
     protected disks: DiskItem[] = [];
     protected currentDisk = "";
-    protected nvmeSerial = "";
     protected form = {
         disk: "",   // 选中的磁盘
         iscsi_ip: "",
@@ -35,7 +33,6 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
     public override async show(data: HostInfo) {
         this.title = this.$t("vmDetail.switchDisk").toString();
         this.data = data;
-        this.nvmeSerial = "";
 
         // ⭐ 打开对话框时获取磁盘信息
         const res = await deviceApi.getDisks(data.address);
@@ -52,28 +49,7 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
             this.form.iscsi_lun = res.iscsi_info.lun;
         }
 
-        // ⭐ 打开对话框时查询一次 NVMe 序列号，获取失败不影响其他功能
-        this.queryNvmeInfo();
-
         return super.show(data);
-    }
-
-    // 从非 nvme 切到 nvme 时重新查询序列号（换盘场景）
-    @Watch("form.disk")
-    protected onDiskChange(newDisk: string, oldDisk: string) {
-        if (newDisk === "nvme" && oldDisk !== "nvme") {
-            this.queryNvmeInfo();
-        }
-    }
-
-    private async queryNvmeInfo() {
-        try {
-            const info = await deviceApi.getNvmeInfo(this.data.address);
-            this.nvmeSerial = info?.serial || "";
-        } catch (e) {
-            console.log(e);
-            this.nvmeSerial = "";
-        }
     }
 
     @ErrorProxy({ success: i18n.t("instance.switchSDKSuccess"), loading: i18n.t("loading") })
@@ -192,12 +168,6 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
                         ))}
                     </el-radio-group>
                 </div>
-
-                {this.form.disk === 'nvme' && this.nvmeSerial ? (
-                    <div style={{ marginBottom: "20px", color: "#999" }}>
-                        {this.$t("vmDetail.nvmeSerial")}：{this.nvmeSerial}
-                    </div>
-                ) : null}
 
                 {this.form.disk === 'iscsi' ? (
                     <el-form
