@@ -253,7 +253,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                     </div>
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.networkSpeed")}>
-                    {this.formatNetworkSpeed(this.detail?.network_speed)}
+                    {this.renderNetworkSpeed(this.detail?.network_speed)}
                 </el-descriptions-item>
                 <el-descriptions-item label={i18n.t("vmDetail.hostOperate")}>
                     <div
@@ -434,6 +434,22 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         if (minutes > 0) parts.push(`${minutes}${this.$t("vmDetail.uptimeMinutes")}`);
         if (seconds > 0 || parts.length === 0) parts.push(`${seconds}${this.$t("vmDetail.uptimeSeconds")}`);
         return parts.join(' ');
+    }
+
+    private renderNetworkSpeed(speed: number | undefined): VNode {
+        const text = this.formatNetworkSpeed(speed);
+        const isLowSpeed = !!speed && speed > 0 && speed < 1000;
+        if (!isLowSpeed) {
+            return <span>{text}</span>;
+        }
+        return (
+            <el-tooltip effect="dark" content={this.$t("vmDetail.networkSpeedLowTip").toString()} placement="top">
+                <Row crossAlign="center" gap={4} style={{ display: "inline-flex", color: "#F56C6C" }}>
+                    <span>{text}</span>
+                    <i class="el-icon-warning"></i>
+                </Row>
+            </el-tooltip>
+        );
     }
 
     private formatNetworkSpeed(speed: number | undefined): string {

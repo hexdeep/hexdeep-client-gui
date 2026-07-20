@@ -260,6 +260,7 @@
         "temperature": "Temperature",
         "networkSpeed": "Network Speed",
         "networkSpeedUnknown": "Not connected",
+        "networkSpeedLowTip": "Please replace with a switch rated 1 Gbps or higher",
         "uptime": "Uptime",
         "bootTime": "Boot Time",
         "uptimeHours": "h",

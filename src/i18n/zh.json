@@ -263,6 +263,7 @@
         "temperature": "温度",
         "networkSpeed": "网卡",
         "networkSpeedUnknown": "未连接",
+        "networkSpeedLowTip": "请更换千兆级以上速率的交换机",
         "uptime": "运行时长",
         "bootTime": "开机时间",
         "uptimeHours": "小时",
