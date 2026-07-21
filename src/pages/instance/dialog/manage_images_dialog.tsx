@@ -6,7 +6,7 @@ import { i18n } from "@/i18n/i18n";
 import { HostInfo, DockerImageUsageInfo, ImageInfo } from "@/api/device_define";
 import { Column, Row } from "@/lib/container";
 import { MyButton } from "@/lib/my_button";
-import { Tools } from "@/common/common";
+import { Tools, makeVmApiUrl } from "@/common/common";
 
 interface ImageTable {
     toggleRowSelection(row: DockerImageUsageInfo, selected: boolean): void;
@@ -397,6 +397,13 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
         this.$message.success(this.$t("vmDetail.copySuccess").toString());
     }
 
+    private exportImage(img: DockerImageUsageInfo) {
+        // 用镜像 id 而非 tags：镜像可能没有 tag（悬空镜像）或有多个 tag，id 总是唯一且有效
+        const url = makeVmApiUrl("image_api/export_archive", this.data.address);
+        url.searchParams.set("image_name", img.id);
+        window.open(url.toString(), "_blank");
+    }
+
     @ErrorProxy({
         confirm: (self: ManageImagesDialog) => i18n.t("vmDetail.deleteImagesConfirm", [self.selectedIds.length]),
         success: i18n.t("vmDetail.deleteImagesSuccess"),
@@ -494,6 +501,14 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
                                             class="shrink-0"
                                             onClick={() => this.copyAddress(row)}
                                         />
+                                        <el-tooltip effect="dark" content={this.$t("vmDetail.exportImage").toString()} placement="top">
+                                            <el-button
+                                                type="text"
+                                                icon="el-icon-download"
+                                                class="shrink-0"
+                                                onClick={() => this.exportImage(row)}
+                                            />
+                                        </el-tooltip>
                                     </Row>
                                 );
                             }

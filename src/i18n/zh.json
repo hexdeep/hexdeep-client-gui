@@ -311,6 +311,7 @@
         "imageNotInUse": "未使用",
         "selectAllDeletableImages": "全选可删除镜像",
         "addImage": "导入镜像",
+        "exportImage": "导出镜像（归档模式）",
         "addImageTitle": "添加 Docker 镜像",
         "imageImportMode": "导入方式",
         "customImage": "远程镜像",

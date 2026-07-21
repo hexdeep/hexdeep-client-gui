@@ -308,6 +308,7 @@
         "imageNotInUse": "Not in use",
         "selectAllDeletableImages": "Select All Deletable",
         "addImage": "Add Image",
+        "exportImage": "Export Image (Archive Mode)",
         "addImageTitle": "Add Docker Image",
         "imageImportMode": "Import Method",
         "customImage": "Remote Image",
