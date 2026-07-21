@@ -160,9 +160,11 @@ export class FilelistDialog extends DrawerDialog<DeviceInfo, void> {
                             if (e.key === "Enter") this.confirmEditPath();
                             else if (e.key === "Escape") this.cancelEditPath();
                         }}
+                        onBlur={() => this.cancelEditPath()}
                     />
-                    <i class="el-icon-check" style={{ cursor: "pointer" }} onClick={() => this.confirmEditPath()} />
-                    <i class="el-icon-close" style={{ cursor: "pointer" }} onClick={() => this.cancelEditPath()} />
+                    {/* mousedown 阶段 preventDefault，避免点击图标先触发输入框 blur（导致 cancelEditPath 抢先执行）*/}
+                    <i class="el-icon-check" style={{ cursor: "pointer" }} onMousedown={(e: MouseEvent) => e.preventDefault()} onClick={() => this.confirmEditPath()} />
+                    <i class="el-icon-close" style={{ cursor: "pointer" }} onMousedown={(e: MouseEvent) => e.preventDefault()} onClick={() => this.cancelEditPath()} />
                 </Row>
             );
         }
