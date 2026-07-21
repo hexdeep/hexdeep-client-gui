@@ -259,10 +259,6 @@ export class EditImageNameDialog extends CommonDialog<EditImageNameDialogData, b
         return super.show(data);
     }
 
-    private onReferenceChange(reference: string) {
-        this.imageName = this.data.image.custom_names?.[reference] ?? "";
-    }
-
     protected override async onConfirm() {
         if (this.submitting) return;
         if (!this.reference) {
@@ -292,9 +288,8 @@ export class EditImageNameDialog extends CommonDialog<EditImageNameDialogData, b
                 <el-form-item label={this.$t("vmDetail.imageReference")}>
                     <el-select
                         v-model={this.reference}
-                        disabled={this.submitting}
+                        disabled
                         style={{ width: "100%" }}
-                        on-change={this.onReferenceChange}
                     >
                         {this.data.image.tags.map(reference => (
                             <el-option key={reference} value={reference} label={reference} />
