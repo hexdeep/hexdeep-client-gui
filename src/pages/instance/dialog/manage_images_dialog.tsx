@@ -81,7 +81,8 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
     public override width: string = "500px";
     protected mode: AddImageMode = "reference";
     protected imageAddress: string = "";
-    protected repositoryTag: string = "";
+    protected repositoryPart: string = "";
+    protected tagPart: string = "";
     protected imageFile: File | null = null;
     protected submitting: boolean = false;
     protected uploadProgress: number = 0;
@@ -113,13 +114,35 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
         return map[status] ?? status;
     }
 
+    private combinedRepositoryTag(): string {
+        return this.tagPart ? `${this.repositoryPart}:${this.tagPart}` : this.repositoryPart;
+    }
+
+    private setRepositoryTag(value: string) {
+        const idx = value.lastIndexOf(":");
+        if (idx >= 0) {
+            this.repositoryPart = value.slice(0, idx);
+            this.tagPart = value.slice(idx + 1);
+        } else {
+            this.repositoryPart = value;
+            this.tagPart = "";
+        }
+    }
+
+    private async copyRepositoryTag() {
+        const value = this.combinedRepositoryTag().trim();
+        if (!value) return;
+        await Tools.copyText(value);
+        this.$message.success(this.$t("vmDetail.copySuccess").toString());
+    }
+
     private async onFileChange(file: any) {
         this.imageFile = file?.raw ?? file ?? null;
-        if (this.imageFile && !this.repositoryTag.trim()) {
+        if (this.imageFile && !this.combinedRepositoryTag().trim()) {
             try {
                 const archive = await getDockerArchiveInfo(this.imageFile);
                 if (!archive.isDockerArchive) {
-                    this.repositoryTag = imageReferenceFromFilename(this.imageFile.name);
+                    this.setRepositoryTag(imageReferenceFromFilename(this.imageFile.name));
                 }
             } catch {
                 // 仅用于预填，解析失败不影响正式提交时的校验
@@ -167,7 +190,7 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                 this.uploadTask = deviceApi.pullImages(
                     this.data.host.address,
                     this.imageAddress.trim(),
-                    this.repositoryTag.trim() || undefined,
+                    this.combinedRepositoryTag().trim() || undefined,
                     (percent, status) => {
                         this.uploadProgress = Math.max(0, Math.min(100, percent));
                         this.progressStatus = status;
@@ -176,13 +199,13 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                 await this.uploadTask.promise;
             } else {
                 const archive = await getDockerArchiveInfo(this.imageFile!);
-                if (!archive.isDockerArchive && !this.repositoryTag.trim()) {
+                if (!archive.isDockerArchive && !this.combinedRepositoryTag().trim()) {
                     this.$message.error(this.$t("vmDetail.repositoryTagRequired").toString());
                     return;
                 }
-                const references = archive.isDockerArchive ? archive.references : [this.repositoryTag.trim()];
+                const references = archive.isDockerArchive ? archive.references : [this.combinedRepositoryTag().trim()];
                 if (!await this.confirmUploadOverwrite(references)) return;
-                this.uploadTask = deviceApi.loadDockerImage(this.data.host.address, this.imageFile!, this.repositoryTag.trim(), references, event => {
+                this.uploadTask = deviceApi.loadDockerImage(this.data.host.address, this.imageFile!, this.combinedRepositoryTag().trim(), references, event => {
                     if (event.lengthComputable) {
                         this.uploadProgress = Math.round(event.loaded / event.total * 100);
                     }
@@ -241,12 +264,28 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                         </el-upload>
                     </el-form-item>
                 )}
-                <el-form-item label={this.$t("vmDetail.imageRepositoryTag")}>
-                    <el-input
-                        v-model={this.repositoryTag}
-                        disabled={this.submitting}
-                        placeholder={this.$t("vmDetail.imageRepositoryTagPlaceholder")}
-                    />
+                <el-form-item>
+                    <div slot="label" class="flex items-center gap-4">
+                        <span>{this.$t("vmDetail.imageRepositoryTag")}</span>
+                        <el-button
+                            type="text"
+                            icon="el-icon-document-copy"
+                            onClick={() => this.copyRepositoryTag()}
+                        />
+                    </div>
+                    <Row crossAlign="center" gap={6}>
+                        <el-input
+                            v-model={this.repositoryPart}
+                            disabled={this.submitting}
+                            placeholder={this.$t("vmDetail.imageRepositoryPlaceholder")}
+                        />
+                        <span>:</span>
+                        <el-input
+                            v-model={this.tagPart}
+                            disabled={this.submitting}
+                            placeholder={this.$t("vmDetail.imageTagPlaceholder")}
+                        />
+                    </Row>
                 </el-form-item>
                 {this.submitting && (
                     <el-form-item>
