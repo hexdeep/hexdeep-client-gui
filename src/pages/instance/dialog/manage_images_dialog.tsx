@@ -18,11 +18,6 @@ interface AddImageDialogData {
     host: HostInfo;
 }
 
-interface EditImageNameDialogData {
-    host: HostInfo;
-    image: DockerImageUsageInfo;
-}
-
 function readTarString(bytes: Uint8Array, start: number, length: number): string {
     const end = bytes.indexOf(0, start);
     const actualEnd = end >= start && end < start + length ? end : start + length;
@@ -85,11 +80,12 @@ async function getDockerArchiveInfo(file: File): Promise<DockerArchiveInfo> {
 export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
     public override width: string = "500px";
     protected mode: AddImageMode = "reference";
-    protected imageReference: string = "";
-    protected imageName: string = "";
+    protected imageAddress: string = "";
+    protected repositoryTag: string = "";
     protected imageFile: File | null = null;
     protected submitting: boolean = false;
     protected uploadProgress: number = 0;
+    protected progressStatus: string = "";
     protected uploadTask: { promise: Promise<any>, cancel: () => void; } | null = null;
 
     public override show(data: AddImageDialogData) {
@@ -103,18 +99,36 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
     }
 
     private onModeChange() {
-        this.imageReference = "";
+        this.imageAddress = "";
         this.imageFile = null;
         this.uploadProgress = 0;
+        this.progressStatus = "";
     }
 
-    private onFileChange(file: any) {
+    private formatProgressStatus(status: string): string {
+        const map: Record<string, string> = {
+            downloading: this.$t("vmDetail.pullStatusDownloading").toString(),
+            importing: this.$t("vmDetail.pullStatusImporting").toString(),
+        };
+        return map[status] ?? status;
+    }
+
+    private async onFileChange(file: any) {
         this.imageFile = file?.raw ?? file ?? null;
+        if (this.imageFile && !this.repositoryTag.trim()) {
+            try {
+                const archive = await getDockerArchiveInfo(this.imageFile);
+                if (!archive.isDockerArchive) {
+                    this.repositoryTag = imageReferenceFromFilename(this.imageFile.name);
+                }
+            } catch {
+                // 仅用于预填，解析失败不影响正式提交时的校验
+            }
+        }
     }
 
-    private async confirmUploadOverwrite(file: File): Promise<boolean> {
-        const archive = await getDockerArchiveInfo(file);
-        const references = archive.isDockerArchive ? archive.references : [imageReferenceFromFilename(file.name)];
+    private async confirmUploadOverwrite(references: string[]): Promise<boolean> {
+        if (references.length === 0) return true;
         const conflicts = await deviceApi.getImageReferenceConflicts(this.data.host.address, references);
         if (conflicts.length === 0) return true;
 
@@ -134,34 +148,41 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
         }
     }
 
-    private async getUploadReferences(file: File): Promise<string[]> {
-        const archive = await getDockerArchiveInfo(file);
-        return archive.isDockerArchive ? archive.references : [imageReferenceFromFilename(file.name)];
-    }
-
     protected override async onConfirm() {
         if (this.submitting) return;
-        if (this.mode === "reference" && !this.imageReference.trim()) {
-            this.$message.error(this.$t("vmDetail.imageReferenceRequired").toString());
+        if (this.mode === "reference" && !this.imageAddress.trim()) {
+            this.$message.error(this.$t("vmDetail.imageAddressRequired").toString());
             return;
         }
         if (this.mode === "upload" && !this.imageFile) {
             this.$message.error(this.$t("vmDetail.imageFileRequired").toString());
             return;
         }
-        if (!this.imageName.trim()) {
-            this.$message.error(this.$t("vmDetail.imageNameRequired").toString());
-            return;
-        }
 
         this.submitting = true;
+        this.uploadProgress = 0;
+        this.progressStatus = "";
         try {
             if (this.mode === "reference") {
-                await deviceApi.pullImages(this.data.host.address, this.imageReference.trim(), this.imageName.trim());
+                this.uploadTask = deviceApi.pullImages(
+                    this.data.host.address,
+                    this.imageAddress.trim(),
+                    this.repositoryTag.trim() || undefined,
+                    (percent, status) => {
+                        this.uploadProgress = Math.max(0, Math.min(100, percent));
+                        this.progressStatus = status;
+                    }
+                );
+                await this.uploadTask.promise;
             } else {
-                if (!await this.confirmUploadOverwrite(this.imageFile!)) return;
-                const references = await this.getUploadReferences(this.imageFile!);
-                this.uploadTask = deviceApi.loadDockerImage(this.data.host.address, this.imageFile!, this.imageName.trim(), references, event => {
+                const archive = await getDockerArchiveInfo(this.imageFile!);
+                if (!archive.isDockerArchive && !this.repositoryTag.trim()) {
+                    this.$message.error(this.$t("vmDetail.repositoryTagRequired").toString());
+                    return;
+                }
+                const references = archive.isDockerArchive ? archive.references : [this.repositoryTag.trim()];
+                if (!await this.confirmUploadOverwrite(references)) return;
+                this.uploadTask = deviceApi.loadDockerImage(this.data.host.address, this.imageFile!, this.repositoryTag.trim(), references, event => {
                     if (event.lengthComputable) {
                         this.uploadProgress = Math.round(event.loaded / event.total * 100);
                     }
@@ -194,19 +215,12 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                         <el-option value="upload" label={this.$t("vmDetail.uploadImage").toString()} />
                     </el-select>
                 </el-form-item>
-                <el-form-item label={this.$t("vmDetail.imageDisplayName")}>
-                    <el-input
-                        v-model={this.imageName}
-                        disabled={this.submitting}
-                        placeholder={this.$t("vmDetail.imageDisplayNamePlaceholder")}
-                    />
-                </el-form-item>
                 {this.mode === "reference" ? (
-                    <el-form-item label={this.$t("vmDetail.imageReference")}>
+                    <el-form-item label={this.$t("vmDetail.imageAddress")}>
                         <el-input
-                            v-model={this.imageReference}
+                            v-model={this.imageAddress}
                             disabled={this.submitting}
-                            placeholder={this.$t("vmDetail.imageReferencePlaceholder")}
+                            placeholder={this.$t("vmDetail.imageAddressPlaceholder")}
                         />
                     </el-form-item>
                 ) : (
@@ -223,86 +237,23 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                         >
                             <MyButton size="small" disabled={this.submitting} text={this.$t("vmDetail.selectImageFile")} />
                         </el-upload>
-                        {this.submitting && <el-progress percentage={this.uploadProgress} />}
                     </el-form-item>
                 )}
-            </el-form>
-        );
-    }
-
-    protected override renderFooter() {
-        return (
-            <div class="dialog-footer">
-                <MyButton
-                    type="primary"
-                    disabled={this.submitting}
-                    text={this.submitting ? this.$t("loading") : this.$t("confirm.ok")}
-                    onClick={() => this.onConfirm()}
-                />
-                <MyButton disabled={this.submitting} text={this.$t("confirm.cancel")} onClick={() => this.close()} />
-            </div>
-        );
-    }
-}
-
-@Dialog
-export class EditImageNameDialog extends CommonDialog<EditImageNameDialogData, boolean> {
-    public override width: string = "500px";
-    protected reference: string = "";
-    protected imageName: string = "";
-    protected submitting: boolean = false;
-
-    public override show(data: EditImageNameDialogData) {
-        this.title = this.$t("vmDetail.editImageNameTitle").toString();
-        this.reference = data.image.tags[0] ?? "";
-        this.imageName = data.image.custom_names?.[this.reference] ?? "";
-        return super.show(data);
-    }
-
-    protected override async onConfirm() {
-        if (this.submitting) return;
-        if (!this.reference) {
-            this.$message.error(this.$t("vmDetail.imageReferenceRequired").toString());
-            return;
-        }
-        if (!this.imageName.trim()) {
-            this.$message.error(this.$t("vmDetail.imageNameRequired").toString());
-            return;
-        }
-
-        this.submitting = true;
-        try {
-            await deviceApi.setCustomImageName(this.data.host.address, this.reference, this.imageName.trim());
-            this.$message.success(this.$t("vmDetail.editImageNameSuccess").toString());
-            await this.close(true);
-        } catch (error) {
-            this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
-        } finally {
-            this.submitting = false;
-        }
-    }
-
-    protected renderDialog(): VNode {
-        return (
-            <el-form label-position="top" style={{ padding: "20px" }}>
-                <el-form-item label={this.$t("vmDetail.imageReference")}>
-                    <el-select
-                        v-model={this.reference}
-                        disabled
-                        style={{ width: "100%" }}
-                    >
-                        {this.data.image.tags.map(reference => (
-                            <el-option key={reference} value={reference} label={reference} />
-                        ))}
-                    </el-select>
-                </el-form-item>
-                <el-form-item label={this.$t("vmDetail.imageDisplayName")}>
+                <el-form-item label={this.$t("vmDetail.imageRepositoryTag")}>
                     <el-input
-                        v-model={this.imageName}
+                        v-model={this.repositoryTag}
                         disabled={this.submitting}
-                        placeholder={this.$t("vmDetail.imageDisplayNamePlaceholder")}
+                        placeholder={this.$t("vmDetail.imageRepositoryTagPlaceholder")}
                     />
                 </el-form-item>
+                {this.submitting && (
+                    <el-form-item>
+                        <el-progress percentage={this.uploadProgress} />
+                        {this.progressStatus && (
+                            <div style={{ fontSize: "12px", color: "#909399" }}>{this.formatProgressStatus(this.progressStatus)}</div>
+                        )}
+                    </el-form-item>
+                )}
             </el-form>
         );
     }
@@ -387,7 +338,7 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
 
     private formatName(img: DockerImageUsageInfo): string {
         if (img.tags && img.tags.length > 0) {
-            const names = img.tags.map(tag => img.custom_names?.[tag] ?? this.imageNameMap[tag] ?? tag);
+            const names = img.tags.map(tag => this.imageNameMap[tag] ?? tag);
             return names.join(", ");
         }
         return img.id.replace(/^sha256:/, "").slice(0, 12);
@@ -403,12 +354,6 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
     private async copyAddress(img: DockerImageUsageInfo) {
         await Tools.copyText(this.formatAddress(img));
         this.$message.success(this.$t("vmDetail.copySuccess").toString());
-    }
-
-    private async editImageName(img: DockerImageUsageInfo) {
-        if (!img.tags?.length) return;
-        const updated = await this.$dialog(EditImageNameDialog).show({ host: this.data, image: img });
-        if (updated) await this.loadImages();
     }
 
     @ErrorProxy({
@@ -507,13 +452,6 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
                                             icon="el-icon-document-copy"
                                             class="shrink-0"
                                             onClick={() => this.copyAddress(row)}
-                                        />
-                                        <el-button
-                                            type="text"
-                                            icon="el-icon-edit"
-                                            class="shrink-0"
-                                            disabled={!row.tags?.length}
-                                            onClick={() => this.editImageName(row)}
                                         />
                                     </Row>
                                 );

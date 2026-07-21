@@ -392,18 +392,61 @@ class DeviceApi extends ApiBase {
     }
 
 
-    public async pullImages(ip: string, addr: string, name?: string) {
-        const url = new URL(makeVmApiUrl("image_api/pull", ip).toString());
+    // pullImages 通过 SSE（image_api/pull_sse）而不是一次性阻塞请求来拉取/下载镜像：
+    // 拉取一个官方仓库/Registry 地址通常很快，但该接口还支持传入任意 http(s) 地址直接下载
+    // tar 包，慢速外部服务器可能耗时数分钟，普通阻塞请求会被网关/反代的空闲超时掐断，浏览器
+    // 会把这类超时误报成 CORS 错误。SSE 连接本身持续有字节流出不会触发这个问题，还能顺带把
+    // 后端实时测得的下载/导入进度推给前端，不需要客户端轮询。
+    public pullImages(
+        ip: string,
+        addr: string,
+        repository: string | undefined,
+        onProgress?: (percent: number, status: string) => void
+    ): { promise: Promise<any>, cancel: () => void; } {
+        const url = new URL(makeVmApiUrl("image_api/pull_sse", ip).toString());
         url.searchParams.set("address", addr);
-        if (name) url.searchParams.set("name", name);
-        const result = await fetch(url);
-        return await this.handleError(result);
+        if (repository) url.searchParams.set("repository", repository);
+
+        const source = new EventSource(url.toString());
+        let settled = false;
+        const promise = new Promise<any>((resolve, reject) => {
+            source.onmessage = (event) => {
+                let msg: any;
+                try {
+                    msg = JSON.parse(event.data);
+                } catch {
+                    return;
+                }
+
+                if (msg.code === 3) {
+                    // 进行中：{percent, status}，percent<0 表示无法计算具体百分比
+                    if (onProgress && msg.data) onProgress(msg.data.percent, msg.data.status);
+                    return;
+                }
+
+                settled = true;
+                source.close();
+                if (msg.code === 200) {
+                    resolve(msg.data);
+                } else {
+                    reject(new Error(msg.err || "拉取失败"));
+                }
+            };
+            source.onerror = () => {
+                source.close();
+                if (settled) return;
+                settled = true;
+                reject(new Error("与后端的连接中断"));
+            };
+        });
+
+        return { promise, cancel: () => source.close() };
     }
 
     public loadDockerImage(
         ip: string,
         file: File,
-        name: string,
+        repository: string,
         references: string[],
         progress: (progressEvent: ProgressEvent) => void
     ): { promise: Promise<any>, cancel: () => void; } {
@@ -428,7 +471,7 @@ class DeviceApi extends ApiBase {
 
             const formData = new FormData();
             formData.append("file", file);
-            formData.append("name", name);
+            formData.append("repository", repository);
             references.forEach(reference => formData.append("references", reference));
             xhr.send(formData);
         });
@@ -446,18 +489,6 @@ class DeviceApi extends ApiBase {
             }
         );
         return await this.handleError(result);
-    }
-
-    public async setCustomImageName(ip: string, reference: string, name: string): Promise<void> {
-        const result = await fetch(
-            makeVmApiUrl("image_api/custom_name", ip),
-            {
-                method: "POST",
-                body: qs.stringify({ reference, name }),
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            }
-        );
-        await this.handleError(result);
     }
 
     public async pullImageProgress(ip: string, addr: string, dockerRegistry: string, progressCb: (progress: number) => void) {

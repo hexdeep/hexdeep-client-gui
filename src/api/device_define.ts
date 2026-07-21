@@ -96,7 +96,6 @@ export interface ImageInfo {
 export interface DockerImageUsageInfo {
     id: string; // 镜像ID
     tags: string[]; // RepoTags，可能为空（悬空镜像）
-    custom_names: Record<string, string>; // 镜像引用 -> 本地自定义名称
     size: number; // 字节
     created_at: string;
     usage_count: number; // 正在使用该镜像的云机数量，0表示可删除
