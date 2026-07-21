@@ -218,6 +218,8 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                 {this.mode === "reference" ? (
                     <el-form-item label={this.$t("vmDetail.imageAddress")}>
                         <el-input
+                            type="textarea"
+                            rows={3}
                             v-model={this.imageAddress}
                             disabled={this.submitting}
                             placeholder={this.$t("vmDetail.imageAddressPlaceholder")}
