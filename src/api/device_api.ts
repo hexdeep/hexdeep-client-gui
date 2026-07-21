@@ -392,9 +392,10 @@ class DeviceApi extends ApiBase {
     }
 
 
-    public async pullImages(ip: string, addr: string) {
+    public async pullImages(ip: string, addr: string, name?: string) {
         const url = new URL(makeVmApiUrl("image_api/pull", ip).toString());
         url.searchParams.set("address", addr);
+        if (name) url.searchParams.set("name", name);
         const result = await fetch(url);
         return await this.handleError(result);
     }
@@ -402,6 +403,8 @@ class DeviceApi extends ApiBase {
     public loadDockerImage(
         ip: string,
         file: File,
+        name: string,
+        references: string[],
         progress: (progressEvent: ProgressEvent) => void
     ): { promise: Promise<any>, cancel: () => void; } {
         const xhr = new XMLHttpRequest();
@@ -425,6 +428,8 @@ class DeviceApi extends ApiBase {
 
             const formData = new FormData();
             formData.append("file", file);
+            formData.append("name", name);
+            references.forEach(reference => formData.append("references", reference));
             xhr.send(formData);
         });
 
@@ -441,6 +446,18 @@ class DeviceApi extends ApiBase {
             }
         );
         return await this.handleError(result);
+    }
+
+    public async setCustomImageName(ip: string, reference: string, name: string): Promise<void> {
+        const result = await fetch(
+            makeVmApiUrl("image_api/custom_name", ip),
+            {
+                method: "POST",
+                body: qs.stringify({ reference, name }),
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            }
+        );
+        await this.handleError(result);
     }
 
     public async pullImageProgress(ip: string, addr: string, dockerRegistry: string, progressCb: (progress: number) => void) {
