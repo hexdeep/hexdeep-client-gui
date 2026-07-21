@@ -267,7 +267,7 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                     text={this.submitting ? this.$t("loading") : this.$t("confirm.ok")}
                     onClick={() => this.onConfirm()}
                 />
-                <MyButton disabled={this.submitting} text={this.$t("confirm.cancel")} onClick={() => this.close()} />
+                <MyButton text={this.$t("confirm.cancel")} onClick={() => this.close()} />
             </div>
         );
     }

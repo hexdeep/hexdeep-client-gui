@@ -409,7 +409,9 @@ class DeviceApi extends ApiBase {
 
         const source = new EventSource(url.toString());
         let settled = false;
+        let rejectFn: (reason?: any) => void = () => { };
         const promise = new Promise<any>((resolve, reject) => {
+            rejectFn = reject;
             source.onmessage = (event) => {
                 let msg: any;
                 try {
@@ -440,7 +442,17 @@ class DeviceApi extends ApiBase {
             };
         });
 
-        return { promise, cancel: () => source.close() };
+        // 关闭 EventSource 会让浏览器断开底层连接，后端 PullSSE 用 c.Request().Context()
+        // 检测到客户端断开后会中止正在进行的下载/导入，不会有镜像残留；这里额外把 promise
+        // 结束掉（用与 XHR 上传取消一致的 "aborted" 惯例），避免 onConfirm 里的 await 挂起。
+        const cancel = () => {
+            if (settled) return;
+            settled = true;
+            source.close();
+            rejectFn("aborted");
+        };
+
+        return { promise, cancel };
     }
 
     public loadDockerImage(
