@@ -11,7 +11,7 @@ import * as tsx from 'vue-tsx-support';
 import { DynamicScroller, DynamicScrollerItem, RecycleScroller } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import s from './dev_list.module.less';
-import { AdbShellDialog } from './dialog/adb_shell';
+import { openAdbShell } from './dialog/adb_shell';
 import { CloneVmDialog } from './dialog/clone_vm';
 import { ExportModelDialog } from './dialog/export_model';
 import { ImportModelDialog } from './dialog/import_model';
@@ -625,7 +625,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     // 隐藏功能：预览图连续双击弹出交互式 adb shell 终端，仅在云机运行中生效
     private openAdbShell(data: DeviceInfo) {
         if (data.state !== 'running') return;
-        this.$dialog(AdbShellDialog).show(data);
+        openAdbShell(this, data);
     }
 
     private async showVipDialog() {
