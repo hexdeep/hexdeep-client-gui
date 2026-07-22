@@ -30,8 +30,10 @@ import { Icon } from '@iconify/vue2';
 import moreVert from '@iconify-icons/mdi/more-vert';
 
 @Component
-class OverflowTooltip extends tsx.Component<{ content: string }> {
+class OverflowTooltip extends tsx.Component<{ content: string; openDelay?: number }> {
     @Prop() private content!: string;
+    // 悬停多久后才弹出 tooltip，单位 ms，默认不延迟；镜像列需要悬停 1 秒后才弹出
+    @Prop({ default: 0 }) private openDelay!: number;
     private disabled = false;
 
     private onMouseEnter(e: MouseEvent) {
@@ -45,9 +47,9 @@ class OverflowTooltip extends tsx.Component<{ content: string }> {
 
     render() {
         return (
-            <el-tooltip content={this.content} placement="top" enterable={true} disabled={this.disabled}>
+            <el-tooltip content={this.content} placement="top" enterable={true} disabled={this.disabled} openDelay={this.openDelay}>
                 <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" onMouseenter={this.onMouseEnter}>
-                    {this.content}
+                    {this.$slots.default ?? this.content}
                 </div>
             </el-tooltip>
         );
@@ -280,6 +282,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         // 此时无法判断真实下载状态，暂按"已是最新"处理，避免误报叉号。
         // 根因见 /root/vm_image_cross_investigation.md，需要按 host 隔离镜像列表后移除。
         const download = img ? (img.id === "" || row.image_digest === img.id) : false;
+        const imageText = `${row.create_req?.mobile_model_version === "v3" ? "[v3]" : ""}${img ? img.name : row.image_addr}`;
         return [
             <div class={[s.listCell, s.colSelection]}>
                 {/* el-checkbox 在没有默认插槽内容时会把 label 当作可见文本回退显示，这里传入空 span 阻止该行为 */}
@@ -303,7 +306,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             <div class={[s.listCell, s.colCreatedAt]}>{this.formatCreatedAt(row.created_at)}</div>,
             <div class={[s.listCell, s.colGit]} attrs={{ title: row.git_commit_id }}>{row.git_commit_id}</div>,
             <div class={[s.listCell, s.colImage]}>
-                <div>
+                <OverflowTooltip content={imageText} openDelay={1000}>
                     {img?.android_version && <span
                         style={{
                             lineHeight: "20px",
@@ -318,8 +321,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         {download && <i class="el-icon-check" />}
                         {!download && <i class="el-icon-close" />}
                     </span>}
-                    <span>{row.create_req?.mobile_model_version === "v3" ? "[v3]" : ""}{img ? img.name : row.image_addr}</span>
-                </div>
+                    <span>{imageText}</span>
+                </OverflowTooltip>
             </div>,
             <div class={[s.listCell, s.colState]}>{this.renderStatus(row)}</div>,
             <div class={[s.listCell, s.colAction]}>{this.renderAction(row)}</div>,
