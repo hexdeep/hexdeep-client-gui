@@ -282,7 +282,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         // 此时无法判断真实下载状态，暂按"已是最新"处理，避免误报叉号。
         // 根因见 /root/vm_image_cross_investigation.md，需要按 host 隔离镜像列表后移除。
         const download = img ? (img.id === "" || row.image_digest === img.id) : false;
-        const imageText = `${row.create_req?.mobile_model_version === "v3" ? "[v3]" : ""}${img ? img.name : row.image_addr}`;
+        const imageText = img ? img.name : row.image_addr;
+        const gitText = `${row.git_commit_id ?? ""}${row.create_req?.mobile_model_version === "v3" ? "[v3]" : ""}`;
         return [
             <div class={[s.listCell, s.colSelection]}>
                 {/* el-checkbox 在没有默认插槽内容时会把 label 当作可见文本回退显示，这里传入空 span 阻止该行为 */}
@@ -304,7 +305,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                 <span class={colorClass}>{this.formatAdb(row.adb)}</span>
             </div>,
             <div class={[s.listCell, s.colCreatedAt]}>{this.formatCreatedAt(row.created_at)}</div>,
-            <div class={[s.listCell, s.colGit]} attrs={{ title: row.git_commit_id }}>{row.git_commit_id}</div>,
+            <div class={[s.listCell, s.colGit]} attrs={{ title: gitText }}>{gitText}</div>,
             <div class={[s.listCell, s.colImage]}>
                 <OverflowTooltip content={imageText} openDelay={1000}>
                     {img?.android_version && <span
