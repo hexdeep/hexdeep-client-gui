@@ -30,20 +30,92 @@ interface DockerArchiveInfo {
 }
 
 function imageReferenceFromFilename(filename: string): string {
-    const base = filename.replace(/\.[^.]+$/, "").toLowerCase();
+    const base = filename.replace(/\.(tar\.gz|tgz|tar)$/i, "").toLowerCase();
     const name = base.replace(/[^a-z0-9._-]+/g, "-").replace(/^[._-]+|[._-]+$/g, "") || "custom-image";
     return `${name}:latest`;
+}
+
+// 顺序读取 tar 字节流的抽象：未压缩包用 File.slice 随机访问（不占内存），gzip 包只能顺序解压读取
+interface TarByteSource {
+    read(n: number): Promise<Uint8Array>;
+    skip(n: number): Promise<void>;
+}
+
+class FileTarSource implements TarByteSource {
+    private offset = 0;
+    constructor(private file: File) { }
+    async read(n: number): Promise<Uint8Array> {
+        const bytes = new Uint8Array(await this.file.slice(this.offset, this.offset + n).arrayBuffer());
+        this.offset += n;
+        return bytes;
+    }
+    async skip(n: number): Promise<void> {
+        this.offset += n;
+    }
+}
+
+class StreamTarSource implements TarByteSource {
+    private reader: ReadableStreamDefaultReader<Uint8Array>;
+    private buffer = new Uint8Array(0);
+    private streamDone = false;
+
+    constructor(stream: ReadableStream<Uint8Array>) {
+        this.reader = stream.getReader();
+    }
+
+    private async fill(min: number) {
+        while (this.buffer.length < min && !this.streamDone) {
+            const { value, done } = await this.reader.read();
+            if (done) { this.streamDone = true; break; }
+            const merged = new Uint8Array(this.buffer.length + value.length);
+            merged.set(this.buffer);
+            merged.set(value, this.buffer.length);
+            this.buffer = merged;
+        }
+    }
+
+    async read(n: number): Promise<Uint8Array> {
+        await this.fill(n);
+        const take = Math.min(n, this.buffer.length);
+        const result = this.buffer.slice(0, take);
+        this.buffer = this.buffer.slice(take);
+        return result;
+    }
+
+    async skip(n: number): Promise<void> {
+        let remaining = n;
+        while (remaining > 0) {
+            if (this.buffer.length > 0) {
+                const take = Math.min(remaining, this.buffer.length);
+                this.buffer = this.buffer.slice(take);
+                remaining -= take;
+                continue;
+            }
+            if (this.streamDone) break;
+            const { value, done } = await this.reader.read();
+            if (done) { this.streamDone = true; break; }
+            this.buffer = new Uint8Array(value);
+        }
+    }
+}
+
+async function isGzipFile(file: File): Promise<boolean> {
+    const magic = new Uint8Array(await file.slice(0, 2).arrayBuffer());
+    return magic[0] === 0x1f && magic[1] === 0x8b;
 }
 
 async function getDockerArchiveInfo(file: File): Promise<DockerArchiveInfo> {
     const manifestReferences = new Set<string>();
     const indexReferences = new Set<string>();
     let isDockerArchive = false;
-    let offset = 0;
 
-    while (offset + 512 <= file.size) {
-        const header = new Uint8Array(await file.slice(offset, offset + 512).arrayBuffer());
-        if (header.every(value => value === 0)) break;
+    const source: TarByteSource = await isGzipFile(file)
+        ? new StreamTarSource(file.stream().pipeThrough(new DecompressionStream("gzip")))
+        : new FileTarSource(file);
+
+    while (true) {
+        const header = await source.read(512);
+        if (header.length < 512 || header.every(value => value === 0)) break;
 
         const name = readTarString(header, 0, 100);
         const prefix = readTarString(header, 345, 155);
@@ -53,23 +125,28 @@ async function getDockerArchiveInfo(file: File): Promise<DockerArchiveInfo> {
         if (!Number.isFinite(size) || size < 0) {
             throw new Error(i18n.t("vmDetail.invalidImageTar").toString());
         }
+        const paddedSize = Math.ceil(size / 512) * 512;
 
         if (path === "manifest.json") {
             isDockerArchive = true;
-            const manifest = JSON.parse(await file.slice(offset + 512, offset + 512 + size).text());
+            const payload = await source.read(size);
+            await source.skip(paddedSize - size);
+            const manifest = JSON.parse(new TextDecoder().decode(payload));
             (manifest as Array<{ RepoTags?: string[]; }>).forEach(item =>
                 (item.RepoTags ?? []).forEach(tag => manifestReferences.add(tag))
             );
         } else if (path === "index.json") {
             isDockerArchive = true;
-            const index = JSON.parse(await file.slice(offset + 512, offset + 512 + size).text());
+            const payload = await source.read(size);
+            await source.skip(paddedSize - size);
+            const index = JSON.parse(new TextDecoder().decode(payload));
             (index.manifests ?? []).forEach((item: { annotations?: Record<string, string>; }) => {
                 const tag = item.annotations?.["org.opencontainers.image.ref.name"];
                 if (tag) indexReferences.add(tag);
             });
+        } else {
+            await source.skip(paddedSize);
         }
-
-        offset += 512 + Math.ceil(size / 512) * 512;
     }
 
     const references = manifestReferences.size > 0 ? manifestReferences : indexReferences;
@@ -252,7 +329,7 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                     <el-form-item label={this.$t("vmDetail.imageTarFile")}>
                         <el-upload
                             action="#"
-                            accept=".tar,application/x-tar"
+                            accept=".tar,.tar.gz,.tgz,application/x-tar,application/gzip"
                             multiple={false}
                             limit={1}
                             auto-upload={false}
