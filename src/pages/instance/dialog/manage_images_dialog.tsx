@@ -321,15 +321,14 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
         return (
             <el-form label-position="top" style={{ padding: "20px" }}>
                 <el-form-item label={this.$t("vmDetail.imageImportMode")}>
-                    <el-select
+                    <el-radio-group
                         v-model={this.mode}
                         disabled={this.submitting}
-                        style={{ width: "100%" }}
                         on-change={this.onModeChange}
                     >
-                        <el-option value="reference" label={this.$t("vmDetail.customImage").toString()} />
-                        <el-option value="upload" label={this.$t("vmDetail.uploadImage").toString()} />
-                    </el-select>
+                        <el-radio-button label="reference">{this.$t("vmDetail.customImage")}</el-radio-button>
+                        <el-radio-button label="upload">{this.$t("vmDetail.uploadImage")}</el-radio-button>
+                    </el-radio-group>
                 </el-form-item>
                 {this.mode === "reference" ? (
                     <el-form-item label={this.$t("vmDetail.imageAddress")}>
