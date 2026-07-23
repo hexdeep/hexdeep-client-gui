@@ -79,7 +79,7 @@ async function getDockerArchiveInfo(file: File): Promise<DockerArchiveInfo> {
 @Dialog
 export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
     public override width: string = "500px";
-    protected mode: AddImageMode = "reference";
+    protected mode: AddImageMode = "upload";
     protected imageAddress: string = "";
     protected repositoryPart: string = "";
     protected tagPart: string = "";
