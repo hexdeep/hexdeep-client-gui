@@ -319,7 +319,7 @@
         "imageAddress": "镜像地址",
         "imageAddressPlaceholder": "Registry 镜像地址 / 官方仓库地址 / http(s) tar 包下载地址",
         "imageAddressRequired": "请输入镜像地址",
-        "imageRepositoryTag": "仓库:标签",
+        "imageRepositoryTag": "名称:标签",
         "imageRepositoryPlaceholder": "例如 myapp",
         "imageTagPlaceholder": "例如 latest",
         "repositoryTagRequired": "该镜像包为根文件系统归档，请指定 repository:tag",

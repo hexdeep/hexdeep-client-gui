@@ -316,7 +316,7 @@
         "imageAddress": "Image Address",
         "imageAddressPlaceholder": "Registry reference / official repo address / http(s) URL to a tar archive",
         "imageAddressRequired": "Enter an image address",
-        "imageRepositoryTag": "Repository:Tag",
+        "imageRepositoryTag": "Name:Tag",
         "imageRepositoryPlaceholder": "e.g. myapp",
         "imageTagPlaceholder": "e.g. latest",
         "repositoryTagRequired": "This archive is a root-filesystem archive; please specify a repository:tag",

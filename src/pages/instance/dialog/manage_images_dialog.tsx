@@ -264,15 +264,7 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                         </el-upload>
                     </el-form-item>
                 )}
-                <el-form-item>
-                    <div slot="label" class="flex items-center gap-4">
-                        <span>{this.$t("vmDetail.imageRepositoryTag")}</span>
-                        <el-button
-                            type="text"
-                            icon="el-icon-document-copy"
-                            onClick={() => this.copyRepositoryTag()}
-                        />
-                    </div>
+                <el-form-item label={this.$t("vmDetail.imageRepositoryTag")}>
                     <Row crossAlign="center" gap={6}>
                         <el-input
                             v-model={this.repositoryPart}
@@ -284,6 +276,12 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                             v-model={this.tagPart}
                             disabled={this.submitting}
                             placeholder={this.$t("vmDetail.imageTagPlaceholder")}
+                        />
+                        <el-button
+                            type="text"
+                            icon="el-icon-document-copy"
+                            class="shrink-0"
+                            onClick={() => this.copyRepositoryTag()}
                         />
                     </Row>
                 </el-form-item>
