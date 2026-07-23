@@ -7,6 +7,7 @@ import { HostInfo, DockerImageUsageInfo, ImageInfo } from "@/api/device_define";
 import { Column, Row } from "@/lib/container";
 import { MyButton } from "@/lib/my_button";
 import { Tools, makeVmApiUrl } from "@/common/common";
+import { XzReadableStream } from "xz-decompress";
 
 interface ImageTable {
     toggleRowSelection(row: DockerImageUsageInfo, selected: boolean): void;
@@ -30,7 +31,7 @@ interface DockerArchiveInfo {
 }
 
 function imageReferenceFromFilename(filename: string): string {
-    const base = filename.replace(/\.(tar\.gz|tgz|tar)$/i, "").toLowerCase();
+    const base = filename.replace(/\.(tar\.gz|tgz|tar\.xz|txz|tar)$/i, "").toLowerCase();
     const name = base.replace(/[^a-z0-9._-]+/g, "-").replace(/^[._-]+|[._-]+$/g, "") || "custom-image";
     return `${name}:latest`;
 }
@@ -104,14 +105,29 @@ async function isGzipFile(file: File): Promise<boolean> {
     return magic[0] === 0x1f && magic[1] === 0x8b;
 }
 
+// xz magic bytes: FD 37 7A 58 5A 00 ("\xFD7zXZ\0")
+async function isXzFile(file: File): Promise<boolean> {
+    const magic = new Uint8Array(await file.slice(0, 6).arrayBuffer());
+    return magic[0] === 0xfd && magic[1] === 0x37 && magic[2] === 0x7a
+        && magic[3] === 0x58 && magic[4] === 0x5a && magic[5] === 0x00;
+}
+
+async function openTarSource(file: File): Promise<TarByteSource> {
+    if (await isGzipFile(file)) {
+        return new StreamTarSource(file.stream().pipeThrough(new DecompressionStream("gzip")));
+    }
+    if (await isXzFile(file)) {
+        return new StreamTarSource(new XzReadableStream(file.stream()));
+    }
+    return new FileTarSource(file);
+}
+
 async function getDockerArchiveInfo(file: File): Promise<DockerArchiveInfo> {
     const manifestReferences = new Set<string>();
     const indexReferences = new Set<string>();
     let isDockerArchive = false;
 
-    const source: TarByteSource = await isGzipFile(file)
-        ? new StreamTarSource(file.stream().pipeThrough(new DecompressionStream("gzip")))
-        : new FileTarSource(file);
+    const source = await openTarSource(file);
 
     while (true) {
         const header = await source.read(512);
@@ -329,7 +345,7 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                     <el-form-item label={this.$t("vmDetail.imageTarFile")}>
                         <el-upload
                             action="#"
-                            accept=".tar,.tar.gz,.tgz,application/x-tar,application/gzip"
+                            accept=".tar,.tar.gz,.tgz,.tar.xz,.txz,application/x-tar,application/gzip,application/x-xz"
                             multiple={false}
                             limit={1}
                             auto-upload={false}
