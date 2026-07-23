@@ -492,7 +492,7 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
                                 const name = this.formatName(row);
                                 return (
                                     <Row crossAlign="center" gap={2}>
-                                        <el-tooltip effect="dark" content={name} placement="top" open-delay={2000} disabled={name.length <= 30}>
+                                        <el-tooltip effect="dark" content={name} placement="top" open-delay={1000} disabled={name.length <= 30}>
                                             <div class="truncate">{name}</div>
                                         </el-tooltip>
                                         <el-button
