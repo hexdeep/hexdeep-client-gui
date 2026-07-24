@@ -3,9 +3,9 @@ import { VNode } from 'vue';
 import { Component, Prop } from "vue-property-decorator";
 import * as tsx from 'vue-tsx-support';
 
-type SlotStatus = "normal" | "expiring" | "expired" | "occupied";
+type SlotStatus = "normal" | "expiring" | "expired";
 
-const STATUS_ORDER: SlotStatus[] = ["normal", "expiring", "expired", "occupied"];
+const STATUS_ORDER: SlotStatus[] = ["normal", "expiring", "expired"];
 
 const STATUS_META: Record<SlotStatus, {
     labelKey: string;
@@ -35,13 +35,6 @@ const STATUS_META: Record<SlotStatus, {
         baseClass: "border-gray-200 bg-gray-50 text-gray-400",
         selectedClass: "",
     },
-    occupied: {
-        labelKey: "create.slotOccupied",
-        selectable: false,
-        dotClass: "bg-slate-400",
-        baseClass: "border-slate-300 bg-slate-100 text-slate-500",
-        selectedClass: "",
-    },
 };
 
 /**
@@ -52,12 +45,10 @@ const STATUS_META: Record<SlotStatus, {
 export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
     @Prop({ default: () => [] }) value!: number[];
     @Prop({ default: () => [] }) rentalRecord!: RentalInfo[];
-    @Prop({ default: () => [] }) occupiedIndices!: number[];
 
     private getSlotStatus(index: number): SlotStatus {
         const info = this.rentalRecord.find(x => x.index === index);
         if (!info || info.state === "expired") return "expired";
-        if (this.occupiedIndices.includes(index)) return "occupied";
         if (info.state === "expiring") return "expiring";
         return "normal";
     }
@@ -120,7 +111,6 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
 interface IProps {
     value?: number[];
     rentalRecord?: RentalInfo[];
-    occupiedIndices?: number[];
 }
 
 interface IEvents {

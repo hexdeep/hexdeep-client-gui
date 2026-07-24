@@ -163,7 +163,6 @@ export interface DockerEditParam {
     info: DeviceInfo;
     hostId: string;
     obj: CreateParam;
-    occupiedIndices?: number[]; // 该主机上已存在云机的实例位编号（创建流程用于渲染实例位选择器）
 }
 
 export interface DockerBatchCreateParam {

@@ -20,7 +20,6 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     protected images: ImageInfo[] = [];
     private dockerRegistries: string[] = [];
     private rentalRecord: RentalInfo[] = [];
-    private occupiedIndices: number[] = [];
     private selectedIndices: number[] = [];
     private dirty = 0;
     public override allowEscape: boolean = false;
@@ -43,7 +42,6 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         deviceApi.getDockerRegistries(this.data.info.hostIp).then((list) => {
             this.dockerRegistries = Array.isArray(list) ? list : [];
         });
-        this.occupiedIndices = data.occupiedIndices ?? [];
         if (!data.isUpdate) {
             this.loadCachedValues();
             // 实例位多选仅创建流程需要，更新流程不展示该字段，跳过 getRental 请求
@@ -371,7 +369,6 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                     images={this.images}
                     dockerRegistries={this.dockerRegistries}
                     rentalRecord={this.rentalRecord}
-                    occupiedIndices={this.occupiedIndices}
                     selectedIndices={this.selectedIndices}
                     isUpdate={this.data.isUpdate}
                     hasVip={this.hasVip}

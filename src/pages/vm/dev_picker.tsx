@@ -99,9 +99,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         }
 
         var rentalIndexSet = std.first.device_indexes.filter(x => x.state != "expired").map(x => x.index);
-        var occupiedIndices = (h.devices ?? []).map(d => d.index);
-        var availableCount = rentalIndexSet.filter(i => !occupiedIndices.includes(i)).length;
-        if (availableCount < 1) {
+        if (rentalIndexSet.length < 1) {
             showPurchaseConfirm();
             return;
         }
@@ -125,7 +123,6 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                 hostId: h.device_id,
                 create_req: {},
             },
-            occupiedIndices: occupiedIndices,
             obj: {
                 name: "",
                 sandbox_size: 64,

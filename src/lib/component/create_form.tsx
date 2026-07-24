@@ -17,7 +17,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     @Prop({ default: () => { return []; } }) images!: ImageInfo[];
     @Prop({ default: () => { return []; } }) dockerRegistries!: string[];
     @Prop({ default: () => { return []; } }) rentalRecord!: RentalInfo[];
-    @Prop({ default: () => { return []; } }) occupiedIndices!: number[];
     @Prop({ default: () => { return []; } }) selectedIndices!: number[];
     @Prop({ default: () => { sandbox_size: 64; } }) data!: CreateParam;
     @Prop({ default: true }) needName!: boolean;
@@ -234,7 +233,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                             <InstanceSlotPicker
                                 value={this.selectedIndices}
                                 rentalRecord={this.rentalRecord}
-                                occupiedIndices={this.occupiedIndices}
                                 on={{ input: (v: number[]) => this.$emit("update:selectedIndices", v) }}
                             />
                         </el-form-item>
@@ -425,7 +423,6 @@ interface IPorps {
     images?: ImageInfo[];
     dockerRegistries: string[];
     rentalRecord?: RentalInfo[];
-    occupiedIndices?: number[];
     selectedIndices?: number[];
     isUpdate?: boolean;
     hasVip?: boolean;

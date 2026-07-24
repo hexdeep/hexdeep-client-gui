@@ -134,7 +134,6 @@
         "slotNormal": "Not expiring",
         "slotExpiring": "Expiring soon",
         "slotExpired": "Expired",
-        "slotOccupied": "Occupied",
         "needSelectSlot": "Please select at least one instance slot",
         "startMulti": "Created successfully, do you want to start the new VMs now?",
         "failuresTitle": "Some VMs failed to create",
