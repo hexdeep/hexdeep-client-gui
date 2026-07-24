@@ -1,13 +1,14 @@
 import { CreateParam, ImageInfo, MobileModelDimensions } from "@/api/device_define";
+import { RentalInfo } from "@/api/order_define";
 import { Component, Prop, Watch } from "vue-property-decorator";
 import * as tsx from 'vue-tsx-support';
 import { Row } from '../container';
 import "./create_form.less";
 import { ImageSelector2 } from "./image_selector2";
+import { InstanceSlotPicker } from "./instance_slot_picker";
 import { ModelSelector } from "./model_selector";
 import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup } from "./mobile_model_loader";
 import { S5FormItems } from "./s5_form_items";
-import { i18n } from "@/i18n/i18n";
 import { isImageVersionCompatibleByModelVersion } from "@/common/common";
 import Vue, { VNode } from 'vue';
 
@@ -15,8 +16,9 @@ import Vue, { VNode } from 'vue';
 export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     @Prop({ default: () => { return []; } }) images!: ImageInfo[];
     @Prop({ default: () => { return []; } }) dockerRegistries!: string[];
-    @Prop({ default: () => { return []; } }) validInstance!: number[];
-    @Prop({ default: () => { return 0; } }) validIndex!: number;
+    @Prop({ default: () => { return []; } }) rentalRecord!: RentalInfo[];
+    @Prop({ default: () => { return []; } }) occupiedIndices!: number[];
+    @Prop({ default: () => { return []; } }) selectedIndices!: number[];
     @Prop({ default: () => { sandbox_size: 64; } }) data!: CreateParam;
     @Prop({ default: true }) needName!: boolean;
     @Prop({ default: false }) isUpdate!: boolean;
@@ -24,8 +26,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     @Prop({ default: false }) isBatchCreate!: boolean;
     @Prop({ default: "" }) ip!: string;
 
-    // 将 index 包裹为响应式对象
-    private index = Vue.observable({ value: this.validIndex });
     private filterState = Vue.observable({ imageType: 'base' });
     private modelList: MobileModelGroup[] = [];
 
@@ -51,18 +51,25 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         return `10.93.${50 + index}.0/24`;
     }
 
-    @Watch("validIndex")
-    onValidIndexChange(newVal: number) {
-        this.index.value = newVal;
-        if (!this.isBatchCreate && !this.isUpdate && newVal > 0) {
-            this.$set(this.data, "subnet", this.getDefaultSubnet(newVal));
+    // 多选实例位时：
+    // - bridge 模式下每台云机各自的子网由 CreateDialog 按实例位编号自动生成（复用同一个手填子网会导致
+    //   后续创建的容器网络冲突），子网输入框禁用；
+    // - mac_vlan 模式下这里填的 IP 视为"第一台云机的IP"，CreateDialog 参考旧批量创建接口
+    //   (dc_api/batch_create 的 OffsetIP 逻辑) 按选中顺序自动给后续云机的IP末段递增。
+    private get isMultiSelect() {
+        return this.selectedIndices.length > 1;
+    }
+
+    @Watch("selectedIndices")
+    onSelectedIndicesChange(newVal: number[]) {
+        if (!this.isBatchCreate && !this.isUpdate && newVal.length === 1) {
+            this.$set(this.data, "subnet", this.getDefaultSubnet(newVal[0]));
         }
     }
 
     protected async created() {
-        this.index.value = this.validIndex;
-        if (!this.isBatchCreate && !this.isUpdate && !this.data.subnet && this.validIndex > 0) {
-            this.$set(this.data, "subnet", this.getDefaultSubnet(this.validIndex));
+        if (!this.isBatchCreate && !this.isUpdate && !this.data.subnet && this.selectedIndices.length === 1) {
+            this.$set(this.data, "subnet", this.getDefaultSubnet(this.selectedIndices[0]));
         }
         if (!this.data.mobile_model_version) {
             this.$set(this.data, "mobile_model_version", "v2");
@@ -222,30 +229,18 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                 )}
 
                 {this.needName && !this.isUpdate && (
-                    <Row>
+                    <Row crossAlign="start">
+                        <el-form-item label={this.$t("create.slots")} prop="index">
+                            <InstanceSlotPicker
+                                value={this.selectedIndices}
+                                rentalRecord={this.rentalRecord}
+                                occupiedIndices={this.occupiedIndices}
+                                on={{ input: (v: number[]) => this.$emit("update:selectedIndices", v) }}
+                            />
+                        </el-form-item>
+
                         <el-form-item label={this.$t("create.name")} prop="name">
                             <el-input v-model={this.data.name} maxlength={20} />
-                        </el-form-item>
-                        <el-form-item label={this.$t("clone.dstIndex")} prop="index">
-                            <el-select
-                                v-model={this.index.value}
-                                onChange={(v: number) => {
-                                    this.index.value = v;
-                                    if (this.data) {
-                                        this.$set(this.data, "index", v);
-                                        if (!this.isBatchCreate && !this.isUpdate) {
-                                            this.$set(this.data, "subnet", this.getDefaultSubnet(v));
-                                        }
-                                    }
-                                }}
-                            >
-                                {this.validInstance.map(x => (
-                                    <el-option
-                                        label={`${i18n.t("instance.instance")}${x}`}
-                                        value={x}
-                                    />
-                                ))}
-                            </el-select>
                         </el-form-item>
                     </Row>
                 )}
@@ -263,7 +258,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                 )}
 
                 <el-form-item label={this.$t("create.subnet")} prop="subnet" >
-                    <el-input v-model={this.data.subnet} disabled={this.data.mac_vlan == 1} />
+                    <el-input v-model={this.data.subnet} disabled={this.data.mac_vlan == 1 || this.isMultiSelect} />
                 </el-form-item>
 
                 <Row>
@@ -271,7 +266,13 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                         <el-switch v-model={this.data.mac_vlan} active-value={1} inactive-value={0} />
                     </el-form-item>
 
-                    <el-form-item label={this.$t("create.ip")} prop="ip" >
+                    <el-form-item
+                        label={this.$t("create.ip")}
+                        prop="ip"
+                        scopedSlots={this.isMultiSelect && this.data.mac_vlan == 1 ? {
+                            label: () => this.labelWithTip(this.$t("create.ip") as string, this.$t("create.ipMultiTip") as string)
+                        } : undefined}
+                    >
                         <el-input v-model={this.data.ip} disabled={this.data.mac_vlan != 1} />
                     </el-form-item>
                 </Row>
@@ -423,8 +424,9 @@ interface IPorps {
     needName?: boolean;
     images?: ImageInfo[];
     dockerRegistries: string[];
-    validInstance: number[];
-    validIndex: number;
+    rentalRecord?: RentalInfo[];
+    occupiedIndices?: number[];
+    selectedIndices?: number[];
     isUpdate?: boolean;
     hasVip?: boolean;
     isBatchCreate?: boolean;
@@ -433,4 +435,5 @@ interface IPorps {
 
 interface IEvents {
     onVipRequired: () => void;
+    "onUpdate:selectedIndices": (v: number[]) => void;
 }

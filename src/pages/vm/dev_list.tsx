@@ -448,9 +448,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         } else {
             name += "2";
         }
+        const host = this.hosts?.find(h => h.device_id === data.hostId);
+        const occupiedIndices = (host?.devices ?? []).map(d => d.index);
         let re = await this.$dialog(CreateDialog).show({
             hostId: data.hostId,
             info: data,
+            occupiedIndices: occupiedIndices,
             obj: {
                 name: name,
                 sandbox_size: 64,

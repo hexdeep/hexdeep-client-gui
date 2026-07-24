@@ -128,7 +128,19 @@
         "image_type_base": "基础版",
         "image_type_magisk": "框架版",
         "image_type_gms": "海外版",
-        "image_type_pine": "Pine版"
+        "image_type_pine": "Pine版",
+        "slots": "实例位选择",
+        "ipMultiTip": "多选创建时，这里填第一台云机的IP，后面每台按顺序自动递增末段（超过254从2重新开始）。",
+        "slotNormal": "未到期",
+        "slotExpiring": "即将到期",
+        "slotExpired": "已到期",
+        "slotOccupied": "有实例",
+        "needSelectSlot": "请至少选择一个实例位",
+        "startMulti": "创建成功，是否立即启动新建的云机？",
+        "failuresTitle": "部分云机创建失败",
+        "failuresIndex": "实例位",
+        "failuresName": "名称",
+        "failuresReason": "失败原因"
     },
     "menu": {
         "start": "开机",

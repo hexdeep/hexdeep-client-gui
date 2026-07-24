@@ -127,7 +127,19 @@
         "image_type_base": "Base",
         "image_type_magisk": "Magisk",
         "image_type_gms": "GMS",
-        "image_type_pine": "Pine"
+        "image_type_pine": "Pine",
+        "slots": "Instance Slots",
+        "ipMultiTip": "When creating multiple VMs at once, this is the IP of the first VM; the rest get the last octet auto-incremented in order (wraps back to 2 after 254).",
+        "slotNormal": "Not expiring",
+        "slotExpiring": "Expiring soon",
+        "slotExpired": "Expired",
+        "slotOccupied": "Occupied",
+        "needSelectSlot": "Please select at least one instance slot",
+        "startMulti": "Created successfully, do you want to start the new VMs now?",
+        "failuresTitle": "Some VMs failed to create",
+        "failuresIndex": "Slot",
+        "failuresName": "Name",
+        "failuresReason": "Reason"
     },
     "menu": {
         "start": "Start",

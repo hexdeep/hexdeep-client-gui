@@ -9,7 +9,6 @@ import { ITreeSlotProps, MyTree } from "@/lib/tree";
 import { Component, InjectReactive, Watch } from 'vue-property-decorator';
 import * as tsx from 'vue-tsx-support';
 import s from './dev_picker.module.less';
-import { BatchCreateDialog } from './dialog/batch_create';
 import { CreateDialog } from './dialog/create';
 import { DiscoverDialog } from './dialog/discover';
 import { RenameDialog } from './dialog/rename';
@@ -100,27 +99,37 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
         }
 
         var rentalIndexSet = std.first.device_indexes.filter(x => x.state != "expired").map(x => x.index);
-        var set = new Set(
-            (h.devices ?? [])
-                .filter(e => rentalIndexSet.includes(e.index))  // O(1) 判断
-                .map(e => e.index)
-        );
-        //const createdCount = set.size;
-        var maxCanCreate = Math.max(0, rentalIndexSet.length);
-        if (maxCanCreate < 1) {
+        var occupiedIndices = (h.devices ?? []).map(d => d.index);
+        var availableCount = rentalIndexSet.filter(i => !occupiedIndices.includes(i)).length;
+        if (availableCount < 1) {
             showPurchaseConfirm();
             return;
         }
-        console.log(this.config);
-        this.$dialog(BatchCreateDialog).show({
-            maxNum: maxCanCreate,
-            hostIp: [h.address],
-            hostId: [h.device_id],
+        const re = await this.$dialog(CreateDialog).show({
+            hostId: h.device_id,
+            info: {
+                name: "",
+                state: "",
+                data: "",
+                index: 0,
+                created_at: "",
+                image_addr: "",
+                image_digest: "",
+                git_commit_id: "",
+                ip: "",
+                macvlan: false,
+                android_sdk: "",
+                adb: "",
+                subnet: "",
+                hostIp: h.address,
+                hostId: h.device_id,
+                create_req: {},
+            },
+            occupiedIndices: occupiedIndices,
             obj: {
-                name: "", num: 1,
-                sandbox: 1,
+                name: "",
                 sandbox_size: 64,
-                suffix_name: this.config.suffixName || "deep",
+                sandbox: 1,
                 width: 1080,
                 height: 1920,
                 dpi: 400,
@@ -128,10 +137,9 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                 y_dpi: 400,
                 fps: 24,
                 dns_urls: "223.5.5.5",
-            }
-        }).then(async re => {
-            this.$emit('changed', h.address);
+            },
         });
+        if (re) this.$emit('changed', h.address);
     }
 
     private async rename(v: DeviceInfo) {
