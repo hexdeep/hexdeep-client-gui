@@ -67,8 +67,11 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         if (!this.data.mobile_model_version) {
             this.$set(this.data, "mobile_model_version", "v2");
         }
-        await this.loadModelList();
-        this.ensureValidModelSelection();
+        // 机型选择器仅创建流程展示，更新流程不需要拉取机型列表
+        if (!this.isUpdate) {
+            await this.loadModelList();
+            this.ensureValidModelSelection();
+        }
         this.ensureCompatibleSelectedImage();
     }
 
@@ -117,8 +120,10 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
 
     @Watch("data.mobile_model_version")
     async onModelVersionChange() {
-        await this.loadModelList();
-        this.ensureValidModelSelection();
+        if (!this.isUpdate) {
+            await this.loadModelList();
+            this.ensureValidModelSelection();
+        }
         this.ensureCompatibleSelectedImage();
     }
 

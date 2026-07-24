@@ -42,14 +42,12 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         });
         if (!data.isUpdate) {
             this.loadCachedValues();
+            // 实例位选择仅创建流程需要，更新流程不展示该字段，跳过 getRental 请求
+            await this.hostIpChange();
         }
-        await this.hostIpChange();
         // 检查VIP状态
         this.checkVipStatus();
-        // 获取所有主机列表
-        deviceApi.getHosts().then(hosts => {
-            this.allHosts = hosts;
-        });
+        // 主机列表仅在用户触发 VIP 购买引导时才需要，交给 onVipRequired 按需拉取
         return super.show(data);
     }
 
