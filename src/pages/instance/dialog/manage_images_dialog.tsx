@@ -7,7 +7,6 @@ import { HostInfo, DockerImageUsageInfo, ImageInfo } from "@/api/device_define";
 import { Column, Row } from "@/lib/container";
 import { MyButton } from "@/lib/my_button";
 import { Tools, makeVmApiUrl } from "@/common/common";
-import { XzReadableStream } from "xz-decompress";
 
 interface ImageTable {
     toggleRowSelection(row: DockerImageUsageInfo, selected: boolean): void;
@@ -19,154 +18,10 @@ interface AddImageDialogData {
     host: HostInfo;
 }
 
-function readTarString(bytes: Uint8Array, start: number, length: number): string {
-    const end = bytes.indexOf(0, start);
-    const actualEnd = end >= start && end < start + length ? end : start + length;
-    return new TextDecoder().decode(bytes.slice(start, actualEnd)).trim();
-}
-
-interface DockerArchiveInfo {
-    references: string[];
-    isDockerArchive: boolean;
-}
-
 function imageReferenceFromFilename(filename: string): string {
     const base = filename.replace(/\.(tar\.gz|tgz|tar\.xz|txz|tar)$/i, "").toLowerCase();
     const name = base.replace(/[^a-z0-9._-]+/g, "-").replace(/^[._-]+|[._-]+$/g, "") || "custom-image";
     return `${name}:latest`;
-}
-
-// 顺序读取 tar 字节流的抽象：未压缩包用 File.slice 随机访问（不占内存），gzip 包只能顺序解压读取
-interface TarByteSource {
-    read(n: number): Promise<Uint8Array>;
-    skip(n: number): Promise<void>;
-}
-
-class FileTarSource implements TarByteSource {
-    private offset = 0;
-    constructor(private file: File) { }
-    async read(n: number): Promise<Uint8Array> {
-        const bytes = new Uint8Array(await this.file.slice(this.offset, this.offset + n).arrayBuffer());
-        this.offset += n;
-        return bytes;
-    }
-    async skip(n: number): Promise<void> {
-        this.offset += n;
-    }
-}
-
-class StreamTarSource implements TarByteSource {
-    private reader: ReadableStreamDefaultReader<Uint8Array>;
-    private buffer = new Uint8Array(0);
-    private streamDone = false;
-
-    constructor(stream: ReadableStream<Uint8Array>) {
-        this.reader = stream.getReader();
-    }
-
-    private async fill(min: number) {
-        while (this.buffer.length < min && !this.streamDone) {
-            const { value, done } = await this.reader.read();
-            if (done) { this.streamDone = true; break; }
-            const merged = new Uint8Array(this.buffer.length + value.length);
-            merged.set(this.buffer);
-            merged.set(value, this.buffer.length);
-            this.buffer = merged;
-        }
-    }
-
-    async read(n: number): Promise<Uint8Array> {
-        await this.fill(n);
-        const take = Math.min(n, this.buffer.length);
-        const result = this.buffer.slice(0, take);
-        this.buffer = this.buffer.slice(take);
-        return result;
-    }
-
-    async skip(n: number): Promise<void> {
-        let remaining = n;
-        while (remaining > 0) {
-            if (this.buffer.length > 0) {
-                const take = Math.min(remaining, this.buffer.length);
-                this.buffer = this.buffer.slice(take);
-                remaining -= take;
-                continue;
-            }
-            if (this.streamDone) break;
-            const { value, done } = await this.reader.read();
-            if (done) { this.streamDone = true; break; }
-            this.buffer = new Uint8Array(value);
-        }
-    }
-}
-
-async function isGzipFile(file: File): Promise<boolean> {
-    const magic = new Uint8Array(await file.slice(0, 2).arrayBuffer());
-    return magic[0] === 0x1f && magic[1] === 0x8b;
-}
-
-// xz magic bytes: FD 37 7A 58 5A 00 ("\xFD7zXZ\0")
-async function isXzFile(file: File): Promise<boolean> {
-    const magic = new Uint8Array(await file.slice(0, 6).arrayBuffer());
-    return magic[0] === 0xfd && magic[1] === 0x37 && magic[2] === 0x7a
-        && magic[3] === 0x58 && magic[4] === 0x5a && magic[5] === 0x00;
-}
-
-async function openTarSource(file: File): Promise<TarByteSource> {
-    if (await isGzipFile(file)) {
-        return new StreamTarSource(file.stream().pipeThrough(new DecompressionStream("gzip")));
-    }
-    if (await isXzFile(file)) {
-        return new StreamTarSource(new XzReadableStream(file.stream()));
-    }
-    return new FileTarSource(file);
-}
-
-async function getDockerArchiveInfo(file: File): Promise<DockerArchiveInfo> {
-    const manifestReferences = new Set<string>();
-    const indexReferences = new Set<string>();
-    let isDockerArchive = false;
-
-    const source = await openTarSource(file);
-
-    while (true) {
-        const header = await source.read(512);
-        if (header.length < 512 || header.every(value => value === 0)) break;
-
-        const name = readTarString(header, 0, 100);
-        const prefix = readTarString(header, 345, 155);
-        const path = prefix ? `${prefix}/${name}` : name;
-        const sizeText = readTarString(header, 124, 12).replace(/\0/g, "").trim();
-        const size = parseInt(sizeText || "0", 8);
-        if (!Number.isFinite(size) || size < 0) {
-            throw new Error(i18n.t("vmDetail.invalidImageTar").toString());
-        }
-        const paddedSize = Math.ceil(size / 512) * 512;
-
-        if (path === "manifest.json") {
-            isDockerArchive = true;
-            const payload = await source.read(size);
-            await source.skip(paddedSize - size);
-            const manifest = JSON.parse(new TextDecoder().decode(payload));
-            (manifest as Array<{ RepoTags?: string[]; }>).forEach(item =>
-                (item.RepoTags ?? []).forEach(tag => manifestReferences.add(tag))
-            );
-        } else if (path === "index.json") {
-            isDockerArchive = true;
-            const payload = await source.read(size);
-            await source.skip(paddedSize - size);
-            const index = JSON.parse(new TextDecoder().decode(payload));
-            (index.manifests ?? []).forEach((item: { annotations?: Record<string, string>; }) => {
-                const tag = item.annotations?.["org.opencontainers.image.ref.name"];
-                if (tag) indexReferences.add(tag);
-            });
-        } else {
-            await source.skip(paddedSize);
-        }
-    }
-
-    const references = manifestReferences.size > 0 ? manifestReferences : indexReferences;
-    return { references: Array.from(references), isDockerArchive };
 }
 
 @Dialog
@@ -229,25 +84,16 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
         this.$message.success(this.$t("vmDetail.copySuccess").toString());
     }
 
-    private async onFileChange(file: any) {
+    private onFileChange(file: any) {
         this.imageFile = file?.raw ?? file ?? null;
+        // 只是按文件名猜一个默认值方便用户编辑：镜像包内容的解压/解析交给后端在上传时做，
+        // 避免在浏览器里解压整个镜像包（尤其 xz 格式此前会卡住主线程好几秒）。
         if (this.imageFile && !this.combinedRepositoryTag().trim()) {
-            try {
-                const archive = await getDockerArchiveInfo(this.imageFile);
-                if (!archive.isDockerArchive) {
-                    this.setRepositoryTag(imageReferenceFromFilename(this.imageFile.name));
-                }
-            } catch {
-                // 仅用于预填，解析失败不影响正式提交时的校验
-            }
+            this.setRepositoryTag(imageReferenceFromFilename(this.imageFile.name));
         }
     }
 
-    private async confirmUploadOverwrite(references: string[]): Promise<boolean> {
-        if (references.length === 0) return true;
-        const conflicts = await deviceApi.getImageReferenceConflicts(this.data.host.address, references);
-        if (conflicts.length === 0) return true;
-
+    private async confirmOverwrite(conflicts: string[]): Promise<boolean> {
         try {
             await this.$confirm(
                 this.$t("vmDetail.imageReferenceConflictConfirm", [conflicts.join(", ")]).toString(),
@@ -291,19 +137,25 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                 );
                 await this.uploadTask.promise;
             } else {
-                const archive = await getDockerArchiveInfo(this.imageFile!);
-                if (!archive.isDockerArchive && !this.combinedRepositoryTag().trim()) {
-                    this.$message.error(this.$t("vmDetail.repositoryTagRequired").toString());
-                    return;
-                }
-                const references = archive.isDockerArchive ? archive.references : [this.combinedRepositoryTag().trim()];
-                if (!await this.confirmUploadOverwrite(references)) return;
-                this.uploadTask = deviceApi.loadDockerImage(this.data.host.address, this.imageFile!, this.combinedRepositoryTag().trim(), references, event => {
-                    if (event.lengthComputable) {
-                        this.uploadProgress = Math.round(event.loaded / event.total * 100);
+                // 归档解压/解析、tag 冲突检测都由后端在收到上传后完成（不再要求浏览器先解压一遍
+                // 整个镜像包）。如果检测到会覆盖已有镜像，后端不会立即导入，而是返回
+                // need_confirm + token；确认后用 token 直接触发导入，不需要重新上传文件。
+                this.uploadTask = deviceApi.loadDockerImage(
+                    this.data.host.address, this.imageFile!, this.combinedRepositoryTag().trim(),
+                    (percent, status) => {
+                        this.uploadProgress = Math.max(0, Math.min(100, percent));
+                        this.progressStatus = status;
                     }
-                });
-                await this.uploadTask.promise;
+                );
+                const result = await this.uploadTask.promise;
+                if (result.status === "need_confirm") {
+                    if (await this.confirmOverwrite(result.conflicts)) {
+                        await deviceApi.confirmLoadDockerImage(this.data.host.address, result.token);
+                    } else {
+                        await deviceApi.cancelLoadDockerImage(this.data.host.address, result.token);
+                        return;
+                    }
+                }
             }
             this.$message.success(this.$t("vmDetail.addImageSuccess").toString());
             await this.close(true);

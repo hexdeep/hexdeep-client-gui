@@ -455,17 +455,26 @@ class DeviceApi extends ApiBase {
         return { promise, cancel };
     }
 
+    // loadDockerImage 只负责上传文件，归档解压/解析、tag 冲突检测都由后端在收到文件后完成
+    // （不再要求浏览器先解压整个镜像包）。返回 {status:"loaded"} 表示已直接导入完成；返回
+    // {status:"need_confirm", conflicts, token} 表示会覆盖已有镜像，需调用 confirmLoadDockerImage
+    // /cancelLoadDockerImage 之一（凭 token，不需要重新上传文件）来完成或放弃这次导入。
     public loadDockerImage(
         ip: string,
         file: File,
         repository: string,
-        references: string[],
-        progress: (progressEvent: ProgressEvent) => void
-    ): { promise: Promise<any>, cancel: () => void; } {
+        onProgress?: (percent: number, status: string) => void
+    ): { promise: Promise<{ status: "loaded"; } | { status: "need_confirm"; conflicts: string[]; token: string; }>, cancel: () => void; } {
         const xhr = new XMLHttpRequest();
-        const promise = new Promise((resolve, reject) => {
+        const promise = new Promise<any>((resolve, reject) => {
             xhr.open("POST", makeVmApiUrl("image_api/load", ip), true);
-            xhr.upload.onprogress = progress;
+            xhr.upload.onprogress = event => {
+                if (onProgress && event.lengthComputable) {
+                    onProgress(Math.round(event.loaded / event.total * 100), "");
+                }
+            };
+            // 上传字节全部发完之后，后端还要解压+解析+落盘，这段等待也给个状态提示
+            xhr.upload.onload = () => { if (onProgress) onProgress(100, "importing"); };
             xhr.onload = () => {
                 try {
                     const json = JSON.parse(xhr.responseText);
@@ -484,23 +493,28 @@ class DeviceApi extends ApiBase {
             const formData = new FormData();
             formData.append("file", file);
             formData.append("repository", repository);
-            references.forEach(reference => formData.append("references", reference));
             xhr.send(formData);
         });
 
         return { promise, cancel: () => xhr.abort() };
     }
 
-    public async getImageReferenceConflicts(ip: string, references: string[]): Promise<string[]> {
-        const result = await fetch(
-            makeVmApiUrl("image_api/reference_conflicts", ip),
-            {
-                method: "POST",
-                body: qs.stringify({ references }, { arrayFormat: "repeat" }),
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            }
-        );
-        return await this.handleError(result);
+    public async confirmLoadDockerImage(ip: string, token: string): Promise<void> {
+        const result = await fetch(makeVmApiUrl("image_api/load_confirm", ip), {
+            method: "POST",
+            body: qs.stringify({ token }),
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        });
+        await this.handleError(result);
+    }
+
+    public async cancelLoadDockerImage(ip: string, token: string): Promise<void> {
+        const result = await fetch(makeVmApiUrl("image_api/load_confirm", ip), {
+            method: "POST",
+            body: qs.stringify({ token, cancel: "true" }),
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        });
+        await this.handleError(result);
     }
 
     public async pullImageProgress(ip: string, addr: string, dockerRegistry: string, progressCb: (progress: number) => void) {

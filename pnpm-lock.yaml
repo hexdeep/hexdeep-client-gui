@@ -83,9 +83,6 @@ importers:
       vue-virtual-scroller:
         specifier: 1.1.2
         version: 1.1.2(vue@2.6.14)
-      xz-decompress:
-        specifier: ^0.2.3
-        version: 0.2.3
     devDependencies:
       '@iconify-icons/bi':
         specifier: ^1.2.19
@@ -2425,10 +2422,6 @@ packages:
     resolution: {integrity: sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==}
     engines: {node: '>=8'}
 
-  xz-decompress@0.2.3:
-    resolution: {integrity: sha512-O8v6HG8T0PrKBcpyWA13GkSYWFvncwzuzcLx5A7++l3HsE3atmoetXjIxrZ/JV/nbvSZ7WS4+3XvREZuVn+rEA==}
-    engines: {node: '>=16'}
-
   y18n@4.0.3:
     resolution: {integrity: sha512-JKhqTOwSrqNA1NY5lSztJ1GrBiUodLMmIZuLiDaMRJ+itFd+ABVE8XBjOvIWL+rSqNDC74LCSFmlb/U4UZ4hJQ==}
 
@@ -4478,8 +4471,6 @@ snapshots:
       ansi-styles: 4.3.0
       string-width: 4.2.3
       strip-ansi: 6.0.1
-
-  xz-decompress@0.2.3: {}
 
   y18n@4.0.3: {}
 
