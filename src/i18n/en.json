@@ -329,6 +329,7 @@
         "addImageSuccess": "Image added successfully",
         "pullStatusDownloading": "Downloading",
         "pullStatusImporting": "Importing",
+        "loadStatusInspecting": "Analyzing image archive",
         "deleteSelectedImages": "Delete Selected ({0})",
         "deleteImagesConfirm": "Are you sure you want to delete the {0} selected image(s)? This action cannot be undone.",
         "deleteImagesSuccess": "Images deleted successfully",

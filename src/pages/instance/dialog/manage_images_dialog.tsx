@@ -58,6 +58,9 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
         const map: Record<string, string> = {
             downloading: this.$t("vmDetail.pullStatusDownloading").toString(),
             importing: this.$t("vmDetail.pullStatusImporting").toString(),
+            inspecting: this.$t("vmDetail.loadStatusInspecting").toString(),
+            // 导入 docker 阶段跟"pull"流程里的导入是同一个意思，复用同一句文案
+            loading: this.$t("vmDetail.pullStatusImporting").toString(),
         };
         return map[status] ?? status;
     }
@@ -137,11 +140,19 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                 );
                 await this.uploadTask.promise;
             } else {
-                // 归档解压/解析、tag 冲突检测都由后端在收到上传后完成（不再要求浏览器先解压一遍
-                // 整个镜像包）。如果检测到会覆盖已有镜像，后端不会立即导入，而是返回
-                // need_confirm + token；确认后用 token 直接触发导入，不需要重新上传文件。
-                this.uploadTask = deviceApi.loadDockerImage(
-                    this.data.host.address, this.imageFile!, this.combinedRepositoryTag().trim(),
+                // 分两段：先上传文件（不解压），再用 SSE 连着后端的解压扫描 tag + 冲突检测 + 必要时
+                // 直接导入的整个过程，全程有真实百分比推回来。如果检测到会覆盖已有镜像，SSE 的终态
+                // 事件会是 need_confirm + token，不会立即导入；确认后用 token 直接触发导入，不需要
+                // 重新上传文件。每段开始前都重新赋值 uploadTask，保证对话框中途关闭时 close() 里的
+                // uploadTask.cancel() 取消的是当前正在跑的那一段。
+                this.uploadTask = deviceApi.uploadImageFile(this.data.host.address, this.imageFile!, percent => {
+                    this.uploadProgress = Math.max(0, Math.min(100, percent));
+                    this.progressStatus = "";
+                });
+                const { token } = await this.uploadTask.promise;
+
+                this.uploadTask = deviceApi.loadImageSSE(
+                    this.data.host.address, token, this.combinedRepositoryTag().trim(),
                     (percent, status) => {
                         this.uploadProgress = Math.max(0, Math.min(100, percent));
                         this.progressStatus = status;

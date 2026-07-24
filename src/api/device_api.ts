@@ -455,26 +455,22 @@ class DeviceApi extends ApiBase {
         return { promise, cancel };
     }
 
-    // loadDockerImage 只负责上传文件，归档解压/解析、tag 冲突检测都由后端在收到文件后完成
-    // （不再要求浏览器先解压整个镜像包）。返回 {status:"loaded"} 表示已直接导入完成；返回
-    // {status:"need_confirm", conflicts, token} 表示会覆盖已有镜像，需调用 confirmLoadDockerImage
-    // /cancelLoadDockerImage 之一（凭 token，不需要重新上传文件）来完成或放弃这次导入。
-    public loadDockerImage(
+    // uploadImageFile 只负责把文件传到服务端落盘，不等解压/解析——那部分可能要花不少时间
+    // （尤其大体积的 gz/xz 归档），挪到 loadImageSSE 里用 SSE 边处理边推进度。这里拿到的
+    // token 就是 loadImageSSE 用来找回这个已落盘文件的凭证。
+    public uploadImageFile(
         ip: string,
         file: File,
-        repository: string,
-        onProgress?: (percent: number, status: string) => void
-    ): { promise: Promise<{ status: "loaded"; } | { status: "need_confirm"; conflicts: string[]; token: string; }>, cancel: () => void; } {
+        onProgress?: (percent: number) => void
+    ): { promise: Promise<{ token: string; }>, cancel: () => void; } {
         const xhr = new XMLHttpRequest();
         const promise = new Promise<any>((resolve, reject) => {
-            xhr.open("POST", makeVmApiUrl("image_api/load", ip), true);
+            xhr.open("POST", makeVmApiUrl("image_api/upload", ip), true);
             xhr.upload.onprogress = event => {
                 if (onProgress && event.lengthComputable) {
-                    onProgress(Math.round(event.loaded / event.total * 100), "");
+                    onProgress(Math.round(event.loaded / event.total * 100));
                 }
             };
-            // 上传字节全部发完之后，后端还要解压+解析+落盘，这段等待也给个状态提示
-            xhr.upload.onload = () => { if (onProgress) onProgress(100, "importing"); };
             xhr.onload = () => {
                 try {
                     const json = JSON.parse(xhr.responseText);
@@ -492,11 +488,69 @@ class DeviceApi extends ApiBase {
 
             const formData = new FormData();
             formData.append("file", file);
-            formData.append("repository", repository);
             xhr.send(formData);
         });
 
         return { promise, cancel: () => xhr.abort() };
+    }
+
+    // loadImageSSE 接着 uploadImageFile 的 token 继续：解压+扫描 tag、冲突检测，无冲突时直接
+    // 导入 docker，全程通过 SSE 推真实字节进度，写法照抄 pullImages 的 EventSource 实现
+    // （同样的 {code:3,data:{percent,status}} 进行中 / {code:200,data} 终态约定）。返回
+    // {status:"loaded"} 表示已导入完成；{status:"need_confirm",conflicts,token} 表示会覆盖
+    // 已有镜像，需调用 confirmLoadDockerImage/cancelLoadDockerImage 之一来完成或放弃。
+    public loadImageSSE(
+        ip: string,
+        token: string,
+        repository: string,
+        onProgress?: (percent: number, status: string) => void
+    ): { promise: Promise<{ status: "loaded"; } | { status: "need_confirm"; conflicts: string[]; token: string; }>, cancel: () => void; } {
+        const url = new URL(makeVmApiUrl("image_api/load_sse", ip).toString());
+        url.searchParams.set("token", token);
+        if (repository) url.searchParams.set("repository", repository);
+
+        const source = new EventSource(url.toString());
+        let settled = false;
+        let rejectFn: (reason?: any) => void = () => { };
+        const promise = new Promise<any>((resolve, reject) => {
+            rejectFn = reject;
+            source.onmessage = (event) => {
+                let msg: any;
+                try {
+                    msg = JSON.parse(event.data);
+                } catch {
+                    return;
+                }
+
+                if (msg.code === 3) {
+                    if (onProgress && msg.data) onProgress(msg.data.percent, msg.data.status);
+                    return;
+                }
+
+                settled = true;
+                source.close();
+                if (msg.code === 200) {
+                    resolve(msg.data);
+                } else {
+                    reject(new Error(msg.err || "导入失败"));
+                }
+            };
+            source.onerror = () => {
+                source.close();
+                if (settled) return;
+                settled = true;
+                reject(new Error("与后端的连接中断"));
+            };
+        });
+
+        const cancel = () => {
+            if (settled) return;
+            settled = true;
+            source.close();
+            rejectFn("aborted");
+        };
+
+        return { promise, cancel };
     }
 
     public async confirmLoadDockerImage(ip: string, token: string): Promise<void> {

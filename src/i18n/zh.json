@@ -332,6 +332,7 @@
         "addImageSuccess": "镜像添加成功",
         "pullStatusDownloading": "下载中",
         "pullStatusImporting": "正在导入",
+        "loadStatusInspecting": "正在解析镜像包",
         "deleteSelectedImages": "删除所选（{0}）",
         "deleteImagesConfirm": "确定要删除选中的 {0} 个镜像吗？删除后不可恢复。",
         "deleteImagesSuccess": "镜像删除成功",
