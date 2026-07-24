@@ -7,6 +7,7 @@ import { HostInfo, DockerImageUsageInfo, ImageInfo } from "@/api/device_define";
 import { Column, Row } from "@/lib/container";
 import { MyButton } from "@/lib/my_button";
 import { Tools, makeVmApiUrl } from "@/common/common";
+import s from "./manage_images_dialog.module.less";
 
 interface ImageTable {
     toggleRowSelection(row: DockerImageUsageInfo, selected: boolean): void;
@@ -242,7 +243,10 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
                 </el-form-item>
                 {this.submitting && (
                     <el-form-item>
-                        <el-progress percentage={this.uploadProgress} />
+                        <el-progress
+                            percentage={this.uploadProgress}
+                            class={this.progressStatus === "loading" ? s.indeterminate : undefined}
+                        />
                         {this.progressStatus && (
                             <div style={{ fontSize: "12px", color: "#909399" }}>{this.formatProgressStatus(this.progressStatus)}</div>
                         )}
