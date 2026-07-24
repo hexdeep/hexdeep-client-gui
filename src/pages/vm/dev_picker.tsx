@@ -105,7 +105,7 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
             showPurchaseConfirm();
             return;
         }
-        const re = await this.$dialog(CreateDialog).show({
+        this.$dialog(CreateDialog).show({
             hostId: h.device_id,
             info: {
                 name: "",
@@ -138,8 +138,9 @@ export class DevicePicker extends tsx.Component<IProps, IEvents> {
                 fps: 24,
                 dns_urls: "223.5.5.5",
             },
+        }).then(re => {
+            if (re) this.$emit('changed', h.address);
         });
-        if (re) this.$emit('changed', h.address);
     }
 
     private async rename(v: DeviceInfo) {
