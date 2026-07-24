@@ -3,7 +3,7 @@ import { orderApi } from "@/api/order_api";
 import { CreateParam, CreatedVmInfo, DockerEditParam, HostInfo, ImageInfo, TreeConfig } from "@/api/device_define";
 import { RentalInfo } from "@/api/order_define";
 import { i18n } from "@/i18n/i18n";
-import { getSuffixName, isImageVersionCompatibleByModelVersion, normalizeMobileModelVersion, timeDiff } from '@/common/common';
+import { getSuffixName, isImageVersionCompatibleByModelVersion, normalizeMobileModelVersion, timeDiff, Tools } from '@/common/common';
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
 import { ErrorProxy } from "@/lib/error_handle";
 import { VNode } from "vue";
@@ -120,6 +120,15 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     @Watch("data", { deep: true })
     protected onDataChange() {
         this.dirty++;
+    }
+
+    private get dataSizeText(): string | undefined {
+        const { data_size, data_real_size } = this.data.info;
+        if (data_size == undefined && data_real_size == undefined) return undefined;
+        return this.$t("create.dataSizeInfo", {
+            0: data_size != undefined ? Tools.getFileSize(data_size) : "-",
+            1: data_real_size != undefined ? Tools.getFileSize(data_real_size) : "-",
+        }).toString();
     }
 
     protected async loadRentalRecord() {
@@ -355,6 +364,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     protected renderDialog(): VNode {
         return (
             <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="150px">
+                {this.data.isUpdate && this.dataSizeText && <div style="color: #606266; margin-bottom: 10px; margin-left: 140px;">{this.dataSizeText}</div>}
                 {this.data.isUpdate && <div style="color: red; margin-bottom: 10px; margin-left: 140px;">{this.$t("changeImage.warning")}</div>}
                 <CreateForm
                     data={this.data.obj}

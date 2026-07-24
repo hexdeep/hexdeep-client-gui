@@ -62,6 +62,7 @@
     },
     "create": {
         "success": "创建成功",
+        "dataSizeInfo": "数据大小：{0}　实际占用：{1}",
         "name": "名称",
         "sandbox": "沙盒",
         "sandbox_tip": "例如创建64GB，不真实占用64GB，按需占用，可以提高仿真度。",

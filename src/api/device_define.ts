@@ -4,6 +4,9 @@ export interface DeviceInfo {
     name: string;
     state: string;
     data: string;
+    // 沙盒模式(data 为 .img 文件)才会返回：data_size 逻辑大小，data_real_size 实际占用磁盘空间，单位均为字节
+    data_size?: number;
+    data_real_size?: number;
     index: number;
     created_at: string;
     image_addr: string;
