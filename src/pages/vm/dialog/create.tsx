@@ -6,6 +6,7 @@ import { i18n } from "@/i18n/i18n";
 import { getSuffixName, isImageVersionCompatibleByModelVersion, normalizeMobileModelVersion, timeDiff, Tools } from '@/common/common';
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
 import { ErrorProxy } from "@/lib/error_handle";
+import { MyButton } from "@/lib/my_button";
 import { VNode } from "vue";
 import { Watch } from "vue-property-decorator";
 import { CreateForm } from "../../../lib/component/create_form";
@@ -376,6 +377,19 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             ],
             // 自定义机型来源可留空（留空表示由后端随机选取一个自定义机型），故不再强制必填
         };
+    }
+
+    // 创建流程按已选实例位数量动态提示将要创建几个云机；更新流程沿用通用的“确定”文案
+    protected override renderFooter() {
+        const confirmText = this.data.isUpdate
+            ? this.$t("confirm.ok")
+            : this.$t("create.confirmButton", [this.selectedIndices.length]);
+        return (
+            <div class="dialog-footer">
+                <MyButton text={confirmText} onClick={() => this.onConfirm()} type="primary" />
+                <MyButton text={this.$t("confirm.cancel")} onClick={() => this.close()} />
+            </div>
+        );
     }
 
     protected renderDialog(): VNode {
