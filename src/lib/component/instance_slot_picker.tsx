@@ -1,4 +1,5 @@
 import { RentalInfo } from '@/api/order_define';
+import { TextButton } from '@/lib/my_button';
 import { VNode } from 'vue';
 import { Component, Prop } from "vue-property-decorator";
 import * as tsx from 'vue-tsx-support';
@@ -79,9 +80,19 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
         this.$emit("input", next);
     }
 
+    // 已付费实例位 = 有租期记录且未到期（normal/expiring），与 STATUS_META 里的 selectable 语义一致
+    private allSelectableIndices(): number[] {
+        return Array.from({ length: 12 }, (_, i) => i + 1)
+            .filter(index => STATUS_META[this.getSlotStatus(index)].selectable);
+    }
+
+    private selectAll() {
+        this.$emit("input", this.allSelectableIndices());
+    }
+
     private renderLegend() {
         return (
-            <div class="flex items-center justify-between gap-4 mb-2 text-xs text-gray-500">
+            <div class="mb-2 text-xs text-gray-500">
                 <div class="flex items-center gap-4">
                     {STATUS_ORDER.map(status => (
                         <div key={status} class="flex items-center gap-1.5">
@@ -90,7 +101,14 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
                         </div>
                     ))}
                 </div>
-                <span class="shrink-0">{this.$t("create.slotSelectedCount", [this.value.length])}</span>
+                <div class="flex items-center justify-between gap-2 mt-1.5">
+                    <TextButton
+                        text={this.$t("selectAll")}
+                        disabled={this.allSelectableIndices().length === 0}
+                        onClick={() => this.selectAll()}
+                    />
+                    <span class="shrink-0">{this.$t("create.slotSelectedCount", [this.value.length])}</span>
+                </div>
             </div>
         );
     }
@@ -114,7 +132,7 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
                 {index}
                 {selected && meta.selectable && (
                     <i
-                        class={["el-icon-check absolute top-1 right-1 text-xs", meta.checkClass]}
+                        class={["el-icon-check absolute text-base top-0 right-0 leading-4", meta.checkClass]}
                         style={CHECK_STROKE_STYLE}
                     />
                 )}

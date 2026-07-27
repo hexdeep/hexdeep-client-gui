@@ -136,7 +136,7 @@
         "slotNormal": "未到期",
         "slotExpiring": "即将到期",
         "slotExpired": "已到期",
-        "slotSelectedCount": "已选中 {0} 项",
+        "slotSelectedCount": "已选{0}项",
         "needSelectSlot": "请至少选择一个实例位",
         "startMulti": "创建成功，是否立即启动新建的云机？",
         "failuresTitle": "部分云机创建失败",
