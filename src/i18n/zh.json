@@ -10,6 +10,7 @@
     "logout": "退出登录",
     "batchOperations": "批量操作",
     "selectAll": "全选",
+    "deselectAll": "取消全选",
     "name": "名称",
     "systemVersion": "系统版本",
     "createdAt": "创建时间",

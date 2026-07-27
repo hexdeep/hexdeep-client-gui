@@ -86,8 +86,13 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
             .filter(index => STATUS_META[this.getSlotStatus(index)].selectable);
     }
 
-    private selectAll() {
-        this.$emit("input", this.allSelectableIndices());
+    private get isAllSelected(): boolean {
+        const selectable = this.allSelectableIndices();
+        return selectable.length > 0 && selectable.every(index => this.value.includes(index));
+    }
+
+    private toggleSelectAll() {
+        this.$emit("input", this.isAllSelected ? [] : this.allSelectableIndices());
     }
 
     private renderLegend() {
@@ -103,9 +108,9 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
                 </div>
                 <div class="flex items-center justify-between gap-2 mt-1.5">
                     <TextButton
-                        text={this.$t("selectAll")}
+                        text={this.$t(this.isAllSelected ? "deselectAll" : "selectAll")}
                         disabled={this.allSelectableIndices().length === 0}
-                        onClick={() => this.selectAll()}
+                        onClick={() => this.toggleSelectAll()}
                     />
                     <span class="shrink-0">{this.$t("create.slotSelectedCount", [this.value.length])}</span>
                 </div>

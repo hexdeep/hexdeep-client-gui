@@ -10,6 +10,7 @@
     "logout": "Logout",
     "batchOperations": "Batch operations",
     "selectAll": "Select all",
+    "deselectAll": "Deselect all",
     "name": "Name",
     "systemVersion": "System version",
     "createdAt": "Created at",
