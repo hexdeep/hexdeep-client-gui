@@ -15,7 +15,8 @@ const STATUS_META: Record<SlotStatus, {
     selectedClass: string;
     // 选中后角标对勾的颜色：正常实例位选中后背景是实心绿色，对勾用绿色即可辨认；
     // 即将到期的实例位选中后背景是实心黄色（amber-500），对勾同样跟随黄色，不用绿色，
-    // 避免颜色语义和背景色对不上。角标本身用白底把对勾"抠"出来，不管压在哪种背景色上都能看清。
+    // 避免颜色语义和背景色对不上。对勾本身没有背景色块，靠 CHECK_STROKE_STYLE 的白色描边
+    // 让笔画在同色的实心背景上也能看清。
     checkClass: string;
 }> = {
     normal: {
@@ -42,6 +43,15 @@ const STATUS_META: Record<SlotStatus, {
         selectedClass: "",
         checkClass: "",
     },
+};
+
+// 对勾角标的白色描边：8 方向 1px 白色投影叠加，在对勾笔画周围勾出一圈白边，而不是给一个
+// 实心圆形背景块——这样即使压在同色的实心选中背景（绿色/黄色）上，笔画本身也能被区分出来。
+const CHECK_STROKE_STYLE = {
+    textShadow: [
+        "-1px -1px 0 #fff", "1px -1px 0 #fff", "-1px 1px 0 #fff", "1px 1px 0 #fff",
+        "0 -1px 0 #fff", "0 1px 0 #fff", "-1px 0 0 #fff", "1px 0 0 #fff",
+    ].join(", "),
 };
 
 /**
@@ -71,16 +81,16 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
 
     private renderLegend() {
         return (
-            <div class="flex flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-gray-500">
-                {STATUS_ORDER.map(status => (
-                    <div key={status} class="flex items-center gap-1.5">
-                        <span class={["inline-block w-2.5 h-2.5 rounded-sm", STATUS_META[status].dotClass]} />
-                        <span>{this.$t(STATUS_META[status].labelKey)}</span>
-                    </div>
-                ))}
-                <div class="flex items-center gap-1.5">
-                    <span>{this.$t("create.slotSelectedCount", [this.value.length])}</span>
+            <div class="flex items-center justify-between gap-4 mb-2 text-xs text-gray-500">
+                <div class="flex items-center gap-4">
+                    {STATUS_ORDER.map(status => (
+                        <div key={status} class="flex items-center gap-1.5">
+                            <span class={["inline-block w-2.5 h-2.5 rounded-sm", STATUS_META[status].dotClass]} />
+                            <span>{this.$t(STATUS_META[status].labelKey)}</span>
+                        </div>
+                    ))}
                 </div>
+                <span class="shrink-0">{this.$t("create.slotSelectedCount", [this.value.length])}</span>
             </div>
         );
     }
@@ -103,9 +113,10 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
             >
                 {index}
                 {selected && meta.selectable && (
-                    <span class={["absolute -top-1.5 -right-1.5 flex items-center justify-center w-4 h-4 rounded-full bg-white shadow", meta.checkClass]}>
-                        <i class="el-icon-check" />
-                    </span>
+                    <i
+                        class={["el-icon-check absolute top-1 right-1 text-xs", meta.checkClass]}
+                        style={CHECK_STROKE_STYLE}
+                    />
                 )}
             </button>
         );
