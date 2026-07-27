@@ -271,6 +271,102 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
     }
 }
 
+type ExportImageFormat = "tar" | "gz";
+
+interface ExportImageDialogData {
+    host: HostInfo;
+    image: DockerImageUsageInfo;
+}
+
+@Dialog
+export class ExportImageDialog extends CommonDialog<ExportImageDialogData, boolean> {
+    public override width: string = "420px";
+    protected format: ExportImageFormat = "tar";
+    protected submitting: boolean = false;
+    protected progress: number = 0;
+    protected progressStatus: string = "";
+    protected exportTask: { promise: Promise<any>, cancel: () => void; } | null = null;
+
+    public override show(data: ExportImageDialogData) {
+        this.title = this.$t("vmDetail.exportImageTitle").toString();
+        return super.show(data);
+    }
+
+    public override close(result?: boolean): Promise<boolean> {
+        if (this.exportTask) this.exportTask.cancel();
+        return super.close(result);
+    }
+
+    protected override async onConfirm() {
+        if (this.submitting) return;
+        this.submitting = true;
+        this.progress = 0;
+        this.progressStatus = "";
+        try {
+            if (this.format === "tar") {
+                const url = makeVmApiUrl("image_api/export_archive", this.data.host.address);
+                url.searchParams.set("image_name", this.data.image.id);
+                window.open(url.toString(), "_blank");
+            } else {
+                this.exportTask = deviceApi.exportImageArchiveSSE(
+                    this.data.host.address,
+                    this.data.image.id,
+                    "gz",
+                    (percent, status) => {
+                        this.progress = Math.max(0, Math.min(100, percent));
+                        this.progressStatus = status;
+                    }
+                );
+                const { token } = await this.exportTask.promise;
+                window.open(deviceApi.exportImageArchiveDownloadUrl(this.data.host.address, token), "_blank");
+            }
+            await this.close(true);
+        } catch (error) {
+            if (error !== "aborted") {
+                this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
+            }
+        } finally {
+            this.exportTask = null;
+            this.submitting = false;
+        }
+    }
+
+    protected renderDialog(): VNode {
+        return (
+            <el-form label-position="top" style={{ padding: "20px" }}>
+                <el-form-item label={this.$t("vmDetail.exportFormat")}>
+                    <el-radio-group v-model={this.format} disabled={this.submitting}>
+                        <el-radio-button label="tar">tar</el-radio-button>
+                        <el-radio-button label="gz">tar.gz</el-radio-button>
+                    </el-radio-group>
+                </el-form-item>
+                {this.submitting && this.format === "gz" && (
+                    <el-form-item>
+                        <el-progress percentage={this.progress} />
+                        {this.progressStatus && (
+                            <div style={{ fontSize: "12px", color: "#909399" }}>{this.$t("vmDetail.exportStatusExporting")}</div>
+                        )}
+                    </el-form-item>
+                )}
+            </el-form>
+        );
+    }
+
+    protected override renderFooter() {
+        return (
+            <div class="dialog-footer">
+                <MyButton
+                    type="primary"
+                    disabled={this.submitting}
+                    text={this.submitting ? this.$t("loading") : this.$t("confirm.ok")}
+                    onClick={() => this.onConfirm()}
+                />
+                <MyButton text={this.$t("confirm.cancel")} onClick={() => this.close()} />
+            </div>
+        );
+    }
+}
+
 @Dialog
 export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
     public override width: string = "800px";
@@ -356,9 +452,7 @@ export class ManageImagesDialog extends CommonDialog<HostInfo, boolean> {
 
     private exportImage(img: DockerImageUsageInfo) {
         // 用镜像 id 而非 tags：镜像可能没有 tag（悬空镜像）或有多个 tag，id 总是唯一且有效
-        const url = makeVmApiUrl("image_api/export_archive", this.data.address);
-        url.searchParams.set("image_name", img.id);
-        window.open(url.toString(), "_blank");
+        this.$dialog(ExportImageDialog).show({ host: this.data, image: img });
     }
 
     @ErrorProxy({

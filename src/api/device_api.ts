@@ -581,6 +581,70 @@ class DeviceApi extends ApiBase {
         return { promise, cancel };
     }
 
+    // exportImageArchiveSSE 用于压缩格式（tar.gz）的镜像导出：压缩在服务端完成，通过 SSE 持续
+    // 推送压缩进度（写法照抄 pullImages/loadImageSSE 的 EventSource 实现），压缩完成后终态事件
+    // 携带一次性 token，前端再用该 token 拼出 export_archive_download 的 URL 触发浏览器下载。
+    // 未压缩的 tar 格式不走这个接口，直接用 export_archive 一次性下载即可（无需进度反馈）。
+    public exportImageArchiveSSE(
+        ip: string,
+        imageName: string,
+        format: "gz",
+        onProgress?: (percent: number, status: string) => void
+    ): { promise: Promise<{ token: string; filename: string; }>, cancel: () => void; } {
+        const url = new URL(makeVmApiUrl("image_api/export_archive_sse", ip).toString());
+        url.searchParams.set("image_name", imageName);
+        url.searchParams.set("format", format);
+
+        const source = new EventSource(url.toString());
+        let settled = false;
+        let rejectFn: (reason?: any) => void = () => { };
+        const promise = new Promise<any>((resolve, reject) => {
+            rejectFn = reject;
+            source.onmessage = (event) => {
+                let msg: any;
+                try {
+                    msg = JSON.parse(event.data);
+                } catch {
+                    return;
+                }
+
+                if (msg.code === 3) {
+                    if (onProgress && msg.data) onProgress(msg.data.percent, msg.data.status);
+                    return;
+                }
+
+                settled = true;
+                source.close();
+                if (msg.code === 200) {
+                    resolve(msg.data);
+                } else {
+                    reject(new Error(msg.err || "导出失败"));
+                }
+            };
+            source.onerror = () => {
+                source.close();
+                if (settled) return;
+                settled = true;
+                reject(new Error("与后端的连接中断"));
+            };
+        });
+
+        const cancel = () => {
+            if (settled) return;
+            settled = true;
+            source.close();
+            rejectFn("aborted");
+        };
+
+        return { promise, cancel };
+    }
+
+    public exportImageArchiveDownloadUrl(ip: string, token: string): string {
+        const url = makeVmApiUrl("image_api/export_archive_download", ip);
+        url.searchParams.set("token", token);
+        return url.toString();
+    }
+
     public async confirmLoadDockerImage(ip: string, token: string): Promise<void> {
         const result = await fetch(makeVmApiUrl("image_api/load_confirm", ip), {
             method: "POST",
