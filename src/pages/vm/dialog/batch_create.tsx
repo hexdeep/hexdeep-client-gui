@@ -129,12 +129,13 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
                 var imgs = await this.getImages(ip);
                 var image = imgs.find(x => x.address == image_addr);
                 if (!image || !image.download) {
-                    const err = await this.$dialog(PullImageDialog).show({
+                    const re = await this.$dialog(PullImageDialog).show({
                         hostIp: ip,
                         imageAddress: image_addr!,
                         dockerRegistry: this.data.obj.docker_registry,
                     });
-                    if (err) throw err;
+                    if (re?.canceled) return;
+                    if (re?.error) throw new Error(re.error);
                 }
             }
         }

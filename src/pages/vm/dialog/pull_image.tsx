@@ -1,5 +1,6 @@
-import { deviceApi } from '@/api/device_api';
+import { deviceApi, PullImageAbortError } from '@/api/device_api';
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
+import { MyButton } from "@/lib/my_button";
 import s from "./pull_image.module.less";
 
 interface PullImageRequest {
@@ -8,10 +9,18 @@ interface PullImageRequest {
     dockerRegistry?: string;
 }
 
+export interface PullImageResult {
+    /** 用户点了取消，调用方应静默中止后续流程 */
+    canceled?: boolean;
+    /** 拉取失败的原因，成功时为空 */
+    error?: string;
+}
+
 @Dialog
-export class PullImageDialog extends CommonDialog<PullImageRequest, void | string> {
+export class PullImageDialog extends CommonDialog<PullImageRequest, PullImageResult> {
     public override width: string = "550px";
     private progress = 0;
+    private controller = new AbortController();
     public override allowEscape: boolean = false;
     public override title: string = this.$t("pullImage.title").toString();
 
@@ -19,13 +28,24 @@ export class PullImageDialog extends CommonDialog<PullImageRequest, void | strin
         deviceApi.pullImageProgress(data.hostIp, data.imageAddress, data.dockerRegistry ?? "", (progress) => {
             // console.log(progress);
             this.progress = progress;
-        }).then(() => {
-            this.close();
+        }, this.controller.signal).then(() => {
+            this.close({});
         }).catch((e) => {
+            // 取消的场景由 onCancel 负责关闭，这里不再当作失败上报
+            if (e instanceof PullImageAbortError) return;
             console.error(e);
-            this.close(this.$t("pullImage.failed").toString());
+            const reason = e instanceof Error ? e.message : `${e}`;
+            const failed = this.$t("pullImage.failed").toString();
+            this.close({ error: reason ? `${failed}: ${reason}` : failed });
         });
         return super.show(data);
+    }
+
+    /** 镜像地址不存在或仓库不可达时，服务端的 docker pull 可能长时间没有响应，
+     *  这个弹窗既没有关闭按钮也不响应 ESC，必须留一个取消的口子，否则界面会一直卡住 */
+    private onCancel() {
+        this.controller.abort();
+        this.close({ canceled: true });
     }
 
     protected override renderHeader(): any {
@@ -37,7 +57,11 @@ export class PullImageDialog extends CommonDialog<PullImageRequest, void | strin
     }
 
     protected override renderFooter() {
-        // ignore
+        return (
+            <div class="dialog-footer">
+                <MyButton text={this.$t("confirm.cancel")} onClick={() => this.onCancel()} />
+            </div>
+        );
     }
 
     protected override renderDialog() {

@@ -25,6 +25,8 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     public override allowEscape: boolean = false;
     private hasVip = false;
     private allHosts: HostInfo[] = [];
+    private pendingFailures: CreateFailureItem[] = [];
+    private pendingCreatedCount = 0;
 
     private static readonly CACHE_KEY = "CreateFormCache";
     private static readonly CACHE_FIELDS = ["name", "sandbox_size", "width", "height", "dpi", "x_dpi", "y_dpi", "fps", "mobile_model_version", "mobile_model_source", "model_id", "model_manufacturer"] as const;
@@ -155,18 +157,20 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         }
         if (image_addr && ((image_addr.includes('.') && image_addr.includes('/')))) {
             if (!image || !image.download) {
-                const err = await this.$dialog(PullImageDialog).show({
+                const re = await this.$dialog(PullImageDialog).show({
                     hostIp: this.data.info.hostIp,
                     imageAddress: image_addr!,
                     dockerRegistry: this.data.obj.docker_registry,
                 });
-                if (err) throw err;
+                if (re?.canceled) return;
+                if (re?.error) throw new Error(re.error);
             }
         }
         if (!this.data.isUpdate) {
             this.saveCacheValues();
         }
-        this.confirming();
+        await this.confirming();
+        await this.showPendingFailures();
     }
 
     private static getDefaultSubnet(index: number): string {
@@ -252,11 +256,13 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         }
 
         if (failures.length > 0) {
-            await this.$dialog(CreateFailuresDialog).show({ failures });
-            if (createdVms.length > 0) {
-                this.close(this.data.obj);
-            }
-            // 存在失败项：不弹通用成功提示（失败详情已经用专门弹窗展示过了）
+            // 失败详情不能在这里弹：confirming() 全程处于 @ErrorProxy 的全屏 loading 遮罩之下
+            // （Element 的遮罩 z-index >= 2000 且 lock，而自定义弹窗的遮罩固定是 999），
+            // CreateFailuresDialog 会被压在遮罩底下点不到，await 永远不返回，loading 也就永远关不掉。
+            // 交给 onConfirm 在 loading 收掉之后再展示。
+            this.pendingFailures = failures;
+            this.pendingCreatedCount = createdVms.length;
+            // 存在失败项：不弹通用成功提示（失败详情由 showPendingFailures 用专门弹窗展示）
             return false;
         }
 
@@ -276,6 +282,19 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             ));
         }
         this.close(this.data.obj);
+    }
+
+    // confirming() 里收集的失败项，等全屏 loading 关闭后由 onConfirm 展示
+    private async showPendingFailures() {
+        if (this.pendingFailures.length === 0) return;
+        const failures = this.pendingFailures;
+        const createdCount = this.pendingCreatedCount;
+        this.pendingFailures = [];
+        this.pendingCreatedCount = 0;
+        await this.$dialog(CreateFailuresDialog).show({ failures });
+        if (createdCount > 0) {
+            this.close(this.data.obj);
+        }
     }
 
     // 将新创建的云机加入 TreeConfig 并设为选中

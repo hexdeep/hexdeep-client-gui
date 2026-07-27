@@ -496,10 +496,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             l.close();
         });
         if (imageAddress) {
-            await this.$dialog(PullImageDialog).show({
+            const re = await this.$dialog(PullImageDialog).show({
                 hostIp: data.hostIp,
                 imageAddress: imageAddress,
             });
+            if (re?.canceled) return false;
+            if (re?.error) throw new Error(re.error);
             await deviceApi.reboot(data.hostIp, data.name);
         }
         this.$emit("changed", data.hostIp);
@@ -515,10 +517,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             l.close();
         });
         if (imageAddress) {
-            await this.$dialog(PullImageDialog).show({
+            const re = await this.$dialog(PullImageDialog).show({
                 hostIp: data.hostIp,
                 imageAddress: imageAddress,
             });
+            if (re?.canceled) return false;
+            if (re?.error) throw new Error(re.error);
             await deviceApi.reset(data.hostIp, data.name);
         }
         this.$emit("changed", data.hostIp);
@@ -541,10 +545,12 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                 l.close();
             });
             if (imageAddress) {
-                await this.$dialog(PullImageDialog).show({
+                const re = await this.$dialog(PullImageDialog).show({
                     hostIp: data.hostIp,
                     imageAddress: imageAddress,
                 });
+                if (re?.canceled) return false;
+                if (re?.error) throw new Error(re.error);
                 await deviceApi.start(data.hostIp, data.name);
             }
             this.$emit("changed", data.hostIp);

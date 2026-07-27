@@ -96,12 +96,13 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
                 var imgs = await deviceApi.getImages(ip);
                 var image = imgs.find(x => x.address == this.obj.image_addr);
                 if (image && !image.download && (image.address.includes('.') && image.address.includes('/'))) {
-                    const err = await this.$dialog(PullImageDialog).show({
+                    const re = await this.$dialog(PullImageDialog).show({
                         hostIp: ip,
                         imageAddress: this.obj.image_addr!,
                         dockerRegistry: this.obj.docker_registry,
                     });
-                    if (err) throw err;
+                    if (re?.canceled) return;
+                    if (re?.error) throw new Error(re.error);
                 }
             }
         }
