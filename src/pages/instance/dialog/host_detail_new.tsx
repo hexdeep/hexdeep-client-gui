@@ -229,9 +229,18 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                             <el-progress text-inside={true} percentage={this.getPercent(this.detail?.disk_percent)}
                                 stroke-width={26} status={this.getStatus(this.detail?.disk_percent)}></el-progress>
                             {this.detail?.disk === "nvme" && this.nvmeInfo ? (
-                                <span style={{ color: "#999", fontSize: "12px" }}>
-                                    {this.$t("vmDetail.nvmeSerial")}: {this.nvmeInfo.serial}
-                                </span>
+                                <Row crossAlign="center" gap={2}>
+                                    <span style={{ color: "#999", fontSize: "12px" }}>
+                                        {this.$t("vmDetail.nvmeSerial")}: {this.nvmeInfo.serial}
+                                    </span>
+                                    <el-button
+                                        type="text"
+                                        icon="el-icon-document-copy"
+                                        class="shrink-0"
+                                        style={{ fontSize: "12px" }}
+                                        onClick={this.copyNvmeSerial}
+                                    />
+                                </Row>
                             ) : null}
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
                                 <span>
@@ -432,6 +441,12 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
 
     private async copyDeviceId() {
         await Tools.copyText(this.data.device_id);
+        this.$message.success(this.$t("vmDetail.copySuccess").toString());
+    }
+
+    private async copyNvmeSerial() {
+        if (!this.nvmeInfo) return;
+        await Tools.copyText(this.nvmeInfo.serial);
         this.$message.success(this.$t("vmDetail.copySuccess").toString());
     }
 
