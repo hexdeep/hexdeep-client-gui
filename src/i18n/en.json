@@ -60,6 +60,7 @@
         "empty": "No Data"
     },
     "create": {
+        "confirmButton": "Create {0} VM(s)",
         "dataSizeInfo": "Data size: {0}   Actual usage: {1}",
         "name": "Name",
         "sandbox": "Sandbox",
@@ -166,7 +167,8 @@
         "screenMirror": "Screen Mirror",
         "shake": "Shake",
         "androidSdkApi": "Android Sdk Api",
-        "switchFirmware": "Switch Firmware"
+        "switchFirmware": "Switch Firmware",
+        "batchRename": "Batch Rename"
     },
     "shake": {
         "title": "Shake",
@@ -253,7 +255,18 @@
         "switchFirmwareTitle": "Batch Switch Firmware",
         "switchFirmwareConfirm": "Are you sure you want to switch firmware for {0} hosts? Hosts will restart after switching.",
         "switchFirmwareSuccess": "Batch firmware switch successful, hosts are restarting...",
-        "affectedHosts": "Affected Hosts"
+        "affectedHosts": "Affected Hosts",
+        "renameTitle": "Batch Rename",
+        "renameBaseName": "Base Name",
+        "renameBaseNameTip": "The new name is formed by concatenating the base name with each VM's slot number",
+        "renameBaseNameLength": "The length is 1-18 characters",
+        "renamePreviewHost": "Host",
+        "renamePreviewSlot": "Slot",
+        "renamePreviewOldName": "Current Name",
+        "renamePreviewNewName": "New Name",
+        "renameSuccess": "Batch rename successful",
+        "renameFailuresTitle": "Some VMs failed to rename",
+        "renameFailuresReason": "Reason"
     },
     "vmDetail": {
         "title": "VM Detail",

@@ -11,6 +11,7 @@ import Vue from "vue";
 import { Component, ProvideReactive, Ref, Watch } from "vue-property-decorator";
 import { DeviceList } from "./dev_list";
 import { DevicePicker } from "./dev_picker";
+import { BatchRenameDialog } from "./dialog/batch_rename";
 import { ChangeImageDialog } from "./dialog/change_image";
 import { ImportVmDialog } from "./dialog/import_vm";
 import { UploadFileDialog } from "./dialog/upload_file";
@@ -376,6 +377,11 @@ export default class VMPage extends Vue {
         if (re) this.refreshHost();
     }
 
+    private async batchRename() {
+        let re = await this.$dialog(BatchRenameDialog).show(this.selectedItems);
+        if (re) this.refreshHost();
+    }
+
     // private async batchCreate() {
     //     await this.$dialog(BatchCreateDialog).show({
     //         num: 12,
@@ -415,6 +421,7 @@ export default class VMPage extends Vue {
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={this.batchChangeImage}>{this.$t("menu.changeImage")}</el-dropdown-item>
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={this.batchUpload}>{this.$t("menu.upload")}</el-dropdown-item>
                                     <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={this.batchSwitchFirmware}>{this.$t("menu.switchFirmware")}</el-dropdown-item>
+                                    <el-dropdown-item disabled={this.rightChecked.isEmpty} nativeOnClick={this.batchRename}>{this.$t("menu.batchRename")}</el-dropdown-item>
                                 </el-dropdown-menu>
                             </el-dropdown>
                             <el-radio-group v-model={this.config.view}>

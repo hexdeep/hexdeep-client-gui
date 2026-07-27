@@ -62,6 +62,7 @@
     },
     "create": {
         "success": "创建成功",
+        "confirmButton": "创建{0}个云机",
         "dataSizeInfo": "数据大小：{0}　实际占用：{1}",
         "name": "名称",
         "sandbox": "沙盒",
@@ -167,7 +168,8 @@
         "screenMirror": "手机端🔥",
         "shake": "摇一摇",
         "androidSdkApi": "安卓SdkApi",
-        "switchFirmware": "切换固件"
+        "switchFirmware": "切换固件",
+        "batchRename": "批量重命名"
     },
     "shake": {
         "title": "摇一摇",
@@ -254,7 +256,18 @@
         "switchFirmwareTitle": "批量切换固件",
         "switchFirmwareConfirm": "确定要为 {0} 台主机切换固件版本吗？切换后主机将重启。",
         "switchFirmwareSuccess": "批量切换固件成功，主机正在重启...",
-        "affectedHosts": "涉及主机"
+        "affectedHosts": "涉及主机",
+        "renameTitle": "批量重命名",
+        "renameBaseName": "基础名称",
+        "renameBaseNameTip": "新名称由「基础名称 + 实例位编号」拼接而成",
+        "renameBaseNameLength": "长度为1 - 18个字符",
+        "renamePreviewHost": "主机",
+        "renamePreviewSlot": "实例位",
+        "renamePreviewOldName": "当前名称",
+        "renamePreviewNewName": "新名称",
+        "renameSuccess": "批量重命名成功",
+        "renameFailuresTitle": "部分云机重命名失败",
+        "renameFailuresReason": "失败原因"
     },
     "vmDetail": {
         "title": "实例详情",
