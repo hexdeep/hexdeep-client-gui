@@ -481,7 +481,7 @@ export class StartupDialog extends CommonDialog<HostInfo, boolean> {
                     />
                     <el-table-column
                         label={this.$t("action")}
-                        width="260"
+                        min-width="180"
                         align="center"
                         scopedSlots={{
                             default: ({ row }: { row: StartupInfo; }) => (
