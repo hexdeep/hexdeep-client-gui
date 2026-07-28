@@ -978,6 +978,38 @@ class DeviceApi extends ApiBase {
         return (await this.handleError(result)) ?? "";
     }
 
+    /**
+     * 通过 SSE 持续订阅启动项日志：连接建立时先推一次现有尾部内容（{init:true}，用来替换），
+     * 之后每有新增内容就推一次增量（{init:false}，用来追加），没有新内容的 tick 后端不会推送。
+     * 断线由 EventSource 按规范自动重连，onStatusChange 只是把连接状态暴露出来给界面显示。
+     */
+    public subscribeStartupLogs(
+        ip: string,
+        id: number,
+        onEvent: (e: { init: boolean; text: string; }) => void,
+        onStatusChange?: (connected: boolean) => void,
+    ): () => void {
+        const url = makeHostVmApiUrl("startup/logs_sse", ip) + `?id=${id}`;
+        const source = new EventSource(url);
+
+        source.onopen = () => onStatusChange?.(true);
+        source.onerror = () => onStatusChange?.(false);
+
+        source.onmessage = (event) => {
+            try {
+                const msg = JSON.parse(event.data);
+                if (msg.code !== 200) {
+                    throw new Error(msg.err ?? "unknown error");
+                }
+                onEvent(msg.data);
+            } catch (e) {
+                console.warn(e);
+            }
+        };
+
+        return () => source.close();
+    }
+
     public async getHostDetail(ip: string): Promise<HostDetailInfo> {
         const result = await fetch(makeHostVmApiUrl("entry/system_info", ip));
         return await this.handleError(result);

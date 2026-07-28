@@ -191,24 +191,59 @@ export class StartupLogsDialog extends CommonDialog<StartupLogsData, void> {
     public override width: string = "800px";
     public override height: string = "600px";
     protected logs: string = "";
-    protected loading: boolean = false;
+    protected loading: boolean = true;
+    // SSE 连接状态，仅用于界面上那个小圆点提示；断线后 EventSource 会按规范自动重连，
+    // 这里不需要也不应该手动重试
+    protected connected: boolean = true;
+    private unsubscribe?: () => void;
 
     public override async show(data: StartupLogsData) {
         this.title = `${this.$t("startup.logsTitle")} - ${data.item.name}`;
         this.data = data;
-        this.loadLogs();
+        this.loading = true;
+        this.unsubscribe = deviceApi.subscribeStartupLogs(
+            data.host.address,
+            data.item.id,
+            e => this.onLogEvent(e),
+            connected => this.connected = connected,
+        );
         return super.show(data);
     }
 
-    private async loadLogs() {
-        this.loading = true;
-        try {
-            this.logs = await deviceApi.getStartupLogs(this.data.host.address, this.data.item.id);
-        } catch (e) {
-            this.$message.error(`${e}`);
-        } finally {
-            this.loading = false;
+    protected destroyed() {
+        this.unsubscribe?.();
+    }
+
+    private onLogEvent(e: { init: boolean; text: string; }) {
+        this.loading = false;
+
+        if (e.init) {
+            // 首次连接推过来的是完整尾部，直接替换，并且不管之前滚动到哪都要跳到最新
+            this.logs = e.text;
+            this.$nextTick(() => this.scrollToBottom());
+            return;
         }
+
+        if (!e.text) return; // 这一次 tick 没有新内容
+
+        // 只有原本就停在最底部时才跟着滚动，用户往上翻看历史日志时不能被新日志打断
+        const wasAtBottom = this.isAtBottom();
+        this.logs += e.text;
+        this.$nextTick(() => {
+            if (wasAtBottom) this.scrollToBottom();
+        });
+    }
+
+    private isAtBottom(): boolean {
+        const el = this.$refs.logBox as HTMLElement | undefined;
+        if (!el) return true;
+        // 留一点容差：不同浏览器对"滚动到底"的 scrollHeight/scrollTop 计算会有 1px 左右的抖动
+        return el.scrollHeight - el.scrollTop - el.clientHeight < 24;
+    }
+
+    private scrollToBottom() {
+        const el = this.$refs.logBox as HTMLElement | undefined;
+        if (el) el.scrollTop = el.scrollHeight;
     }
 
     protected renderDialog(): VNode {
@@ -216,16 +251,23 @@ export class StartupLogsDialog extends CommonDialog<StartupLogsData, void> {
             <Column gap={12} style={{ padding: "20px", height: "100%", minHeight: 0 }}>
                 <Row crossAlign="center" gap={10}>
                     <span style={{ color: "#909399", fontSize: "12px" }}>{this.$t("startup.logsTip")}</span>
-                    <MyButton
-                        type="primary"
-                        size="small"
-                        class="ms-auto shrink-0"
-                        disabled={this.loading}
-                        text={this.$t("startup.refresh")}
-                        onClick={this.loadLogs}
-                    />
+                    <Row crossAlign="center" gap={4} class="ms-auto shrink-0">
+                        <span
+                            style={{
+                                width: "8px",
+                                height: "8px",
+                                borderRadius: "50%",
+                                background: this.connected ? "#67C23A" : "#E6A23C",
+                                display: "inline-block",
+                            }}
+                        />
+                        <span style={{ fontSize: "12px", color: "#909399" }}>
+                            {this.connected ? this.$t("startup.logsLive") : this.$t("startup.logsReconnecting")}
+                        </span>
+                    </Row>
                 </Row>
                 <div
+                    ref="logBox"
                     v-loading={this.loading}
                     style={{
                         flex: "1",
