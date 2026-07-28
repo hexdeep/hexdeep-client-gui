@@ -145,8 +145,22 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
 
         if (this.data.isUpdate) {
             if (this.dirty < 2) {
-                this.close();
-                return;
+                // 用户没有改动任何字段就点了确认：不能直接跳过更新请求——云机可能用的是自定义镜像，
+                // 镜像内容已经更新但地址没变，这种情况下"不改设置、点确认"正是刷新出最新镜像的方式，
+                // 所以这里改成二次确认，而不是静默关闭。
+                const re = await this.$confirm(
+                    this.$t("create.noChangeConfirm").toString(),
+                    this.$t("confirm.title").toString(),
+                    {
+                        confirmButtonText: this.$t("confirm.ok").toString(),
+                        cancelButtonText: this.$t("confirm.cancel").toString(),
+                        type: "warning",
+                    }
+                ).catch(() => "cancel");
+                if (re !== "confirm") {
+                    this.close();
+                    return;
+                }
             }
         } else if (this.selectedIndices.length === 0) {
             throw new Error(this.$t("create.needSelectSlot").toString());

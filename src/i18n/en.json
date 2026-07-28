@@ -116,6 +116,7 @@
         "offset_placeholder": "Empty = random",
         "nameRule": "The length is 1-20 characters",
         "success": "Create successful",
+        "noChangeConfirm": "No settings were changed. Do you still want to update? If the custom image this VM uses has been updated, confirming will make the VM pick up the latest image without changing any settings.",
         "start": "Created successfully, do you want to start now?",
         "maxCreate": "The current host has no available instance location",
         "numRule": "The number of VMs to create must be between 1 and {0} and an integer",
