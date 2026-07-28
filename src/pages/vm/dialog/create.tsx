@@ -234,7 +234,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             const index = sortedIndices[j];
             const obj = Object.assign({}, baseObj);
             obj.index = index;
-            obj.name = isMulti ? `${baseName}_${index}` : baseName;
+            obj.name = isMulti ? `${baseName}${index}` : baseName;
             if (isMulti) {
                 if (baseObj.mac_vlan == 1) {
                     // mac_vlan 模式：参照旧批量创建的 OffsetIP 规则，按顺序递增末段
