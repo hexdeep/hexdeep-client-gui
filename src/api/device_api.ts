@@ -4,7 +4,7 @@ import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
-import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile, DockerImageUsageInfo, NvmeInfo, StartupInfo } from "./device_define";
+import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile, DockerImageUsageInfo, NvmeInfo, StartupInfo, StartupRestartPolicy } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
@@ -903,7 +903,7 @@ class DeviceApi extends ApiBase {
      */
     public addStartup(
         ip: string,
-        params: { name: string; file: File; command?: string; start?: boolean; },
+        params: { name: string; file: File; command?: string; restartPolicy?: StartupRestartPolicy; start?: boolean; },
         onProgress?: (percent: number) => void
     ): { promise: Promise<StartupInfo>, cancel: () => void; } {
         const xhr = new XMLHttpRequest();
@@ -933,6 +933,7 @@ class DeviceApi extends ApiBase {
             formData.append("name", params.name);
             formData.append("file", params.file);
             formData.append("command", params.command ?? "");
+            formData.append("restart_policy", params.restartPolicy ?? "");
             formData.append("start", params.start ? "1" : "0");
             xhr.send(formData);
         });
@@ -940,11 +941,11 @@ class DeviceApi extends ApiBase {
         return { promise, cancel: () => xhr.abort() };
     }
 
-    /** 修改名称和启动命令；命令的改动要重启该启动项才会生效 */
-    public async updateStartup(ip: string, id: number, name: string, command: string) {
+    /** 修改名称、启动命令与退出后处理策略；命令的改动要重启该启动项才会生效 */
+    public async updateStartup(ip: string, id: number, name: string, command: string, restartPolicy: StartupRestartPolicy) {
         const result = await fetch(makeHostVmApiUrl("startup/update", ip), {
             method: "POST",
-            body: qs.stringify({ id, name, command }),
+            body: qs.stringify({ id, name, command, restart_policy: restartPolicy }),
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
         });
         return await this.handleError(result);

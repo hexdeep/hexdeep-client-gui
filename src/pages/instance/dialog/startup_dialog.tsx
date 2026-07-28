@@ -3,7 +3,7 @@ import { ErrorProxy } from "@/lib/error_handle";
 import { VNode } from "vue";
 import { deviceApi } from "@/api/device_api";
 import { i18n } from "@/i18n/i18n";
-import { HostInfo, StartupInfo } from "@/api/device_define";
+import { HostInfo, StartupInfo, StartupRestartPolicy } from "@/api/device_define";
 import { Column, Row } from "@/lib/container";
 import { MyButton } from "@/lib/my_button";
 
@@ -26,6 +26,7 @@ export class StartupFormDialog extends CommonDialog<StartupFormData, boolean> {
     public override width: string = "520px";
     protected name: string = "";
     protected command: string = "";
+    protected restartPolicy: StartupRestartPolicy = "on_failure";
     protected file: File | null = null;
     protected submitting: boolean = false;
     protected uploadProgress: number = 0;
@@ -40,6 +41,9 @@ export class StartupFormDialog extends CommonDialog<StartupFormData, boolean> {
         if (data.item) {
             this.name = data.item.name;
             this.command = data.item.command;
+            this.restartPolicy = data.item.restart_policy;
+        } else {
+            this.restartPolicy = "on_failure";
         }
         return super.show(data);
     }
@@ -77,7 +81,8 @@ export class StartupFormDialog extends CommonDialog<StartupFormData, boolean> {
                     this.data.host.address,
                     this.data.item!.id,
                     this.name.trim(),
-                    this.command.trim()
+                    this.command.trim(),
+                    this.restartPolicy
                 );
             } else {
                 this.uploadTask = deviceApi.addStartup(
@@ -86,6 +91,7 @@ export class StartupFormDialog extends CommonDialog<StartupFormData, boolean> {
                         name: this.name.trim(),
                         file: this.file!,
                         command: this.command.trim(),
+                        restartPolicy: this.restartPolicy,
                         start: startNow,
                     },
                     percent => this.uploadProgress = Math.max(0, Math.min(100, percent))
@@ -146,6 +152,15 @@ export class StartupFormDialog extends CommonDialog<StartupFormData, boolean> {
                     />
                     <div style={{ fontSize: "12px", color: "#909399", lineHeight: "1.6" }}>
                         {this.$t("startup.commandTip")}
+                    </div>
+                </el-form-item>
+                <el-form-item label={this.$t("startup.restartPolicy")}>
+                    <el-select v-model={this.restartPolicy} disabled={this.submitting} style={{ width: "100%" }}>
+                        <el-option value="on_failure" label={this.$t("startup.restartPolicyOnFailure").toString()} />
+                        <el-option value="none" label={this.$t("startup.restartPolicyNone").toString()} />
+                    </el-select>
+                    <div style={{ fontSize: "12px", color: "#909399", lineHeight: "1.6" }}>
+                        {this.$t("startup.restartPolicyTip")}
                     </div>
                 </el-form-item>
                 {this.submitting && !this.isEditMode && (

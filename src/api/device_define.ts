@@ -266,6 +266,9 @@ export interface DiskItem {
     name: string;
 }
 
+/** 启动项退出后处理策略：none=不重启，on_failure=异常退出自动重启 */
+export type StartupRestartPolicy = "none" | "on_failure";
+
 /** 启动项：host_server 启动后拉起并托管的外部程序 */
 export interface StartupInfo {
     id: number;
@@ -276,6 +279,8 @@ export interface StartupInfo {
     command: string;
     /** 实际执行的命令，command 为空时后端补齐为 ./<filename> */
     resolved_command: string;
+    /** 退出后处理策略 */
+    restart_policy: StartupRestartPolicy;
     /** 当前子进程pid，0表示未运行 */
     pid: number;
     /** 当前进程的创建时间，Unix毫秒时间戳；未运行时为0 */
