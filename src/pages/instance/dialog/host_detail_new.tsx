@@ -18,6 +18,7 @@ import { orderApi } from "@/api/order_api";
 import { DeviceVipInfo } from "@/api/order_define";
 import { SwitchFirmwareDialog } from "./switch_firmware";
 import { ManageImagesDialog } from "./manage_images_dialog";
+import { StartupDialog } from "./startup_dialog";
 
 const FIRMWARE_STORAGE_KEY = "firmware_version_list";
 
@@ -35,7 +36,8 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected firmwareUpdated: boolean = false;
     protected currentFirmwareVersion: string = "";
     protected nvmeInfo: NvmeInfo | null = null;
-    override width: string = "600px";
+    // 主机操作那一行按钮偏多，600px 下会挤成三行，加宽让它们排得开一些
+    override width: string = "760px";
     public override async show(data: HostInfo) {
         this.data = data;
         this.title = this.$t("instance.hostDetail").toString() + ` (${data.address})`;
@@ -340,6 +342,15 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                         >
                             {this.$t("vmDetail.manageImages")}
                         </MyButton>
+
+                        <MyButton
+                            type="primary"
+                            size="small"
+                            style={{ whiteSpace: "nowrap" }}
+                            onClick={this.manageStartups}
+                        >
+                            {this.$t("startup.title")}
+                        </MyButton>
                     </div>
                 </el-descriptions-item>
             </el-descriptions>
@@ -437,6 +448,10 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
 
     private async manageImages() {
         await this.$dialog(ManageImagesDialog).show(this.data);
+    }
+
+    private async manageStartups() {
+        await this.$dialog(StartupDialog).show(this.data);
     }
 
     private async copyDeviceId() {

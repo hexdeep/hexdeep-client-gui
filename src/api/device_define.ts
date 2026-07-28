@@ -266,6 +266,23 @@ export interface DiskItem {
     name: string;
 }
 
+/** 启动项：host_server 启动后拉起并托管的外部程序 */
+export interface StartupInfo {
+    id: number;
+    name: string;
+    /** 上传的可执行文件名 */
+    filename: string;
+    /** 用户自定义的启动命令，为空表示用默认的 ./<filename> */
+    command: string;
+    /** 实际执行的命令，command 为空时后端补齐为 ./<filename> */
+    resolved_command: string;
+    /** 当前子进程pid，0表示未运行 */
+    pid: number;
+    /** 后端实时探测的运行状态，不是库里的字段 */
+    running: boolean;
+    created_at: string;
+}
+
 export interface NvmeInfo {
     model: string;
     firmware: string;

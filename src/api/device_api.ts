@@ -4,7 +4,7 @@ import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
-import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile, DockerImageUsageInfo, NvmeInfo } from "./device_define";
+import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile, DockerImageUsageInfo, NvmeInfo, StartupInfo } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
@@ -888,6 +888,94 @@ class DeviceApi extends ApiBase {
     public async resetHost(ip: string) {
         const result = await fetch(makeHostVmApiUrl("entry/reset", ip));
         return await this.handleError(result);
+    }
+
+    // ---- 启动项（host_server 托管的外部程序，端口82）----
+
+    public async getStartups(ip: string): Promise<StartupInfo[]> {
+        const result = await fetch(makeHostVmApiUrl("startup/list", ip));
+        return (await this.handleError(result)) ?? [];
+    }
+
+    /**
+     * 上传可执行文件并新建启动项。用 XMLHttpRequest 而不是 fetch 是为了拿上传进度：
+     * 可执行文件最大允许 200MB，走慢速网络时没有进度条会让人以为卡死了。
+     */
+    public addStartup(
+        ip: string,
+        params: { name: string; file: File; command?: string; start?: boolean; },
+        onProgress?: (percent: number) => void
+    ): { promise: Promise<StartupInfo>, cancel: () => void; } {
+        const xhr = new XMLHttpRequest();
+        const promise = new Promise<StartupInfo>((resolve, reject) => {
+            xhr.open("POST", makeHostVmApiUrl("startup/add", ip).toString(), true);
+            xhr.upload.onprogress = event => {
+                if (onProgress && event.lengthComputable) {
+                    onProgress(Math.round(event.loaded / event.total * 100));
+                }
+            };
+            xhr.onload = () => {
+                try {
+                    const json = JSON.parse(xhr.responseText);
+                    if (xhr.status >= 200 && xhr.status < 300 && json.code === 200) {
+                        resolve(json.data);
+                    } else {
+                        reject(new Error(json.err || `Upload failed: ${xhr.status} ${xhr.statusText}`));
+                    }
+                } catch {
+                    reject(new Error(`Invalid response: ${xhr.status} ${xhr.statusText}`));
+                }
+            };
+            xhr.onerror = () => reject(new Error("Network error during startup upload"));
+            xhr.onabort = () => reject("aborted");
+
+            const formData = new FormData();
+            formData.append("name", params.name);
+            formData.append("file", params.file);
+            formData.append("command", params.command ?? "");
+            formData.append("start", params.start ? "1" : "0");
+            xhr.send(formData);
+        });
+
+        return { promise, cancel: () => xhr.abort() };
+    }
+
+    /** 修改名称和启动命令；命令的改动要重启该启动项才会生效 */
+    public async updateStartup(ip: string, id: number, name: string, command: string) {
+        const result = await fetch(makeHostVmApiUrl("startup/update", ip), {
+            method: "POST",
+            body: qs.stringify({ id, name, command }),
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        });
+        return await this.handleError(result);
+    }
+
+    public async startStartup(ip: string, id: number) {
+        const result = await fetch(makeHostVmApiUrl("startup/start", ip) + `?id=${id}`);
+        return await this.handleError(result);
+    }
+
+    public async stopStartup(ip: string, id: number) {
+        const result = await fetch(makeHostVmApiUrl("startup/stop", ip) + `?id=${id}`);
+        return await this.handleError(result);
+    }
+
+    public async restartStartup(ip: string, id: number) {
+        const result = await fetch(makeHostVmApiUrl("startup/restart", ip) + `?id=${id}`);
+        return await this.handleError(result);
+    }
+
+    /** 返回删除失败的启动项ID到失败原因的映射；全部成功时返回空对象 */
+    public async deleteStartups(ip: string, ids: number[]): Promise<Record<string, string>> {
+        const query = qs.stringify({ ids }, { arrayFormat: "repeat" });
+        const result = await fetch(makeHostVmApiUrl("startup/delete", ip) + `?${query}`);
+        return (await this.handleError(result)) ?? {};
+    }
+
+    /** 返回日志末尾的内容（默认后端截 256KB），不是完整日志 */
+    public async getStartupLogs(ip: string, id: number): Promise<string> {
+        const result = await fetch(makeHostVmApiUrl("startup/logs", ip) + `?id=${id}`);
+        return (await this.handleError(result)) ?? "";
     }
 
     public async getHostDetail(ip: string): Promise<HostDetailInfo> {
