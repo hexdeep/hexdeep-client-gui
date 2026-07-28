@@ -36,8 +36,9 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
     protected firmwareUpdated: boolean = false;
     protected currentFirmwareVersion: string = "";
     protected nvmeInfo: NvmeInfo | null = null;
+    protected startupAvailable: boolean = false;
     // 主机操作那一行按钮偏多，600px 下会挤成三行，加宽让它们排得开一些
-    override width: string = "760px";
+    override width: string = "700px";
     public override async show(data: HostInfo) {
         this.data = data;
         this.title = this.$t("instance.hostDetail").toString() + ` (${data.address})`;
@@ -61,7 +62,12 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
         this.loadCurrentFirmwareVersion();
         this.unsubscribeHostDetail = deviceApi.subscribeHostDetail(data.address, e => this.detail = e);
         this.loadNvmeInfo();
+        this.checkStartupAvailable();
         return super.show(data);
+    }
+
+    private async checkStartupAvailable() {
+        this.startupAvailable = await deviceApi.isStartupSupported(this.data.address);
     }
 
     private async loadNvmeInfo() {
@@ -343,14 +349,16 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                             {this.$t("vmDetail.manageImages")}
                         </MyButton>
 
-                        <MyButton
-                            type="primary"
-                            size="small"
-                            style={{ whiteSpace: "nowrap" }}
-                            onClick={this.manageStartups}
-                        >
-                            {this.$t("startup.title")}
-                        </MyButton>
+                        {this.startupAvailable && (
+                            <MyButton
+                                type="primary"
+                                size="small"
+                                style={{ whiteSpace: "nowrap" }}
+                                onClick={this.manageStartups}
+                            >
+                                {this.$t("startup.title")}
+                            </MyButton>
+                        )}
                     </div>
                 </el-descriptions-item>
             </el-descriptions>

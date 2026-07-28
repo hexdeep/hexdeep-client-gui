@@ -907,6 +907,20 @@ class DeviceApi extends ApiBase {
     }
 
     /**
+     * 探测目标主机的 host_server 是否已经升级到支持启动项管理——老版本 host_server 没有
+     * /startup/* 路由，请求会落到 echo 的默认 404，而不是走到 handler 返回业务错误。
+     * 用于 GUI 侧决定要不要展示"打开启动项管理"的入口按钮，避免用户点进去才发现接口不存在。
+     */
+    public async isStartupSupported(ip: string): Promise<boolean> {
+        try {
+            const result = await fetch(this.makeStartupActUrl(ip, 0));
+            return result.status !== 404;
+        } catch {
+            return false;
+        }
+    }
+
+    /**
      * 上传可执行文件并新建启动项。用 XMLHttpRequest 而不是 fetch 是为了拿上传进度：
      * 可执行文件最大允许 200MB，走慢速网络时没有进度条会让人以为卡死了。
      */
