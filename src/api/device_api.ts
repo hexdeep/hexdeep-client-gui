@@ -907,14 +907,22 @@ class DeviceApi extends ApiBase {
     }
 
     /**
-     * 探测目标主机的 host_server 是否已经升级到支持启动项管理——老版本 host_server 没有
-     * /startup/* 路由，请求会落到 echo 的默认 404，而不是走到 handler 返回业务错误。
-     * 用于 GUI 侧决定要不要展示"打开启动项管理"的入口按钮，避免用户点进去才发现接口不存在。
+     * 探测目标主机的 host_server 是否已经升级到支持启动项管理。
+     *
+     * 不能靠 HTTP 状态码判断：host_server 的统一错误处理（util.HttpUtil.Error/ErrorMsg）
+     * 无论什么错误都用 c.JSON(http.StatusOK, ...) 应答，路由不存在时也一样——请求会先落到
+     * echo 内置的 NotFoundHandler（产出 err 形如 "code=404, message=Not Found"）或者老版本
+     * host_server 自带的 GET /* 兜底路由（产出 err 字面量 "404"），两种情况响应体的业务
+     * code 都是非 200，但 HTTP 状态永远是 200。所以只能解析响应体，用 code!=200 且 err 里
+     * 带 "404" 这个特征来识别"路由压根不存在"，而不是真的业务报错（启动项相关的业务错误
+     * 都是"启动项不存在"之类的中文提示，不会凑巧带上 "404"）。
      */
     public async isStartupSupported(ip: string): Promise<boolean> {
         try {
             const result = await fetch(this.makeStartupActUrl(ip, 0));
-            return result.status !== 404;
+            const json = await result.json();
+            if (json?.code === 200) return true;
+            return !String(json?.err ?? "").includes("404");
         } catch {
             return false;
         }
