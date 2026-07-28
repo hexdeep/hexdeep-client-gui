@@ -468,7 +468,7 @@ export class StartupDialog extends CommonDialog<HostInfo, boolean> {
                     empty-text={this.$t("startup.empty").toString()}
                     on-selection-change={this.onSelectionChange}
                 >
-                    <el-table-column type="selection" width="55" />
+                    <el-table-column type="selection" width="55" reserve-selection />
                     <el-table-column
                         label={this.$t("startup.columnName")}
                         min-width="160"
