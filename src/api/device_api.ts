@@ -891,9 +891,18 @@ class DeviceApi extends ApiBase {
     }
 
     // ---- 启动项（host_server 托管的外部程序，端口82）----
+    // 列表/启停/重启/编辑/批量删除/查日志全部合并进一条 GET，用 act 区分（对齐 host_server
+    // 侧 startupHandler.Act 的 0~6），跟机型文件接口的 makeMobileModelUrl 是同一个套路；
+    // 新增（要带文件）和日志 SSE（长连接）GET 扛不住，各自单独留一个接口。
+
+    private makeStartupActUrl(ip: string, act: 0 | 1 | 2 | 3 | 4 | 5 | 6) {
+        const url = makeHostVmApiUrl("startup", ip);
+        url.searchParams.set("act", act.toString());
+        return url;
+    }
 
     public async getStartups(ip: string): Promise<StartupInfo[]> {
-        const result = await fetch(makeHostVmApiUrl("startup/list", ip));
+        const result = await fetch(this.makeStartupActUrl(ip, 0));
         return (await this.handleError(result)) ?? [];
     }
 
@@ -943,39 +952,49 @@ class DeviceApi extends ApiBase {
 
     /** 修改名称、启动命令与退出后处理策略；命令的改动要重启该启动项才会生效 */
     public async updateStartup(ip: string, id: number, name: string, command: string, restartPolicy: StartupRestartPolicy) {
-        const result = await fetch(makeHostVmApiUrl("startup/update", ip), {
-            method: "POST",
-            body: qs.stringify({ id, name, command, restart_policy: restartPolicy }),
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        });
+        const url = this.makeStartupActUrl(ip, 4);
+        url.searchParams.set("id", id.toString());
+        url.searchParams.set("name", name);
+        url.searchParams.set("command", command);
+        url.searchParams.set("restart_policy", restartPolicy);
+        const result = await fetch(url);
         return await this.handleError(result);
     }
 
     public async startStartup(ip: string, id: number) {
-        const result = await fetch(makeHostVmApiUrl("startup/start", ip) + `?id=${id}`);
+        const url = this.makeStartupActUrl(ip, 1);
+        url.searchParams.set("id", id.toString());
+        const result = await fetch(url);
         return await this.handleError(result);
     }
 
     public async stopStartup(ip: string, id: number) {
-        const result = await fetch(makeHostVmApiUrl("startup/stop", ip) + `?id=${id}`);
+        const url = this.makeStartupActUrl(ip, 2);
+        url.searchParams.set("id", id.toString());
+        const result = await fetch(url);
         return await this.handleError(result);
     }
 
     public async restartStartup(ip: string, id: number) {
-        const result = await fetch(makeHostVmApiUrl("startup/restart", ip) + `?id=${id}`);
+        const url = this.makeStartupActUrl(ip, 3);
+        url.searchParams.set("id", id.toString());
+        const result = await fetch(url);
         return await this.handleError(result);
     }
 
     /** 返回删除失败的启动项ID到失败原因的映射；全部成功时返回空对象 */
     public async deleteStartups(ip: string, ids: number[]): Promise<Record<string, string>> {
-        const query = qs.stringify({ ids }, { arrayFormat: "repeat" });
-        const result = await fetch(makeHostVmApiUrl("startup/delete", ip) + `?${query}`);
+        const url = this.makeStartupActUrl(ip, 5);
+        for (const id of ids) url.searchParams.append("ids", id.toString());
+        const result = await fetch(url);
         return (await this.handleError(result)) ?? {};
     }
 
     /** 返回日志末尾的内容（默认后端截 256KB），不是完整日志 */
     public async getStartupLogs(ip: string, id: number): Promise<string> {
-        const result = await fetch(makeHostVmApiUrl("startup/logs", ip) + `?id=${id}`);
+        const url = this.makeStartupActUrl(ip, 6);
+        url.searchParams.set("id", id.toString());
+        const result = await fetch(url);
         return (await this.handleError(result)) ?? "";
     }
 
