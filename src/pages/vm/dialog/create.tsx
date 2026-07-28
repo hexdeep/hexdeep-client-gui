@@ -409,6 +409,11 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     protected renderDialog(): VNode {
         return (
             <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="150px">
+                {this.data.isUpdate && (
+                    <el-form-item label={this.$t("create.dataPath")}>
+                        <el-input value={this.data.info.data} disabled />
+                    </el-form-item>
+                )}
                 {this.data.isUpdate && this.dataSizeText && <div style="color: #606266; margin-bottom: 10px; margin-left: 140px;">{this.dataSizeText}</div>}
                 {this.data.isUpdate && <div style="color: red; margin-bottom: 10px; margin-left: 140px;">{this.$t("changeImage.warning")}</div>}
                 <CreateForm

@@ -63,6 +63,7 @@
     "create": {
         "confirmButton": "Create {0} VM(s)",
         "dataSizeInfo": "Data size: {0}   Actual usage: {1}",
+        "dataPath": "Data Path",
         "name": "Name",
         "sandbox": "Sandbox",
         "sandbox_tip": "For example, creating 64GB does not actually occupy 64GB; space is allocated on demand, which improves emulation fidelity.",

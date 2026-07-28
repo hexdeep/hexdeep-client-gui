@@ -65,6 +65,7 @@
         "success": "创建成功",
         "confirmButton": "创建{0}个云机",
         "dataSizeInfo": "数据大小：{0}　实际占用：{1}",
+        "dataPath": "数据路径",
         "name": "名称",
         "sandbox": "沙盒",
         "sandbox_tip": "例如创建64GB，不真实占用64GB，按需占用，可以提高仿真度。",
