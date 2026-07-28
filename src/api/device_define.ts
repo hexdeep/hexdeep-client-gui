@@ -278,6 +278,8 @@ export interface StartupInfo {
     resolved_command: string;
     /** 当前子进程pid，0表示未运行 */
     pid: number;
+    /** 当前进程的创建时间，Unix毫秒时间戳；未运行时为0 */
+    started_at: number;
     /** 后端实时探测的运行状态，不是库里的字段 */
     running: boolean;
     created_at: string;

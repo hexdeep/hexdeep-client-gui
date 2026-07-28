@@ -300,7 +300,8 @@ export class StartupLogsDialog extends CommonDialog<StartupLogsData, void> {
 
 @Dialog
 export class StartupDialog extends CommonDialog<HostInfo, boolean> {
-    public override width: string = "980px";
+    // 表格只剩名称/状态/操作三列，可执行文件名和启动命令挪到编辑弹窗里去看，不用再撑这么宽
+    public override width: string = "700px";
     public override height: string = "620px";
 
     protected startups: StartupInfo[] = [];
@@ -367,10 +368,28 @@ export class StartupDialog extends CommonDialog<HostInfo, boolean> {
         await this.loadStartups();
     }
 
-    @ErrorProxy({ success: i18n.t("startup.restartSuccess"), loading: i18n.t("loading") })
+    @ErrorProxy({
+        confirm: (_: StartupDialog, item: StartupInfo) => i18n.t("startup.restartConfirm", [item.name]),
+        success: i18n.t("startup.restartSuccess"),
+        loading: i18n.t("loading"),
+    })
     private async restartItem(item: StartupInfo) {
         await deviceApi.restartStartup(this.data.address, item.id);
         await this.loadStartups();
+    }
+
+    /** 只显示两级最大单位，够用又不啰嗦；这里不需要精确到秒，isRunning 每3秒轮询本来就会让它自然刷新 */
+    private formatDuration(ms: number): string {
+        const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        if (days > 0) return this.$t("startup.durationDays", [days, hours]).toString();
+        if (hours > 0) return this.$t("startup.durationHours", [hours, minutes]).toString();
+        if (minutes > 0) return this.$t("startup.durationMinutes", [minutes]).toString();
+        return this.$t("startup.durationSeconds", [seconds]).toString();
     }
 
     @ErrorProxy({
@@ -436,37 +455,25 @@ export class StartupDialog extends CommonDialog<HostInfo, boolean> {
                 >
                     <el-table-column type="selection" width="55" />
                     <el-table-column
-                        type="index"
-                        label={this.$t("startup.columnIndex")}
-                        width="70"
-                        align="center"
-                    />
-                    <el-table-column
                         label={this.$t("startup.columnName")}
-                        min-width="140"
+                        min-width="160"
                         show-overflow-tooltip
                         prop="name"
                     />
                     <el-table-column
-                        label={this.$t("startup.columnFile")}
-                        min-width="140"
-                        show-overflow-tooltip
-                        prop="filename"
-                    />
-                    <el-table-column
-                        label={this.$t("startup.columnCommand")}
-                        min-width="160"
-                        show-overflow-tooltip
-                        prop="resolved_command"
-                    />
-                    <el-table-column
                         label={this.$t("startup.columnStatus")}
-                        width="110"
-                        align="center"
+                        min-width="200"
                         scopedSlots={{
                             default: ({ row }: { row: StartupInfo; }) => {
                                 if (row.running) {
-                                    return <span style={{ color: "#67C23A" }}>{this.$t("startup.running")} ({row.pid})</span>;
+                                    return (
+                                        <span>
+                                            <span style={{ color: "#67C23A" }}>{this.$t("startup.running")} ({row.pid})</span>
+                                            {row.started_at > 0 && (
+                                                <span style={{ color: "#909399" }}> · {this.formatDuration(Date.now() - row.started_at)}</span>
+                                            )}
+                                        </span>
+                                    );
                                 }
                                 return <span style={{ color: "#909399" }}>{this.$t("startup.stopped")}</span>;
                             }
