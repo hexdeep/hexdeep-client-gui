@@ -281,11 +281,11 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                             </el-form-item>
                         )}
 
-                        <el-form-item label={this.$t("create.sandbox")} prop="sandbox" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.sandbox") as string, this.$t("create.sandbox_tip") as string) }}>
+                        <el-form-item label={this.$t("create.sandbox")} prop="sandbox" label-width="120px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.sandbox") as string, this.$t("create.sandbox_tip") as string) }}>
                             <el-switch v-model={this.data.sandbox} active-value={1} inactive-value={0} />
                         </el-form-item>
 
-                        <el-form-item label={this.$t("create.sandbox_size")} prop="sandbox_size" required={this.data.sandbox == 1}>
+                        <el-form-item label={this.$t("create.sandbox_size")} prop="sandbox_size" label-width="120px" required={this.data.sandbox == 1}>
                             <el-input v-model={this.data.sandbox_size} type="number" disabled={this.data.sandbox != 1} />
                         </el-form-item>
                     </Row>
@@ -426,10 +426,10 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     <el-form-item label={this.$t("create.width")} prop="width">
                         <el-input v-model={this.data.width} onBlur={this.fixNumber("width")} min={600} max={4000} type="number" />
                     </el-form-item>
-                    <el-form-item label={this.$t("create.height")} prop="height">
+                    <el-form-item label={this.$t("create.height")} prop="height" label-width="120px">
                         <el-input v-model={this.data.height} onBlur={this.fixNumber("height")} min={600} max={4000} type="number" />
                     </el-form-item>
-                    <el-form-item label={this.$t("create.fps")} prop="fps" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.fps") as string, this.$t("create.fps_tip") as string) }}>
+                    <el-form-item label={this.$t("create.fps")} prop="fps" label-width="120px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.fps") as string, this.$t("create.fps_tip") as string) }}>
                         <el-input v-model={this.data.fps} onBlur={this.fixNumber("fps")} min={10} max={60} type="number" />
                     </el-form-item>
                 </Row>
@@ -438,10 +438,10 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     <el-form-item label={this.$t("create.dpi")} prop="dpi">
                         <el-input v-model={this.data.dpi} onBlur={this.fixNumber("dpi")} min={100} max={600} type="number" />
                     </el-form-item>
-                    <el-form-item label={this.$t("create.x_dpi")} prop="x_dpi" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.x_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
+                    <el-form-item label={this.$t("create.x_dpi")} prop="x_dpi" label-width="120px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.x_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
                         <el-input class="no-number-spinner" v-model={this.data.x_dpi} onBlur={this.fixNumber("x_dpi")} min={100} max={600} step={0.001} type="number" />
                     </el-form-item>
-                    <el-form-item label={this.$t("create.y_dpi")} prop="y_dpi" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.y_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
+                    <el-form-item label={this.$t("create.y_dpi")} prop="y_dpi" label-width="120px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.y_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
                         <el-input class="no-number-spinner" v-model={this.data.y_dpi} onBlur={this.fixNumber("y_dpi")} min={100} max={600} step={0.001} type="number" />
                     </el-form-item>
                 </Row>
