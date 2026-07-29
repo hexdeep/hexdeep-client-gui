@@ -97,7 +97,7 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
 
     private renderLegend() {
         return (
-            <div class="mb-2 flex items-center justify-between gap-4 text-xs text-gray-500">
+            <div class="mb-2 flex items-center justify-between gap-4 text-xs text-gray-500" style="width: 400px">
                 <div class="flex items-center gap-4">
                     {STATUS_ORDER.map(status => (
                         <div key={status} class="flex items-center gap-1.5">
@@ -129,7 +129,7 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
                 disabled={!meta.selectable}
                 onClick={() => this.toggle(index)}
                 class={[
-                    "relative flex items-center justify-center rounded-md border text-sm font-medium transition-colors aspect-square",
+                    "relative flex items-center justify-center rounded-md border text-sm font-medium transition-colors w-9 h-9",
                     meta.selectable ? "cursor-pointer" : "cursor-not-allowed opacity-70",
                     selected && meta.selectable ? meta.selectedClass : meta.baseClass,
                 ]}
@@ -149,7 +149,7 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
         return (
             <div class="w-full">
                 {this.renderLegend()}
-                <div class="grid grid-cols-12 gap-2">
+                <div class="flex gap-2">
                     {Array.from({ length: 12 }, (_, i) => i + 1).map(index => this.renderSlotButton(index))}
                 </div>
             </div>
