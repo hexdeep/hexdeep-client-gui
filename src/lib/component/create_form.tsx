@@ -264,7 +264,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                                     <el-select v-model={this.filterState.androidVersion}>
                                         <el-option label={this.$t("create.androidVersionAll")} value={0} />
                                         {this.androidVersionOptions.map(version => (
-                                            <el-option key={version} label={String(version)} value={version} />
+                                            <el-option key={version} label={`Android ${version}`} value={version} />
                                         ))}
                                     </el-select>
                                 </el-form-item>
