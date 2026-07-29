@@ -2,7 +2,7 @@ import { CreateParam, ImageInfo, MobileModelDimensions } from "@/api/device_defi
 import { RentalInfo } from "@/api/order_define";
 import { Component, Prop, Watch } from "vue-property-decorator";
 import * as tsx from 'vue-tsx-support';
-import { Row } from '../container';
+import { Column, Row } from '../container';
 import "./create_form.less";
 import { ImageSelector2 } from "./image_selector2";
 import { InstanceSlotPicker } from "./instance_slot_picker";
@@ -25,8 +25,21 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     @Prop({ default: false }) isBatchCreate!: boolean;
     @Prop({ default: "" }) ip!: string;
 
-    private filterState = Vue.observable({ imageType: 'base' });
+    // androidVersion=0 表示不过滤（默认，兼容老行为）；此过滤仅用于筛选下方镜像地址下拉框的
+    // 选项，不会随创建请求发往服务器——安卓版本由服务器根据实际选中的镜像地址判断。
+    private filterState = Vue.observable({ imageType: 'base', androidVersion: 0 });
     private modelList: MobileModelGroup[] = [];
+
+    // 当前阶段仅安卓14是内测版本，其余全是安卓12，因此只在镜像列表里确实存在安卓14镜像时，
+    // 才展示"安卓版本"选择器；只有安卓12一种版本时没有筛选的意义，不展示以免徒增干扰。
+    private get showAndroidVersionFilter() {
+        return this.images.some(img => img.android_version === 14);
+    }
+
+    private get androidVersionOptions() {
+        const versions = new Set(this.images.map(img => img.android_version).filter(v => !!v));
+        return Array.from(versions).sort((a, b) => a - b);
+    }
 
     private get filteredImages() {
         const type = this.filterState.imageType;
@@ -34,7 +47,11 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
             ? this.images
             : this.images.filter(img => img.name && img.name.includes(`-${type}-`));
 
-        return byType.filter(img => isImageVersionCompatibleByModelVersion(this.data.mobile_model_version, img.major_version));
+        const byAndroidVersion = this.filterState.androidVersion === 0
+            ? byType
+            : byType.filter(img => img.android_version === this.filterState.androidVersion);
+
+        return byAndroidVersion.filter(img => isImageVersionCompatibleByModelVersion(this.data.mobile_model_version, img.major_version));
     }
 
     private inputNumber(key: string, min: number, max: number) {
@@ -237,9 +254,22 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                             />
                         </el-form-item>
 
-                        <el-form-item label={this.$t("create.name")} prop="name">
-                            <el-input v-model={this.data.name} maxlength={20} />
-                        </el-form-item>
+                        <Column>
+                            <el-form-item label={this.$t("create.name")} prop="name">
+                                <el-input v-model={this.data.name} maxlength={20} />
+                            </el-form-item>
+
+                            {this.showAndroidVersionFilter && (
+                                <el-form-item label={this.$t("create.androidVersion")}>
+                                    <el-select v-model={this.filterState.androidVersion}>
+                                        <el-option label={this.$t("create.androidVersionAll")} value={0} />
+                                        {this.androidVersionOptions.map(version => (
+                                            <el-option key={version} label={String(version)} value={version} />
+                                        ))}
+                                    </el-select>
+                                </el-form-item>
+                            )}
+                        </Column>
                     </Row>
                 )}
 

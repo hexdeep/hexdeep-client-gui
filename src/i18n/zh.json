@@ -88,6 +88,8 @@
         "fps": "FPS",
         "fps_tip": "屏幕刷新率，建议设置为24或更低。",
         "mobile_model_version": "机型版本",
+        "androidVersion": "安卓版本",
+        "androidVersionAll": "全部",
         "model_id": "型号",
         "custom_model_path": "自定义型号路径",
         "custom_model_path_placeholder": "输入网络下载路径或服务器上的绝对路径（留空则由后端随机选取）",
