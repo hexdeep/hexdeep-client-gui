@@ -1,8 +1,9 @@
+import { deviceApi } from "@/api/device_api";
 import { CreateParam, ImageInfo, MobileModelDimensions } from "@/api/device_define";
 import { RentalInfo } from "@/api/order_define";
 import { Component, Prop, Watch } from "vue-property-decorator";
 import * as tsx from 'vue-tsx-support';
-import { Column, Row } from '../container';
+import { Row } from '../container';
 import "./create_form.less";
 import { ImageSelector2 } from "./image_selector2";
 import { InstanceSlotPicker } from "./instance_slot_picker";
@@ -30,10 +31,19 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     private filterState = Vue.observable({ imageType: 'base', androidVersion: 0 });
     private modelList: MobileModelGroup[] = [];
 
-    // 当前阶段仅安卓14是内测版本，其余全是安卓12，因此只在镜像列表里确实存在安卓14镜像时，
-    // 才展示"安卓版本"选择器；只有安卓12一种版本时没有筛选的意义，不展示以免徒增干扰。
+    // 宿主机内核是否支持Android 14容器（/proc/version 第三行 android=0或14），由 super_sdk
+    // 的 /dc_api/check_android14_support 接口探测；接口不存在或探测失败时按“不支持”处理。
+    private hostSupportsAndroid14 = false;
+
+    private async loadHostAndroid14Support() {
+        this.hostSupportsAndroid14 = await deviceApi.checkAndroid14Support(this.ip);
+    }
+
+    // 当前阶段仅安卓14是内测版本，其余全是安卓12，因此只在镜像列表里确实存在安卓14镜像、
+    // 并且宿主机内核也支持运行Android 14容器时，才展示"安卓版本"选择器——两个条件缺一不可：
+    // 有14的镜像但内核不支持时选了也创建不出来，内核支持但没有14镜像时选择器没有意义。
     private get showAndroidVersionFilter() {
-        return this.images.some(img => img.android_version === 14);
+        return this.hostSupportsAndroid14 && this.images.some(img => img.android_version === 14);
     }
 
     private get androidVersionOptions() {
@@ -84,6 +94,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     }
 
     protected async created() {
+        this.loadHostAndroid14Support();
         if (!this.isBatchCreate && !this.isUpdate && !this.data.subnet && this.selectedIndices.length === 1) {
             this.$set(this.data, "subnet", this.getDefaultSubnet(this.selectedIndices[0]));
         }
@@ -138,6 +149,14 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         } else if (!this.data.docker_registry && this.dockerRegistries.length > 0) {
             // 切换回官方镜像且当前为空时，恢复默认值
             this.$set(this.data, "docker_registry", this.dockerRegistries[0]);
+        }
+    }
+
+    // 安卓14容器目前只随v3机型出，选中安卓14筛选后自动切到v3（v2单选框同时被禁用，防止选回去）。
+    @Watch("filterState.androidVersion")
+    onAndroidVersionFilterChange(newVal: number) {
+        if (newVal === 14 && this.data.mobile_model_version !== "v3") {
+            this.$set(this.data, "mobile_model_version", "v3");
         }
     }
 
@@ -245,36 +264,23 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                 )}
 
                 {this.needName && !this.isUpdate && (
-                    <Row crossAlign="start">
-                        <el-form-item label={this.$t("create.slots")} prop="index">
-                            <InstanceSlotPicker
-                                value={this.selectedIndices}
-                                rentalRecord={this.rentalRecord}
-                                on={{ input: (v: number[]) => this.$emit("update:selectedIndices", v) }}
-                            />
-                        </el-form-item>
-
-                        <Column style="width: 100%">
-                            <el-form-item label={this.$t("create.name")} prop="name">
-                                <el-input v-model={this.data.name} maxlength={20} />
-                            </el-form-item>
-
-                            {this.showAndroidVersionFilter && (
-                                <el-form-item label={this.$t("create.androidVersion")}>
-                                    <el-select v-model={this.filterState.androidVersion}>
-                                        <el-option label={this.$t("create.androidVersionAll")} value={0} />
-                                        {this.androidVersionOptions.map(version => (
-                                            <el-option key={version} label={`Android ${version}`} value={version} />
-                                        ))}
-                                    </el-select>
-                                </el-form-item>
-                            )}
-                        </Column>
-                    </Row>
+                    <el-form-item label={this.$t("create.slots")} prop="index">
+                        <InstanceSlotPicker
+                            value={this.selectedIndices}
+                            rentalRecord={this.rentalRecord}
+                            on={{ input: (v: number[]) => this.$emit("update:selectedIndices", v) }}
+                        />
+                    </el-form-item>
                 )}
 
                 {!this.isUpdate && (
                     <Row>
+                        {this.needName && (
+                            <el-form-item label={this.$t("create.name")} prop="name">
+                                <el-input v-model={this.data.name} maxlength={20} />
+                            </el-form-item>
+                        )}
+
                         <el-form-item label={this.$t("create.sandbox")} prop="sandbox" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.sandbox") as string, this.$t("create.sandbox_tip") as string) }}>
                             <el-switch v-model={this.data.sandbox} active-value={1} inactive-value={0} />
                         </el-form-item>
@@ -309,7 +315,8 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     <Row>
                         <el-form-item label={this.$t("create.mobile_model_version")} prop="mobile_model_version">
                             <el-radio-group v-model={this.data.mobile_model_version}>
-                                <el-radio label="v2">v2</el-radio>
+                                {/* 安卓14镜像依赖v3机型，选中安卓14时禁止切回v2，见 onAndroidVersionFilterChange */}
+                                <el-radio label="v2" disabled={this.filterState.androidVersion === 14}>v2</el-radio>
                                 {/* v3 暂未完成，先隐藏 */}
                                 <el-radio label="v3">v3</el-radio>
                             </el-radio-group>
@@ -337,6 +344,17 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                             v-model={this.data.mobile_model_source}
                             placeholder={this.$t("create.custom_model_path_placeholder")}
                         />
+                    </el-form-item>
+                )}
+
+                {!this.isUpdate && this.showAndroidVersionFilter && (
+                    <el-form-item label={this.$t("create.androidVersion")}>
+                        <el-radio-group v-model={this.filterState.androidVersion}>
+                            <el-radio label={0}>{this.$t("create.androidVersionAll")}</el-radio>
+                            {this.androidVersionOptions.map(version => (
+                                <el-radio key={version} label={version}>{`Android ${version}`}</el-radio>
+                            ))}
+                        </el-radio-group>
                     </el-form-item>
                 )}
 

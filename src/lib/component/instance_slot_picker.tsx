@@ -56,7 +56,7 @@ const CHECK_STROKE_STYLE = {
 };
 
 /**
- * 实例位多选器：两行六列展示 1-12 号实例位的租期/占用状态，
+ * 实例位多选器：一行十二列展示 1-12 号实例位的租期/占用状态，
  * 已到期、已被占用的实例位不可勾选。value/input 实现 v-model<number[]>。
  */
 @Component
@@ -97,7 +97,7 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
 
     private renderLegend() {
         return (
-            <div class="mb-2 text-xs text-gray-500">
+            <div class="mb-2 flex items-center justify-between gap-4 text-xs text-gray-500">
                 <div class="flex items-center gap-4">
                     {STATUS_ORDER.map(status => (
                         <div key={status} class="flex items-center gap-1.5">
@@ -106,7 +106,7 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
                         </div>
                     ))}
                 </div>
-                <div class="flex items-center justify-between gap-2 mt-1.5">
+                <div class="flex items-center gap-2 shrink-0">
                     <TextButton
                         text={this.$t(this.isAllSelected ? "deselectAll" : "selectAll")}
                         disabled={this.allSelectableIndices().length === 0}
@@ -149,7 +149,7 @@ export class InstanceSlotPicker extends tsx.Component<IProps, IEvents, {}> {
         return (
             <div class="w-full">
                 {this.renderLegend()}
-                <div class="grid grid-cols-6 gap-2">
+                <div class="grid grid-cols-12 gap-2">
                     {Array.from({ length: 12 }, (_, i) => i + 1).map(index => this.renderSlotButton(index))}
                 </div>
             </div>
