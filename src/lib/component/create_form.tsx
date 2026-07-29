@@ -254,7 +254,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                             />
                         </el-form-item>
 
-                        <Column>
+                        <Column style="width: 100%">
                             <el-form-item label={this.$t("create.name")} prop="name">
                                 <el-input v-model={this.data.name} maxlength={20} />
                             </el-form-item>
