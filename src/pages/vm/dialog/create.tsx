@@ -14,6 +14,7 @@ import { normalizeModelSubmitFields } from "@/lib/component/mobile_model_loader"
 import { CreateFailureItem, CreateFailuresDialog } from './create_failures';
 import { PullImageDialog } from './pull_image';
 import { VipHostSelectDialog } from "./vip_host_select";
+import { ManageImagesDialog } from "@/pages/instance/dialog/manage_images_dialog";
 
 @Dialog
 export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
@@ -39,12 +40,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         const ip = data.info.hostIp;
         const vmInfo = `${ip}(${vmNo}-${vmName})`;
         this.title = data.isUpdate ? `${this.$t("menu.updateVm")} ${vmInfo}` : `${this.$t("createVm")} ${ip}`;
-        deviceApi.getImages(this.data.info.hostIp).then((images) => {
-            this.images = images;
-        });
-        deviceApi.getDockerRegistries(this.data.info.hostIp).then((list) => {
-            this.dockerRegistries = Array.isArray(list) ? list : [];
-        });
+        this.refreshImages();
         if (!data.isUpdate) {
             const cachedIndices = this.loadCachedValues();
             // 实例位多选仅创建流程需要，更新流程不展示该字段，跳过 getRental 请求
@@ -129,6 +125,26 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         if (result) {
             await this.checkVipStatus();
         }
+    }
+
+    private refreshImages() {
+        deviceApi.getImages(this.data.info.hostIp).then((images) => {
+            this.images = images;
+        });
+        deviceApi.getDockerRegistries(this.data.info.hostIp).then((list) => {
+            this.dockerRegistries = Array.isArray(list) ? list : [];
+        });
+    }
+
+    // 允许在创建/更新云机的同时打开镜像管理，添加/删除镜像后刷新当前表单可选的镜像列表
+    private async manageImages() {
+        if (this.allHosts.length === 0) {
+            this.allHosts = await deviceApi.getHosts();
+        }
+        const currentHost = this.allHosts.find(h => h.device_id === this.data.hostId);
+        if (!currentHost) return;
+        await this.$dialog(ManageImagesDialog).show(currentHost);
+        this.refreshImages();
     }
 
     @Watch("data", { deep: true })
@@ -415,6 +431,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             <div class="dialog-footer">
                 <MyButton text={confirmText} onClick={() => this.onConfirm()} type="primary" />
                 <MyButton text={this.$t("confirm.cancel")} onClick={() => this.close()} />
+                <MyButton text={this.$t("vmDetail.manageImages")} onClick={() => this.manageImages()} />
             </div>
         );
     }
