@@ -280,18 +280,29 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                 </el-form-item>
 
                 <Row>
-                    <el-form-item label={this.$t("create.mac_vlan")} prop="mac_vlan">
+                    <el-form-item label={this.$t("create.mac_vlan")} prop="mac_vlan" style="flex: 0 0 auto; width: auto;">
                         <el-switch v-model={this.data.mac_vlan} active-value={1} inactive-value={0} />
                     </el-form-item>
 
                     <el-form-item
                         label={this.$t("create.ip")}
                         prop="ip"
+                        label-width="40px"
+                        style="flex: 1 1 0; width: auto;"
                         scopedSlots={this.isMultiSelect && this.data.mac_vlan == 1 ? {
                             label: () => this.labelWithTip(this.$t("create.ip") as string, this.$t("create.ipMultiTip") as string)
                         } : undefined}
                     >
                         <el-input v-model={this.data.ip} disabled={this.data.mac_vlan != 1} />
+                    </el-form-item>
+
+                    <el-form-item
+                        label={this.$t("create.dns_urls")}
+                        prop="dns_urls"
+                        style="flex: 2 1 0; width: auto;"
+                        scopedSlots={{ label: () => this.labelWithTip(this.$t("create.dns_urls") as string, this.$t("create.dns_urls_tip") as string) }}
+                    >
+                        <el-input v-model={this.data.dns_urls} />
                     </el-form-item>
                 </Row>
 
@@ -342,6 +353,27 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     </el-form-item>
                 )}
 
+                <Row>
+                    <el-form-item label={this.$t("create.width")} prop="width" label-width="60px">
+                        <el-input class="no-number-spinner" v-model={this.data.width} onBlur={this.fixNumber("width")} min={600} max={4000} type="number" />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.height")} prop="height" label-width="60px">
+                        <el-input class="no-number-spinner" v-model={this.data.height} onBlur={this.fixNumber("height")} min={600} max={4000} type="number" />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.fps")} prop="fps" label-width="70px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.fps") as string, this.$t("create.fps_tip") as string) }}>
+                        <el-input class="no-number-spinner" v-model={this.data.fps} onBlur={this.fixNumber("fps")} min={10} max={60} type="number" />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.dpi")} prop="dpi" label-width="50px">
+                        <el-input class="no-number-spinner" v-model={this.data.dpi} onBlur={this.fixNumber("dpi")} min={100} max={600} type="number" />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.x_dpi")} prop="x_dpi" label-width="65px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.x_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
+                        <el-input class="no-number-spinner" v-model={this.data.x_dpi} onBlur={this.fixNumber("x_dpi")} min={100} max={600} step={0.001} type="number" />
+                    </el-form-item>
+                    <el-form-item label={this.$t("create.y_dpi")} prop="y_dpi" label-width="65px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.y_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
+                        <el-input class="no-number-spinner" v-model={this.data.y_dpi} onBlur={this.fixNumber("y_dpi")} min={100} max={600} step={0.001} type="number" />
+                    </el-form-item>
+                </Row>
+
                 <el-form-item
                     label={this.$t("create.docker_registry")}
                     prop="docker_registry"
@@ -381,35 +413,10 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     )}
                 </el-form-item>
 
-                <Row>
-                    <el-form-item label={this.$t("create.width")} prop="width" label-width="60px">
-                        <el-input class="no-number-spinner" v-model={this.data.width} onBlur={this.fixNumber("width")} min={600} max={4000} type="number" />
-                    </el-form-item>
-                    <el-form-item label={this.$t("create.height")} prop="height" label-width="60px">
-                        <el-input class="no-number-spinner" v-model={this.data.height} onBlur={this.fixNumber("height")} min={600} max={4000} type="number" />
-                    </el-form-item>
-                    <el-form-item label={this.$t("create.fps")} prop="fps" label-width="70px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.fps") as string, this.$t("create.fps_tip") as string) }}>
-                        <el-input class="no-number-spinner" v-model={this.data.fps} onBlur={this.fixNumber("fps")} min={10} max={60} type="number" />
-                    </el-form-item>
-                    <el-form-item label={this.$t("create.dpi")} prop="dpi" label-width="50px">
-                        <el-input class="no-number-spinner" v-model={this.data.dpi} onBlur={this.fixNumber("dpi")} min={100} max={600} type="number" />
-                    </el-form-item>
-                    <el-form-item label={this.$t("create.x_dpi")} prop="x_dpi" label-width="65px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.x_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
-                        <el-input class="no-number-spinner" v-model={this.data.x_dpi} onBlur={this.fixNumber("x_dpi")} min={100} max={600} step={0.001} type="number" />
-                    </el-form-item>
-                    <el-form-item label={this.$t("create.y_dpi")} prop="y_dpi" label-width="65px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.y_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
-                        <el-input class="no-number-spinner" v-model={this.data.y_dpi} onBlur={this.fixNumber("y_dpi")} min={100} max={600} step={0.001} type="number" />
-                    </el-form-item>
-                </Row>
-
                 {/* 老板说先不做界面：开机时长(offset)输入框暂时注释掉，仅隐藏 UI，其余 JS 逻辑(类型/fixNumber 空值处理/请求透传)保持不变 */}
                 {/* <el-form-item label={this.$t("create.offset")} prop="offset" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.offset") as string, this.$t("create.offset_tip") as string) }}>
                     <el-input class="no-number-spinner" v-model={this.data.offset} onBlur={this.fixNumber("offset")} min={0} type="number" placeholder={this.$t("create.offset_placeholder") as string} />
                 </el-form-item> */}
-
-                <el-form-item label={this.$t("create.dns_urls")} prop="dns_urls">
-                    <el-input v-model={this.data.dns_urls} />
-                </el-form-item>
 
                 {/* {!this.isUpdate && <S5FormItems v-model={this.data}></S5FormItems>} */}
             </div>

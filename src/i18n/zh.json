@@ -117,6 +117,7 @@
         "s5_udp_over_tcp0": "禁用",
         "s5_udp_over_tcp1": "启用",
         "dns_urls": "DNS地址",
+        "dns_urls_tip": "多个DNS地址用英文逗号分隔",
         "offset": "开机时长",
         "offset_tip": "云机对外报告的已开机时长，单位：秒。留空则随机生成；更新时留空保持原值。",
         "offset_placeholder": "留空则随机",

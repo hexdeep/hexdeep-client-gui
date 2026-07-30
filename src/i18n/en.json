@@ -115,6 +115,7 @@
         "s5_udp_over_tcp0": "Disable",
         "s5_udp_over_tcp1": "Enable",
         "dns_urls": "DNS Address",
+        "dns_urls_tip": "Separate multiple DNS addresses with commas",
         "offset": "Uptime Offset",
         "offset_tip": "The boot uptime the cloud phone reports, in seconds. Leave empty for a random value; leave empty on update to keep the current value.",
         "offset_placeholder": "Empty = random",
