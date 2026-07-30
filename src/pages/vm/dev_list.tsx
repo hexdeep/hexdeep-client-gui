@@ -534,6 +534,18 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         this.$emit("changed", data.hostIp);
     }
 
+    // 安卓14与安卓12容器共享宿主机内核，二者不能同时正常运行：宿主机上已有安卓14云机在跑时，
+    // 再启动一台安卓12云机，内核仍处于安卓14模式，新启动的安卓12云机大概率异常。这里只是提示，
+    // 不拦截启动请求——用户可以先看效果，按提示自行处理（关安卓14云机后重启这台）。
+    private hasRunningAndroid14Sibling(data: DeviceInfo): boolean {
+        const host = this.hosts.find(h => h.address === data.hostIp);
+        return !!host?.devices?.some(d =>
+            d.state === "running" &&
+            d.key !== data.key &&
+            this.images.find(img => img.address === d.image_addr)?.android_version === 14
+        );
+    }
+
     @ErrorProxy({ confirm: t("confirm.startTitle"), success: i18n.t("success") })
     private async start(data: DeviceInfo) {
         const l = this.$loading({
@@ -541,6 +553,8 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             text: i18n.t("loading").toString(),
         });
         try {
+            const startedImage = this.images.find(img => img.address === data.image_addr);
+            const shouldWarnAndroid14Conflict = startedImage?.android_version !== 14 && this.hasRunningAndroid14Sibling(data);
             const imageAddress = await deviceApi.start(data.hostIp, data.name).finally(() => {
                 l.close();
             });
@@ -552,6 +566,9 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                 if (re?.canceled) return false;
                 if (re?.error) throw new Error(re.error);
                 await deviceApi.start(data.hostIp, data.name);
+            }
+            if (shouldWarnAndroid14Conflict) {
+                this.$message.warning(this.$t("android14ConflictOnStart").toString());
             }
             this.$emit("changed", data.hostIp);
         } catch (e) {

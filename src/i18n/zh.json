@@ -30,6 +30,7 @@
     "exited": "已退出",
     "starting": "启动中",
     "noRun": "未运行",
+    "android14ConflictOnStart": "检测到主机上有正在运行的安卓14云机，此安卓12云机可能无法正常运行，请先将安卓14云机停止，再重启此云机",
     "invalidIp": "IP地址格式错误",
     "invalidSubnet": "子网格式错误，示例：200.100.10.0/24",
     "invalidDnsUrls": "DNS地址格式错误，示例：8.8.8.8,1.1.1.1",
