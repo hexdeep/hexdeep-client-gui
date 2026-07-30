@@ -30,6 +30,7 @@
     "created": "Created",
     "starting": "Starting",
     "android14ConflictOnStart": "A running Android 14 VM was detected on this host. This Android 12 VM may not run properly — please stop the Android 14 VM first, then restart this VM.",
+    "android12ConflictOnStart": "A running Android 12 VM was detected on this host. This Android 14 VM may not run properly — please stop the Android 12 VM first, then restart this VM.",
     "createVm": "Create VM",
     "batchCreateVm": "Batch create VM",
     "more": "More",
