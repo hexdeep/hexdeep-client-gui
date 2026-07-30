@@ -125,7 +125,7 @@ export class HostDetailDialog extends CommonDialog<HostInfo, void> {
                           placement="top"
                           disabled={this.sdk?.current_version && this.sdk.current_version.length <= 20}
                         >
-                          <div class="w-64 truncate">{this.sdk?.current_version}</div>
+                          <div class="grow min-w-0 truncate">{this.sdk?.current_version}</div>
                         </el-tooltip>
                         <Row gap={10} class="shrink-0 ms-auto">
                             <MyButton type="primary" size="small" onClick={this.rebootSDK}>
