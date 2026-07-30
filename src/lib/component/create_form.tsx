@@ -39,13 +39,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         this.hostSupportsAndroid14 = await deviceApi.checkAndroid14Support(this.ip);
     }
 
-    // 当前阶段仅安卓14是内测版本，其余全是安卓12，因此只在镜像列表里确实存在安卓14镜像、
-    // 并且宿主机内核也支持运行Android 14容器时，才展示"安卓版本"选择器——两个条件缺一不可：
-    // 有14的镜像但内核不支持时选了也创建不出来，内核支持但没有14镜像时选择器没有意义。
-    private get showAndroidVersionFilter() {
-        return this.hostSupportsAndroid14 && this.images.some(img => img.android_version === 14);
-    }
-
     private get androidVersionOptions() {
         const versions = new Set(this.images.map(img => img.android_version).filter(v => !!v));
         return Array.from(versions).sort((a, b) => a - b);
@@ -347,13 +340,20 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     </el-form-item>
                 )}
 
-                {!this.isUpdate && this.showAndroidVersionFilter && (
+                {!this.isUpdate && (
                     <el-form-item label={this.$t("create.androidVersion")}>
                         <el-radio-group v-model={this.filterState.androidVersion}>
                             <el-radio label={0}>{this.$t("create.androidVersionAll")}</el-radio>
-                            {this.androidVersionOptions.map(version => (
-                                <el-radio key={version} label={version}>{`Android ${version}`}</el-radio>
-                            ))}
+                            {this.androidVersionOptions.map(version => {
+                                // 安卓14的可创建性由 super_sdk 的 /dc_api/check_android14_support 实时探测，
+                                // 探测不通过时禁用该选项，而不是隐藏整行——用户仍应看到"有安卓14"这个事实。
+                                const android14Disabled = version === 14 && !this.hostSupportsAndroid14;
+                                return (
+                                    <el-radio key={version} label={version} disabled={android14Disabled}>
+                                        {android14Disabled ? `Android ${version} (${this.$t("create.android14DisabledTip")})` : `Android ${version}`}
+                                    </el-radio>
+                                );
+                            })}
                         </el-radio-group>
                     </el-form-item>
                 )}

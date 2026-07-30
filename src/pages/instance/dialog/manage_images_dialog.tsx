@@ -30,8 +30,8 @@ export class AddImageDialog extends CommonDialog<AddImageDialogData, boolean> {
     public override width: string = "500px";
     protected mode: AddImageMode = "upload";
     protected imageAddress: string = "";
-    protected repositoryPart: string = "";
-    protected tagPart: string = "";
+    protected repositoryPart: string = "android";
+    protected tagPart: string = "v3";
     protected imageFile: File | null = null;
     protected submitting: boolean = false;
     protected uploadProgress: number = 0;
