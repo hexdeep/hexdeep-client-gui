@@ -17,7 +17,7 @@ import { VipHostSelectDialog } from "./vip_host_select";
 
 @Dialog
 export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
-    public override width: string = "800px";
+    public override width: string = "850px";
     protected images: ImageInfo[] = [];
     private dockerRegistries: string[] = [];
     private rentalRecord: RentalInfo[] = [];
@@ -46,9 +46,12 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             this.dockerRegistries = Array.isArray(list) ? list : [];
         });
         if (!data.isUpdate) {
-            this.loadCachedValues();
+            const cachedIndices = this.loadCachedValues();
             // 实例位多选仅创建流程需要，更新流程不展示该字段，跳过 getRental 请求
             await this.loadRentalRecord();
+            // 只勾选缓存里到本次仍未到期的实例位；只是打开对话框看一眼、没有实际创建的话，
+            // 不改写缓存本身——缓存只在真正创建时才被覆盖，见 saveCacheValues。
+            this.selectedIndices = cachedIndices.filter(index => this.isSlotSelectable(index));
         }
         // 检查VIP状态
         this.checkVipStatus();
@@ -74,10 +77,11 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         }
     }
 
-    private loadCachedValues() {
+    // 返回值是缓存里的实例位列表（原样返回，是否到期由调用方结合当次 rentalRecord 过滤）
+    private loadCachedValues(): number[] {
         try {
             const cached = localStorage.getItem(CreateDialog.CACHE_KEY);
-            if (!cached) return;
+            if (!cached) return [];
             const values = JSON.parse(cached);
             if (values.mobile_model_version === "v1") {
                 values.mobile_model_version = "v2";
@@ -87,8 +91,10 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                     (this.data.obj as any)[field] = values[field];
                 }
             }
+            return Array.isArray(values.selectedIndices) ? values.selectedIndices : [];
         } catch (e) {
             console.warn("Failed to load create cache:", e);
+            return [];
         }
     }
 
@@ -98,10 +104,17 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             for (const field of CreateDialog.CACHE_FIELDS) {
                 values[field] = (this.data.obj as any)[field];
             }
+            values.selectedIndices = this.selectedIndices;
             localStorage.setItem(CreateDialog.CACHE_KEY, JSON.stringify(values));
         } catch (e) {
             console.warn("Failed to save create cache:", e);
         }
+    }
+
+    // 与 InstanceSlotPicker 的可选规则保持一致：没有租期记录或已到期都算不可选
+    private isSlotSelectable(index: number): boolean {
+        const info = this.rentalRecord.find(x => x.index === index);
+        return !!info && info.state !== "expired";
     }
 
     private async onVipRequired() {
@@ -408,14 +421,14 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
 
     protected renderDialog(): VNode {
         return (
-            <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="150px">
+            <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="100px">
                 {this.data.isUpdate && (
                     <el-form-item label={this.$t("create.dataPath")}>
                         <el-input value={this.data.info.data} disabled />
                     </el-form-item>
                 )}
-                {this.data.isUpdate && this.dataSizeText && <div style="color: #606266; margin-bottom: 10px; margin-left: 140px;">{this.dataSizeText}</div>}
-                {this.data.isUpdate && <div style="color: red; margin-bottom: 10px; margin-left: 140px;">{this.$t("changeImage.warning")}</div>}
+                {this.data.isUpdate && this.dataSizeText && <div style="color: #606266; margin-bottom: 10px; margin-left: 90px;">{this.dataSizeText}</div>}
+                {this.data.isUpdate && <div style="color: red; margin-bottom: 10px; margin-left: 90px;">{this.$t("changeImage.warning")}</div>}
                 <CreateForm
                     data={this.data.obj}
                     images={this.images}

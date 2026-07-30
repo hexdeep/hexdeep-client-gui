@@ -285,7 +285,7 @@ export class BatchCreateDialog extends CommonDialog<DockerBatchCreateParam, bool
 
     protected renderDialog(): VNode {
         return (
-            <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="150px" class={s.form}>
+            <el-form ref="formRef" props={{ model: this.data.obj }} rules={this.formRules} label-width="100px" class={s.form}>
                 <div class={s.tip}>{this.$t("create.tip", { 0: this.data.maxNum })}</div>
                 <CreateForm data={this.data.obj} needName={false} images={this.images} dockerRegistries={this.dockerRegistries} hasVip={this.hasVip} isBatchCreate={true} ip={this.data.hostIp.first} on={{ "vip-required": () => this.onVipRequired() }}>
                     <Row>

@@ -2,6 +2,26 @@
     width: 100%;
 }
 
+// 安卓版本选择用 tabs，走品牌紫色而非 element-ui 默认淡蓝主题色。
+// type="border-card" 自带的 .el-tabs--border-card>.el-tabs__header .el-tabs__item.is-active
+// 选择器有 4 层类选择器，比原来 `.brand-tabs .el-tabs__item.is-active`（3 层）更具体会覆盖掉，
+// 这里把 .brand-tabs 和 .el-tabs--border-card 叠在同一元素上再复刻一遍完整选择器结构来提高优先级。
+.brand-tabs.el-tabs--border-card > .el-tabs__header .el-tabs__item.is-active,
+.brand-tabs.el-tabs--border-card > .el-tabs__header .el-tabs__item:not(.is-disabled):hover {
+    color: #6A11A1;
+}
+
+.brand-tabs {
+    .el-tabs__item.is-active,
+    .el-tabs__item:hover {
+        color: #6A11A1;
+    }
+
+    .el-tabs__active-bar {
+        background-color: #6A11A1;
+    }
+}
+
 .no-number-spinner {
     input[type="number"] {
         -moz-appearance: textfield;
@@ -12,5 +32,10 @@
     input[type="number"]::-webkit-inner-spin-button {
         -webkit-appearance: none;
         margin: 0;
+    }
+
+    .el-input__inner {
+        padding-left: 10px;
+        padding-right: 10px;
     }
 }

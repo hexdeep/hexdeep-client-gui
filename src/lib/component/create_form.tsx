@@ -1,13 +1,12 @@
 import { deviceApi } from "@/api/device_api";
-import { CreateParam, ImageInfo, MobileModelDimensions } from "@/api/device_define";
+import { CreateParam, ImageInfo } from "@/api/device_define";
 import { RentalInfo } from "@/api/order_define";
 import { Component, Prop, Watch } from "vue-property-decorator";
 import * as tsx from 'vue-tsx-support';
 import { Row } from '../container';
 import "./create_form.less";
-import { ImageSelector2 } from "./image_selector2";
+import { CreateFormVersionFields } from "./create_form_version_fields";
 import { InstanceSlotPicker } from "./instance_slot_picker";
-import { ModelSelector } from "./model_selector";
 import { CUSTOM_MODEL_VALUE, getOrLoadMobileModelList, MobileModelGroup } from "./mobile_model_loader";
 import { S5FormItems } from "./s5_form_items";
 import { isImageVersionCompatibleByModelVersion } from "@/common/common";
@@ -26,8 +25,9 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     @Prop({ default: false }) isBatchCreate!: boolean;
     @Prop({ default: "" }) ip!: string;
 
-    // androidVersion=0 表示不过滤（默认，兼容老行为）；此过滤仅用于筛选下方镜像地址下拉框的
-    // 选项，不会随创建请求发往服务器——安卓版本由服务器根据实际选中的镜像地址判断。
+    // 安卓版本用 tab 而非下拉过滤，androidVersion 始终对应当前激活的 tab（见 androidVersionOptions
+    // 的 immediate watcher，保证初始就有一个合法值）；此状态仅用于筛选镜像地址列表，不会随创建
+    // 请求发往服务器——安卓版本由服务器根据实际选中的镜像地址判断。
     private filterState = Vue.observable({ imageType: 'base', androidVersion: 0 });
     private modelList: MobileModelGroup[] = [];
 
@@ -44,17 +44,27 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         return Array.from(versions).sort((a, b) => a - b);
     }
 
-    private get filteredImages() {
-        const type = this.filterState.imageType;
-        const byType = type === 'all'
-            ? this.images
-            : this.images.filter(img => img.name && img.name.includes(`-${type}-`));
+    // 安卓版本 tab 没有「全部」项，镜像列表加载完成/变化后，若当前激活版本不在可选列表里
+    // （初始值 0，或该版本的镜像已不存在了），自动落到第一个可选版本上，保证 tabs 始终有激活项。
+    @Watch("androidVersionOptions", { immediate: true })
+    onAndroidVersionOptionsChange(options: number[]) {
+        if (options.length > 0 && !options.includes(this.filterState.androidVersion)) {
+            this.filterState.androidVersion = options[0];
+        }
+    }
 
-        const byAndroidVersion = this.filterState.androidVersion === 0
-            ? byType
-            : byType.filter(img => img.android_version === this.filterState.androidVersion);
-
-        return byAndroidVersion.filter(img => isImageVersionCompatibleByModelVersion(this.data.mobile_model_version, img.major_version));
+    // 安卓14 tab 因宿主机内核不支持而禁用时，在 tab 文字后附带一个 info 图标，悬停在图标或
+    // 文字上都展示原因提示（不再用括号直接写在文字里）。
+    private renderAndroidVersionTabLabel(version: number): VNode {
+        const disabled = version === 14 && !this.hostSupportsAndroid14;
+        return (
+            <el-tooltip slot="label" content={this.$t("create.android14DisabledTip") as string} placement="top" effect="dark" transition="" disabled={!disabled}>
+                <span>
+                    {`Android ${version}`}
+                    {disabled && <i class="el-icon-info" style="margin-left: 4px; color: #909399; cursor: help;"></i>}
+                </span>
+            </el-tooltip>
+        );
     }
 
     private inputNumber(key: string, min: number, max: number) {
@@ -100,26 +110,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
             this.ensureValidModelSelection();
         }
         this.ensureCompatibleSelectedImage();
-    }
-
-    private fixNumber(key: string) {
-        return (e: Event) => {
-            const target = e.target as HTMLInputElement;
-            // x_dpi/y_dpi/offset 允许留空：x_dpi/y_dpi 由后端处理空值，offset 留空则随机开机时间
-            if ((key === "x_dpi" || key === "y_dpi" || key === "offset") && target.value.trim() === "") {
-                this.$set(this.data, key, undefined);
-                return;
-            }
-            let val = Number(target.value);
-            let min = Number(target.min);
-            let max = Number(target.max);
-            if (val < min) val = min;
-            if (val > max) val = max;
-            if (key === "x_dpi" || key === "y_dpi") {
-                val = this.roundDpi(val);
-            }
-            this.$set(this.data, key, val);
-        };
     }
 
     @Watch("dockerRegistries", { immediate: true })
@@ -201,22 +191,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         }
     }
 
-    private applyModelDimensions(meta: MobileModelDimensions) {
-        this.$set(this.data, "width", meta.screen_width);
-        this.$set(this.data, "height", meta.screen_height);
-        this.$set(this.data, "dpi", meta.screen_density);
-        if (meta.screen_xdpi !== undefined) {
-            this.$set(this.data, "x_dpi", this.roundDpi(meta.screen_xdpi));
-        }
-        if (meta.screen_ydpi !== undefined) {
-            this.$set(this.data, "y_dpi", this.roundDpi(meta.screen_ydpi));
-        }
-    }
-
-    private roundDpi(value: number) {
-        return Math.round(value * 1000) / 1000;
-    }
-
     // 带信息图标 + 悬停提示的表单项标签
     private labelWithTip(label: string, tip: string): VNode {
         return (
@@ -229,11 +203,28 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         );
     }
 
-    // 用户在机型对话框点击「覆盖到表单」后，才用机型屏幕参数覆盖当前表单
-    private onApplyDimensions(meta?: MobileModelDimensions) {
-        if (meta) {
-            this.applyModelDimensions(meta);
-        }
+    private fixNumber(key: string) {
+        return (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            // x_dpi/y_dpi/offset 允许留空：x_dpi/y_dpi 由后端处理空值，offset 留空则随机开机时间
+            if ((key === "x_dpi" || key === "y_dpi" || key === "offset") && target.value.trim() === "") {
+                this.$set(this.data, key, undefined);
+                return;
+            }
+            let val = Number(target.value);
+            let min = Number(target.min);
+            let max = Number(target.max);
+            if (val < min) val = min;
+            if (val > max) val = max;
+            if (key === "x_dpi" || key === "y_dpi") {
+                val = this.roundDpi(val);
+            }
+            this.$set(this.data, key, val);
+        };
+    }
+
+    private roundDpi(value: number) {
+        return Math.round(value * 1000) / 1000;
     }
 
     private ensureCompatibleSelectedImage() {
@@ -274,7 +265,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                             </el-form-item>
                         )}
 
-                        <el-form-item label={this.$t("create.sandbox")} prop="sandbox" label-width="120px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.sandbox") as string, this.$t("create.sandbox_tip") as string) }}>
+                        <el-form-item label={this.$t("create.sandbox")} prop="sandbox" style="width: 300px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.sandbox") as string, this.$t("create.sandbox_tip") as string) }}>
                             <el-switch v-model={this.data.sandbox} active-value={1} inactive-value={0} />
                         </el-form-item>
 
@@ -304,31 +295,36 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     </el-form-item>
                 </Row>
 
+                {/* 安卓版本用 tab 切换，仅机型版本/型号、镜像类型、镜像地址这三行随安卓版本变化，
+                    封装在 CreateFormVersionFields 里，两个 tab 各实例化一份，各自按该版本过滤镜像列表；
+                    其余表单项（自定义机型路径/镜像加速/分辨率/DPI/DNS 等）与安卓版本无关，不纳入 tab 管理 */}
                 {!this.isUpdate && (
-                    <Row>
-                        <el-form-item label={this.$t("create.mobile_model_version")} prop="mobile_model_version">
-                            <el-radio-group v-model={this.data.mobile_model_version}>
-                                {/* 安卓14镜像依赖v3机型，选中安卓14时禁止切回v2，见 onAndroidVersionFilterChange */}
-                                <el-radio label="v2" disabled={this.filterState.androidVersion === 14}>v2</el-radio>
-                                {/* v3 暂未完成，先隐藏 */}
-                                <el-radio label="v3">v3</el-radio>
-                            </el-radio-group>
-                        </el-form-item>
-                        <el-form-item label={this.$t("create.model_id")} prop="model_id"  >
-                            <ModelSelector
-                                v-model={this.data.model_id}
-                                version={this.data.mobile_model_version || "v2"}
-                                ip={this.ip}
-                                source={this.data.mobile_model_source}
-                                manufacturer={this.data.model_manufacturer}
-                                on={{
-                                    "update:source": (v: string) => this.$set(this.data, "mobile_model_source", v),
-                                    "update:manufacturer": (v: string) => this.$set(this.data, "model_manufacturer", v),
-                                    "apply-dimensions": this.onApplyDimensions
-                                }}
-                            />
-                        </el-form-item>
-                    </Row>
+                    <el-tabs
+                        class="brand-tabs ml-4 mb-4"
+                        type="border-card"
+                        value={String(this.filterState.androidVersion)}
+                        onInput={(v: string) => { this.filterState.androidVersion = Number(v); }}
+                    >
+                        {this.androidVersionOptions.map(version => (
+                            <el-tab-pane
+                                key={version}
+                                name={String(version)}
+                                disabled={version === 14 && !this.hostSupportsAndroid14}
+                                lazy
+                            >
+                                {this.renderAndroidVersionTabLabel(version)}
+                                <CreateFormVersionFields
+                                    data={this.data}
+                                    filterState={this.filterState}
+                                    images={this.images}
+                                    androidVersion={version}
+                                    hasVip={this.hasVip}
+                                    ip={this.ip}
+                                    on={{ "vip-required": () => this.$emit("vip-required") }}
+                                />
+                            </el-tab-pane>
+                        ))}
+                    </el-tabs>
                 )}
 
                 {!this.isUpdate && this.isCustomModelSelected && (
@@ -340,43 +336,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     </el-form-item>
                 )}
 
-                {!this.isUpdate && (
-                    <el-form-item label={this.$t("create.androidVersion")}>
-                        <el-radio-group v-model={this.filterState.androidVersion}>
-                            <el-radio label={0}>{this.$t("create.androidVersionAll")}</el-radio>
-                            {this.androidVersionOptions.map(version => {
-                                // 安卓14的可创建性由 super_sdk 的 /dc_api/check_android14_support 实时探测，
-                                // 探测不通过时禁用该选项，而不是隐藏整行——用户仍应看到"有安卓14"这个事实。
-                                const android14Disabled = version === 14 && !this.hostSupportsAndroid14;
-                                return (
-                                    <el-radio key={version} label={version} disabled={android14Disabled}>
-                                        {android14Disabled ? `Android ${version} (${this.$t("create.android14DisabledTip")})` : `Android ${version}`}
-                                    </el-radio>
-                                );
-                            })}
-                        </el-radio-group>
-                    </el-form-item>
-                )}
-
-                <el-form-item label={this.$t("create.image_type")}>
-                    <el-radio-group v-model={this.filterState.imageType}>
-                        {/*<el-radio label="all">{this.$t("create.image_type_all")}</el-radio>*/}
-                        <el-radio label="base">{this.$t("create.image_type_base")}</el-radio>
-                        <el-radio label="magisk">{this.$t("create.image_type_magisk")}</el-radio>
-                        <el-radio label="gms">{this.$t("create.image_type_gms")}</el-radio>
-                        <el-radio label="pine">{this.$t("create.image_type_pine")}</el-radio>
-                    </el-radio-group>
-                </el-form-item>
-
-                <el-form-item label={this.$t("create.image_addr")} prop="image_addr">
-                    <ImageSelector2
-                        images={this.filteredImages}
-                        v-model={this.data.image_addr}
-                        showCustom={this.filterState.imageType === 'base'}
-                        hasVip={this.hasVip}
-                        on={{ "vip-required": () => this.$emit("vip-required") }}
-                    />
-                </el-form-item>
                 {this.data.image_addr == "[customImage]" && (
                     <el-form-item label={this.$t("customImage")} prop="custom_image">
                         <el-input v-model={this.data.custom_image} />
@@ -423,25 +382,22 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                 </el-form-item>
 
                 <Row>
-                    <el-form-item label={this.$t("create.width")} prop="width">
-                        <el-input v-model={this.data.width} onBlur={this.fixNumber("width")} min={600} max={4000} type="number" />
+                    <el-form-item label={this.$t("create.width")} prop="width" label-width="60px">
+                        <el-input class="no-number-spinner" v-model={this.data.width} onBlur={this.fixNumber("width")} min={600} max={4000} type="number" />
                     </el-form-item>
-                    <el-form-item label={this.$t("create.height")} prop="height" label-width="120px">
-                        <el-input v-model={this.data.height} onBlur={this.fixNumber("height")} min={600} max={4000} type="number" />
+                    <el-form-item label={this.$t("create.height")} prop="height" label-width="60px">
+                        <el-input class="no-number-spinner" v-model={this.data.height} onBlur={this.fixNumber("height")} min={600} max={4000} type="number" />
                     </el-form-item>
-                    <el-form-item label={this.$t("create.fps")} prop="fps" label-width="120px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.fps") as string, this.$t("create.fps_tip") as string) }}>
-                        <el-input v-model={this.data.fps} onBlur={this.fixNumber("fps")} min={10} max={60} type="number" />
+                    <el-form-item label={this.$t("create.fps")} prop="fps" label-width="70px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.fps") as string, this.$t("create.fps_tip") as string) }}>
+                        <el-input class="no-number-spinner" v-model={this.data.fps} onBlur={this.fixNumber("fps")} min={10} max={60} type="number" />
                     </el-form-item>
-                </Row>
-
-                <Row>
-                    <el-form-item label={this.$t("create.dpi")} prop="dpi">
-                        <el-input v-model={this.data.dpi} onBlur={this.fixNumber("dpi")} min={100} max={600} type="number" />
+                    <el-form-item label={this.$t("create.dpi")} prop="dpi" label-width="50px">
+                        <el-input class="no-number-spinner" v-model={this.data.dpi} onBlur={this.fixNumber("dpi")} min={100} max={600} type="number" />
                     </el-form-item>
-                    <el-form-item label={this.$t("create.x_dpi")} prop="x_dpi" label-width="120px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.x_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
+                    <el-form-item label={this.$t("create.x_dpi")} prop="x_dpi" label-width="65px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.x_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
                         <el-input class="no-number-spinner" v-model={this.data.x_dpi} onBlur={this.fixNumber("x_dpi")} min={100} max={600} step={0.001} type="number" />
                     </el-form-item>
-                    <el-form-item label={this.$t("create.y_dpi")} prop="y_dpi" label-width="120px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.y_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
+                    <el-form-item label={this.$t("create.y_dpi")} prop="y_dpi" label-width="65px" scopedSlots={{ label: () => this.labelWithTip(this.$t("create.y_dpi") as string, this.$t("create.dpi_axis_tip") as string) }}>
                         <el-input class="no-number-spinner" v-model={this.data.y_dpi} onBlur={this.fixNumber("y_dpi")} min={100} max={600} step={0.001} type="number" />
                     </el-form-item>
                 </Row>

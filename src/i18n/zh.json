@@ -88,8 +88,6 @@
         "fps": "FPS",
         "fps_tip": "屏幕刷新率，建议设置为24或更低。",
         "mobile_model_version": "机型版本",
-        "androidVersion": "安卓版本",
-        "androidVersionAll": "全部",
         "android14DisabledTip": "关闭所有安卓12云机后可用",
         "model_id": "型号",
         "custom_model_path": "自定义型号路径",

@@ -39,6 +39,8 @@ Vue.use(DescriptionsItem);
 Vue.use(Card);
 Vue.use(Divider);
 Vue.use(Progress);
+Vue.use(Tabs);
+Vue.use(TabPane);
 
 
 Vue.prototype.$alert = MessageBox.alert;
