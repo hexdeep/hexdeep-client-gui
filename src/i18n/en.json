@@ -88,7 +88,6 @@
         "fps": "FPS",
         "fps_tip": "Screen refresh rate; recommended to set to 24 or lower.",
         "mobile_model_version": "Model Version",
-        "android14DisabledTip": "available after closing all Android 12 VMs",
         "model_id": "Model ID",
         "custom_model_path": "Custom Model Path",
         "custom_model_path_placeholder": "Enter a download URL or an absolute server file path (leave empty for a random model)",

@@ -31,14 +31,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     private filterState = Vue.observable({ imageType: 'base', androidVersion: 0 });
     private modelList: MobileModelGroup[] = [];
 
-    // 宿主机内核是否支持Android 14容器（/proc/version 第三行 android=0或14），由 super_sdk
-    // 的 /dc_api/check_android14_support 接口探测；接口不存在或探测失败时按“不支持”处理。
-    private hostSupportsAndroid14 = false;
-
-    private async loadHostAndroid14Support() {
-        this.hostSupportsAndroid14 = await deviceApi.checkAndroid14Support(this.ip);
-    }
-
     private get androidVersionOptions() {
         const versions = new Set(this.images.map(img => img.android_version).filter(v => !!v));
         return Array.from(versions).sort((a, b) => a - b);
@@ -76,20 +68,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         }
     }
 
-    // 安卓14 tab 因宿主机内核不支持而禁用时，在 tab 文字后附带一个 info 图标，悬停在图标或
-    // 文字上都展示原因提示（不再用括号直接写在文字里）。
-    private renderAndroidVersionTabLabel(version: number): VNode {
-        const disabled = version === 14 && !this.hostSupportsAndroid14;
-        return (
-            <el-tooltip slot="label" content={this.$t("create.android14DisabledTip") as string} placement="top" effect="dark" transition="" disabled={!disabled}>
-                <span>
-                    {`Android ${version}`}
-                    {disabled && <i class="el-icon-info" style="margin-left: 4px; color: #909399; cursor: help;"></i>}
-                </span>
-            </el-tooltip>
-        );
-    }
-
     private inputNumber(key: string, min: number, max: number) {
         return (v: string) => {
             let val = Number(v);
@@ -120,7 +98,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     }
 
     protected async created() {
-        this.loadHostAndroid14Support();
         if (!this.isBatchCreate && !this.isUpdate && !this.data.subnet && this.selectedIndices.length === 1) {
             this.$set(this.data, "subnet", this.getDefaultSubnet(this.selectedIndices[0]));
         }
@@ -333,7 +310,10 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                 {/* 安卓版本用 tab 切换，仅机型版本/型号、镜像类型、镜像地址这三行随安卓版本变化，
                     封装在 CreateFormVersionFields 里，两个 tab 各实例化一份，各自按该版本过滤镜像列表；
                     其余表单项（自定义机型路径/镜像加速/分辨率/DPI/DNS 等）与安卓版本无关，不纳入 tab 管理。
-                    更新流程也允许改机型版本/机型/镜像，因此这里不再按 isUpdate 隐藏。 */}
+                    更新流程也允许改机型版本/机型/镜像，因此这里不再按 isUpdate 隐藏。
+                    安卓14 tab 不在前端预先禁用/探测宿主机是否支持——老板希望客户始终能看到安卓14
+                    镜像，即使当前宿主机暂不能用；宿主机不支持时由后端在提交创建/更新请求时报错拦截
+                    （见 super_sdk docker_handler.go 的 checkAndroid14KernelSupport）。 */}
                 <el-tabs
                     class="brand-tabs ml-4 mb-4"
                     type="border-card"
@@ -344,10 +324,9 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                         <el-tab-pane
                             key={version}
                             name={String(version)}
-                            disabled={version === 14 && !this.hostSupportsAndroid14}
+                            label={`Android ${version}`}
                             lazy
                         >
-                            {this.renderAndroidVersionTabLabel(version)}
                             <CreateFormVersionFields
                                 data={this.data}
                                 filterState={this.filterState}

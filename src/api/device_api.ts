@@ -356,22 +356,6 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
-    /**
-     * 探测目标主机内核是否支持运行Android 14容器（/proc/version 第三行 android= 值为 0 或 14）。
-     * 老版本 super_sdk 没有这个接口时，跟 host_server 一样统一走 c.JSON(http.StatusOK, ...)
-     * 应答 404，HTTP 状态码不可用；这里不区分"接口不存在"和"内核确实不支持"，只要拿不到明确的
-     * code===200 && data.supported===true，一律当作不支持处理（宁可误判不支持，也不能误判支持）。
-     */
-    public async checkAndroid14Support(ip: string): Promise<boolean> {
-        try {
-            const result = await fetch(makeVmApiUrl("dc_api/check_android14_support", ip));
-            const json = await result.json();
-            return json?.code === 200 && json?.data?.supported === true;
-        } catch {
-            return false;
-        }
-    }
-
     public async getHostRemark(ip: string): Promise<string> {
         const result = await fetch(makeHostVmApiUrl("entry/get_remark", ip));
         return await this.handleError(result);
