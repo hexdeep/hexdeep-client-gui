@@ -1,4 +1,4 @@
-import { deviceApi, PullImageAbortError } from '@/api/device_api';
+import { deviceApi } from '@/api/device_api';
 import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
 import { MyButton } from "@/lib/my_button";
 import s from "./pull_image.module.less";
@@ -20,19 +20,28 @@ export interface PullImageResult {
 export class PullImageDialog extends CommonDialog<PullImageRequest, PullImageResult> {
     public override width: string = "550px";
     private progress = 0;
-    private controller = new AbortController();
+    private pullTask: { promise: Promise<any>, cancel: () => void; } | null = null;
     public override allowEscape: boolean = false;
     public override title: string = this.$t("pullImage.title").toString();
 
     public override show(data: PullImageRequest) {
-        deviceApi.pullImageProgress(data.hostIp, data.imageAddress, data.dockerRegistry ?? "", (progress) => {
-            // console.log(progress);
-            this.progress = progress;
-        }, this.controller.signal).then(() => {
+        this.pullTask = deviceApi.pullImages(
+            data.hostIp,
+            data.imageAddress,
+            undefined,
+            (percent) => {
+                // percent<0 表示服务端此时无法计算具体百分比（比如走普通 registry docker pull），
+                // 保留上一次已知的百分比，不倒退成 0，也不让进度条乱跳。
+                if (percent >= 0) this.progress = percent;
+            },
+            data.dockerRegistry
+        );
+        this.pullTask.promise.then(() => {
             this.close({});
-        }).catch((e) => {
-            // 取消的场景由 onCancel 负责关闭，这里不再当作失败上报
-            if (e instanceof PullImageAbortError) return;
+        }).catch((e: any) => {
+            // 取消的场景由 onCancel 负责关闭，这里不再当作失败上报（pullImages 的 cancel()
+            // 用字符串 "aborted" 拒绝 promise，和 manage_images_dialog.tsx 里的约定一致）
+            if (e === "aborted") return;
             console.error(e);
             const reason = e instanceof Error ? e.message : `${e}`;
             const failed = this.$t("pullImage.failed").toString();
@@ -44,7 +53,7 @@ export class PullImageDialog extends CommonDialog<PullImageRequest, PullImageRes
     /** 镜像地址不存在或仓库不可达时，服务端的 docker pull 可能长时间没有响应，
      *  这个弹窗既没有关闭按钮也不响应 ESC，必须留一个取消的口子，否则界面会一直卡住 */
     private onCancel() {
-        this.controller.abort();
+        this.pullTask?.cancel();
         this.close({ canceled: true });
     }
 

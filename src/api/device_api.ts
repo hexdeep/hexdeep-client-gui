@@ -16,34 +16,6 @@ export class VipImageRestrictedError extends Error {
     }
 }
 
-// 用户主动取消镜像拉取，不属于失败，调用方不应该按错误提示
-export class PullImageAbortError extends Error {
-    constructor() {
-        super("canceled");
-        this.name = 'PullImageAbortError';
-    }
-}
-
-/**
- * 取出 image_api/pull_progress 响应体末尾的 JSON 报文。
- * 响应体前半段是进度字节(固定为 0x00/0x01，JSON 文本里不会出现这两个字节)，
- * 因此从尾部往前找到第一个进度字节，其后就是服务端追加的 util.Msg。
- * 只有进度字节（或响应被截断）时返回 undefined，按成功处理。
- */
-function parsePullProgressResult(buf: ArrayBuffer | null): { code: number; err?: string } | undefined {
-    if (!buf || buf.byteLength === 0) return undefined;
-    const bytes = new Uint8Array(buf);
-    let i = bytes.length - 1;
-    while (i >= 0 && bytes[i] !== 0x00 && bytes[i] !== 0x01) i--;
-    const tail = bytes.subarray(i + 1);
-    if (tail.length === 0) return undefined;
-    try {
-        return JSON.parse(new TextDecoder().decode(tail).trim());
-    } catch {
-        return undefined;
-    }
-}
-
 class DeviceApi extends ApiBase {
     private fileListInfo!: FilelistInfo;
     public async queryS5(hostIp: string, name: string) {
@@ -445,11 +417,13 @@ class DeviceApi extends ApiBase {
         ip: string,
         addr: string,
         repository: string | undefined,
-        onProgress?: (percent: number, status: string) => void
+        onProgress?: (percent: number, status: string) => void,
+        dockerRegistry?: string
     ): { promise: Promise<any>, cancel: () => void; } {
         const url = new URL(makeVmApiUrl("image_api/pull_sse", ip).toString());
         url.searchParams.set("address", addr);
         if (repository) url.searchParams.set("repository", repository);
+        if (dockerRegistry) url.searchParams.set("registry_ip", dockerRegistry);
 
         const source = new EventSource(url.toString());
         let settled = false;
@@ -677,78 +651,6 @@ class DeviceApi extends ApiBase {
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
         });
         await this.handleError(result);
-    }
-
-    /**
-     * 拉取镜像并回调进度。
-     *
-     * 服务端 image_api/pull_progress 的响应体是「进度字节(0x00/0x01) + 末尾一个 JSON 报文」，
-     * 失败时（例如自定义镜像地址根本不存在）同样返回 HTTP 200，只是末尾 JSON 的 code != 200。
-     * 所以不能只凭 onload 就当作成功，必须把尾部的 JSON 解析出来判断，否则调用方会以为镜像已经
-     * 拉好而继续往下创建云机。
-     *
-     * `signal` 用于中途取消：镜像地址不存在或仓库不可达时 docker pull 可能长时间没有响应，
-     * 界面需要能把这个请求断掉。
-     */
-    public async pullImageProgress(ip: string, addr: string, dockerRegistry: string, progressCb: (progress: number) => void, signal?: AbortSignal) {
-        return new Promise<void>((resolve, reject) => {
-            if (signal?.aborted) {
-                reject(new PullImageAbortError());
-                return;
-            }
-            const xhr = new XMLHttpRequest();
-            const TOTAL_BYTES = 10_000; // 服务端固定推送字节数
-
-            // 拼 URL
-            const url = new URL(makeVmApiUrl("image_api/pull_progress", ip).toString());
-            url.searchParams.set("address", addr);
-            url.searchParams.set("registry_ip", dockerRegistry);
-
-            // 进度事件
-            xhr.onprogress = (event) => {
-                if (event.lengthComputable) {
-                    // 如果服务端有 Content-Length，可直接用 event.total
-                    const pct = Math.min((event.loaded / event.total) * 100, 100);
-                    progressCb(pct);
-                } else {
-                    // 如果没有 Content-Length，就用固定的 TOTAL_BYTES
-                    const pct = Math.min((event.loaded / TOTAL_BYTES) * 100, 100);
-                    progressCb(pct);
-                }
-            };
-
-            xhr.onload = () => {
-                if (xhr.status < 200 || xhr.status >= 300) {
-                    reject(new Error(`下载失败: ${xhr.status} ${xhr.statusText}`));
-                    return;
-                }
-                const msg = parsePullProgressResult(xhr.response);
-                if (msg && msg.code !== 200) {
-                    reject(new Error(msg.err || `下载失败: ${addr}`));
-                    return;
-                }
-                progressCb(100);
-                resolve();
-            };
-
-            xhr.onerror = () => {
-                reject(new Error(`下载失败: ${xhr.status} ${xhr.statusText}`));
-            };
-
-            xhr.onabort = () => {
-                reject(new PullImageAbortError());
-            };
-
-            signal?.addEventListener("abort", () => xhr.abort(), { once: true });
-
-            // 打开连接
-            xhr.open("GET", url.toString(), true);
-            // 二进制模式，这里不解析成字符串
-            xhr.responseType = "arraybuffer";
-
-            // 发送请求
-            xhr.send();
-        });
     }
 
 
