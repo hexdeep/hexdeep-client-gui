@@ -30,9 +30,12 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     private filterState = Vue.observable({ imageType: 'base', androidVersion: 0 });
     private modelList: MobileModelGroup[] = [];
 
+    // 安卓版本 tab 固定为12/14两项，不再随 images 里实际有哪些版本的镜像变化——服务端可能因该
+    // 主机暂无安卓14权限（见 hexdeep_server and14ImageAllowed）而不返回任何安卓14镜像，但老板
+    // 希望客户始终能看到安卓14这个入口，即使当前不可用；镜像地址下拉在对应 tab 下为空即可，
+    // 真正的可用性拦截交给后端在提交创建/更新请求时报错（见 checkAndroidKernelConflict）。
     private get androidVersionOptions() {
-        const versions = new Set(this.images.map(img => img.android_version).filter(v => !!v));
-        return Array.from(versions).sort((a, b) => a - b);
+        return [12, 14];
     }
 
     // 更新流程首次拿到镜像列表时，把 tab/镜像类型默认定位到这台云机当前正在用的镜像上，
@@ -303,7 +306,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                     更新流程也允许改机型版本/机型/镜像，因此这里不再按 isUpdate 隐藏。
                     安卓14 tab 不在前端预先禁用/探测宿主机是否支持——老板希望客户始终能看到安卓14
                     镜像，即使当前宿主机暂不能用；宿主机不支持时由后端在提交创建/更新请求时报错拦截
-                    （见 super_sdk docker_handler.go 的 checkAndroid14KernelSupport）。 */}
+                    （见 super_sdk docker_handler.go 的 checkAndroidKernelConflict）。 */}
                 <el-tabs
                     class="brand-tabs ml-4 mb-4"
                     type="border-card"
