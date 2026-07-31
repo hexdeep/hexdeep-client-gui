@@ -127,9 +127,12 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         if (!this.data.mobile_model_version) {
             this.$set(this.data, "mobile_model_version", "v2");
         }
-        // 更新流程现在也允许改机型版本/机型，需要和创建流程一样拉取机型列表
-        await this.loadModelList();
-        this.ensureValidModelSelection();
+        // 型号(model_id)选择器不在更新流程展示（改了也不生效，见 CreateFormVersionFields），
+        // 机型列表仅创建流程需要拉取
+        if (!this.isUpdate) {
+            await this.loadModelList();
+            this.ensureValidModelSelection();
+        }
         this.ensureCompatibleSelectedImage();
     }
 
@@ -166,8 +169,10 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
 
     @Watch("data.mobile_model_version")
     async onModelVersionChange() {
-        await this.loadModelList();
-        this.ensureValidModelSelection();
+        if (!this.isUpdate) {
+            await this.loadModelList();
+            this.ensureValidModelSelection();
+        }
         this.ensureCompatibleSelectedImage();
     }
 
@@ -200,7 +205,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     }
 
     private ensureValidModelSelection() {
-        if (this.isCustomModelSelected) {
+        if (this.isUpdate || this.isCustomModelSelected) {
             return;
         }
         // 随机由后端完成，model_id<=0 保持「随机」即可，不再前端预抽具体机型。
@@ -350,13 +355,14 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                                 androidVersion={version}
                                 hasVip={this.hasVip}
                                 ip={this.ip}
+                                isUpdate={this.isUpdate}
                                 on={{ "vip-required": () => this.$emit("vip-required") }}
                             />
                         </el-tab-pane>
                     ))}
                 </el-tabs>
 
-                {this.isCustomModelSelected && (
+                {!this.isUpdate && this.isCustomModelSelected && (
                     <el-form-item label={this.$t("create.custom_model_path")} prop="mobile_model_source">
                         <el-input
                             v-model={this.data.mobile_model_source}

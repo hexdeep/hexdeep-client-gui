@@ -20,6 +20,7 @@ export class CreateFormVersionFields extends tsx.Component<IProps, IEvents, {}> 
     @Prop({ required: true }) androidVersion!: number;
     @Prop({ default: false }) hasVip!: boolean;
     @Prop({ default: "" }) ip!: string;
+    @Prop({ default: false }) isUpdate!: boolean;
 
     private get filteredImages() {
         const type = this.filterState.imageType;
@@ -66,20 +67,25 @@ export class CreateFormVersionFields extends tsx.Component<IProps, IEvents, {}> 
                             <el-radio label="v3">v3</el-radio>
                         </el-radio-group>
                     </el-form-item>
-                    <el-form-item label={this.$t("create.model_id")} prop="model_id">
-                        <ModelSelector
-                            v-model={this.data.model_id}
-                            version={this.data.mobile_model_version || "v2"}
-                            ip={this.ip}
-                            source={this.data.mobile_model_source}
-                            manufacturer={this.data.model_manufacturer}
-                            on={{
-                                "update:source": (v: string) => this.$set(this.data, "mobile_model_source", v),
-                                "update:manufacturer": (v: string) => this.$set(this.data, "model_manufacturer", v),
-                                "apply-dimensions": this.onApplyDimensions
-                            }}
-                        />
-                    </el-form-item>
+                    {/* 型号(model_id)在更新云机时不生效：真正的机型信息在创建时一次性写入 /data，
+                        UpdateContainer 只重建容器、复用原有 /data，不会重新生成机型数据，所以更新表单
+                        不展示这一项，避免让用户误以为改了这里就能改到已运行云机的机型。 */}
+                    {!this.isUpdate && (
+                        <el-form-item label={this.$t("create.model_id")} prop="model_id">
+                            <ModelSelector
+                                v-model={this.data.model_id}
+                                version={this.data.mobile_model_version || "v2"}
+                                ip={this.ip}
+                                source={this.data.mobile_model_source}
+                                manufacturer={this.data.model_manufacturer}
+                                on={{
+                                    "update:source": (v: string) => this.$set(this.data, "mobile_model_source", v),
+                                    "update:manufacturer": (v: string) => this.$set(this.data, "model_manufacturer", v),
+                                    "apply-dimensions": this.onApplyDimensions
+                                }}
+                            />
+                        </el-form-item>
+                    )}
                 </Row>
 
                 <el-form-item label={this.$t("create.image_type")}>
@@ -119,6 +125,7 @@ interface IProps {
     androidVersion: number;
     hasVip?: boolean;
     ip?: string;
+    isUpdate?: boolean;
 }
 
 interface IEvents {
