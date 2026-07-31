@@ -168,9 +168,9 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
 
     @ErrorProxy({ validatForm: "formRef" })
     protected override async onConfirm() {
-        const normalizedModelVersion = this.data.isUpdate
-            ? normalizeMobileModelVersion(this.data.info.create_req?.mobile_model_version)
-            : normalizeMobileModelVersion(this.data.obj.mobile_model_version);
+        // 更新流程现在也允许在表单里改机型版本，兼容性检查要用表单当前值，不能再用云机
+        // 创建时的旧值（this.data.info.create_req），否则改了版本后这里还是拿旧版本去校验。
+        const normalizedModelVersion = normalizeMobileModelVersion(this.data.obj.mobile_model_version);
 
         if (this.data.isUpdate) {
             if (this.dirty < 2) {

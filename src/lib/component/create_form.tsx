@@ -44,11 +44,34 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         return Array.from(versions).sort((a, b) => a - b);
     }
 
+    // 更新流程首次拿到镜像列表时，把 tab/镜像类型默认定位到这台云机当前正在用的镜像上，
+    // 避免每次打开更新对话框都被强制拉回“Android 12 / base”——只在第一次生效一次，
+    // 之后用户自己切 tab 不会被这里覆盖回去。
+    private updateFilterInitialized = false;
+
+    private matchImageType(name?: string): string {
+        if (!name) return 'base';
+        for (const type of ['magisk', 'gms', 'pine']) {
+            if (name.includes(`-${type}-`)) return type;
+        }
+        return 'base';
+    }
+
     // 安卓版本 tab 没有「全部」项，镜像列表加载完成/变化后，若当前激活版本不在可选列表里
     // （初始值 0，或该版本的镜像已不存在了），自动落到第一个可选版本上，保证 tabs 始终有激活项。
     @Watch("androidVersionOptions", { immediate: true })
     onAndroidVersionOptionsChange(options: number[]) {
-        if (options.length > 0 && !options.includes(this.filterState.androidVersion)) {
+        if (options.length === 0) return;
+        if (this.isUpdate && !this.updateFilterInitialized) {
+            this.updateFilterInitialized = true;
+            const current = this.images.find(img => img.address === this.data.image_addr);
+            if (current && options.includes(current.android_version)) {
+                this.filterState.androidVersion = current.android_version;
+                this.filterState.imageType = this.matchImageType(current.name);
+                return;
+            }
+        }
+        if (!options.includes(this.filterState.androidVersion)) {
             this.filterState.androidVersion = options[0];
         }
     }
@@ -104,11 +127,9 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         if (!this.data.mobile_model_version) {
             this.$set(this.data, "mobile_model_version", "v2");
         }
-        // 机型选择器仅创建流程展示，更新流程不需要拉取机型列表
-        if (!this.isUpdate) {
-            await this.loadModelList();
-            this.ensureValidModelSelection();
-        }
+        // 更新流程现在也允许改机型版本/机型，需要和创建流程一样拉取机型列表
+        await this.loadModelList();
+        this.ensureValidModelSelection();
         this.ensureCompatibleSelectedImage();
     }
 
@@ -145,10 +166,8 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
 
     @Watch("data.mobile_model_version")
     async onModelVersionChange() {
-        if (!this.isUpdate) {
-            await this.loadModelList();
-            this.ensureValidModelSelection();
-        }
+        await this.loadModelList();
+        this.ensureValidModelSelection();
         this.ensureCompatibleSelectedImage();
     }
 
@@ -181,7 +200,7 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     }
 
     private ensureValidModelSelection() {
-        if (this.isUpdate || this.isCustomModelSelected) {
+        if (this.isCustomModelSelected) {
             return;
         }
         // 随机由后端完成，model_id<=0 保持「随机」即可，不再前端预抽具体机型。
@@ -308,48 +327,41 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
 
                 {/* 安卓版本用 tab 切换，仅机型版本/型号、镜像类型、镜像地址这三行随安卓版本变化，
                     封装在 CreateFormVersionFields 里，两个 tab 各实例化一份，各自按该版本过滤镜像列表；
-                    其余表单项（自定义机型路径/镜像加速/分辨率/DPI/DNS 等）与安卓版本无关，不纳入 tab 管理 */}
-                {!this.isUpdate && (
-                    <el-tabs
-                        class="brand-tabs ml-4 mb-4"
-                        type="border-card"
-                        value={String(this.filterState.androidVersion)}
-                        onInput={(v: string) => { this.filterState.androidVersion = Number(v); }}
-                    >
-                        {this.androidVersionOptions.map(version => (
-                            <el-tab-pane
-                                key={version}
-                                name={String(version)}
-                                disabled={version === 14 && !this.hostSupportsAndroid14}
-                                lazy
-                            >
-                                {this.renderAndroidVersionTabLabel(version)}
-                                <CreateFormVersionFields
-                                    data={this.data}
-                                    filterState={this.filterState}
-                                    images={this.images}
-                                    androidVersion={version}
-                                    hasVip={this.hasVip}
-                                    ip={this.ip}
-                                    on={{ "vip-required": () => this.$emit("vip-required") }}
-                                />
-                            </el-tab-pane>
-                        ))}
-                    </el-tabs>
-                )}
+                    其余表单项（自定义机型路径/镜像加速/分辨率/DPI/DNS 等）与安卓版本无关，不纳入 tab 管理。
+                    更新流程也允许改机型版本/机型/镜像，因此这里不再按 isUpdate 隐藏。 */}
+                <el-tabs
+                    class="brand-tabs ml-4 mb-4"
+                    type="border-card"
+                    value={String(this.filterState.androidVersion)}
+                    onInput={(v: string) => { this.filterState.androidVersion = Number(v); }}
+                >
+                    {this.androidVersionOptions.map(version => (
+                        <el-tab-pane
+                            key={version}
+                            name={String(version)}
+                            disabled={version === 14 && !this.hostSupportsAndroid14}
+                            lazy
+                        >
+                            {this.renderAndroidVersionTabLabel(version)}
+                            <CreateFormVersionFields
+                                data={this.data}
+                                filterState={this.filterState}
+                                images={this.images}
+                                androidVersion={version}
+                                hasVip={this.hasVip}
+                                ip={this.ip}
+                                on={{ "vip-required": () => this.$emit("vip-required") }}
+                            />
+                        </el-tab-pane>
+                    ))}
+                </el-tabs>
 
-                {!this.isUpdate && this.isCustomModelSelected && (
+                {this.isCustomModelSelected && (
                     <el-form-item label={this.$t("create.custom_model_path")} prop="mobile_model_source">
                         <el-input
                             v-model={this.data.mobile_model_source}
                             placeholder={this.$t("create.custom_model_path_placeholder")}
                         />
-                    </el-form-item>
-                )}
-
-                {this.data.image_addr == "[customImage]" && (
-                    <el-form-item label={this.$t("customImage")} prop="custom_image">
-                        <el-input v-model={this.data.custom_image} />
                     </el-form-item>
                 )}
 

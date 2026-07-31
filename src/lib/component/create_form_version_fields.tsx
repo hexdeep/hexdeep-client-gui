@@ -101,6 +101,12 @@ export class CreateFormVersionFields extends tsx.Component<IProps, IEvents, {}> 
                         on={{ "vip-required": () => this.$emit("vip-required") }}
                     />
                 </el-form-item>
+
+                {this.data.image_addr == "[customImage]" && (
+                    <el-form-item label={this.$t("customImage")} prop="custom_image">
+                        <el-input v-model={this.data.custom_image} />
+                    </el-form-item>
+                )}
             </div>
         );
     }
