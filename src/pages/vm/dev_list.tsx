@@ -569,7 +569,11 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                 await deviceApi.start(data.hostIp, data.name);
             }
             if (shouldWarnAndroidConflict) {
-                this.$message.warning(this.$t(startedIsAndroid14 ? "android12ConflictOnStart" : "android14ConflictOnStart").toString());
+                this.$notify({
+                    type: "warning",
+                    title: this.$t("tip").toString(),
+                    message: this.$t(startedIsAndroid14 ? "android12ConflictOnStart" : "android14ConflictOnStart").toString(),
+                });
             }
             this.$emit("changed", data.hostIp);
         } catch (e) {

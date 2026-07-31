@@ -1,4 +1,4 @@
-import { Autocomplete, Breadcrumb, BreadcrumbItem, Button, Card, Checkbox, CheckboxGroup, DatePicker, Descriptions, DescriptionsItem, Divider, Dropdown, DropdownItem, DropdownMenu, Form, FormItem, Image, Input, InputNumber, Link, Loading, Message, MessageBox, Option, OptionGroup, Pagination, Popover, Progress, Radio, RadioButton, RadioGroup, Select, Skeleton, SkeletonItem, Slider, Switch, TabPane, Table, TableColumn, Tabs, Tag, Tooltip, Transfer, Tree, Upload } from "element-ui";
+import { Autocomplete, Breadcrumb, BreadcrumbItem, Button, Card, Checkbox, CheckboxGroup, DatePicker, Descriptions, DescriptionsItem, Divider, Dropdown, DropdownItem, DropdownMenu, Form, FormItem, Image, Input, InputNumber, Link, Loading, Message, MessageBox, Notification, Option, OptionGroup, Pagination, Popover, Progress, Radio, RadioButton, RadioGroup, Select, Skeleton, SkeletonItem, Slider, Switch, TabPane, Table, TableColumn, Tabs, Tag, Tooltip, Transfer, Tree, Upload } from "element-ui";
 import { ElImage } from "element-ui/types/image";
 import Vue from "vue";
 

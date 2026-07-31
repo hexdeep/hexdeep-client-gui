@@ -1,4 +1,3 @@
-import { deviceApi } from "@/api/device_api";
 import { CreateParam, ImageInfo } from "@/api/device_define";
 import { RentalInfo } from "@/api/order_define";
 import { Component, Prop, Watch } from "vue-property-decorator";
@@ -66,15 +65,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         if (!options.includes(this.filterState.androidVersion)) {
             this.filterState.androidVersion = options[0];
         }
-    }
-
-    private inputNumber(key: string, min: number, max: number) {
-        return (v: string) => {
-            let val = Number(v);
-            if (val < min) val = min;
-            if (val > max) val = max;
-            this.$set(this.data, key, val);
-        };
     }
 
     private getDefaultSubnet(index: number): string {
@@ -340,15 +330,6 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
                         </el-tab-pane>
                     ))}
                 </el-tabs>
-
-                {!this.isUpdate && this.isCustomModelSelected && (
-                    <el-form-item label={this.$t("create.custom_model_path")} prop="mobile_model_source">
-                        <el-input
-                            v-model={this.data.mobile_model_source}
-                            placeholder={this.$t("create.custom_model_path_placeholder")}
-                        />
-                    </el-form-item>
-                )}
 
                 <Row>
                     <el-form-item label={this.$t("create.width")} prop="width" label-width="60px">

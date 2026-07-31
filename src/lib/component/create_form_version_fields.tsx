@@ -6,6 +6,7 @@ import { VNode } from 'vue';
 import { Row } from '../container';
 import { ImageSelector2 } from "./image_selector2";
 import { ModelSelector } from "./model_selector";
+import { CUSTOM_MODEL_VALUE } from "./mobile_model_loader";
 
 /**
  * 创建云机表单中「机型版本/型号」「镜像类型」「镜像地址」这三行，按安卓版本参数化，
@@ -35,6 +36,10 @@ export class CreateFormVersionFields extends tsx.Component<IProps, IEvents, {}> 
 
     private roundDpi(value: number) {
         return Math.round(value * 1000) / 1000;
+    }
+
+    private get isCustomModelSelected() {
+        return Number(this.data.model_id ?? 0) === CUSTOM_MODEL_VALUE;
     }
 
     private applyModelDimensions(meta: MobileModelDimensions) {
@@ -87,6 +92,15 @@ export class CreateFormVersionFields extends tsx.Component<IProps, IEvents, {}> 
                         </el-form-item>
                     )}
                 </Row>
+
+                {!this.isUpdate && this.isCustomModelSelected && (
+                    <el-form-item label={this.$t("create.custom_model_path")} prop="mobile_model_source" label-width="120px">
+                        <el-input
+                            v-model={this.data.mobile_model_source}
+                            placeholder={this.$t("create.custom_model_path_placeholder")}
+                        />
+                    </el-form-item>
+                )}
 
                 <el-form-item label={this.$t("create.image_type")}>
                     <el-radio-group v-model={this.filterState.imageType}>
