@@ -239,8 +239,20 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         }
     }
 
+    // 多文件一起拖入时，el-upload 会对每个文件几乎同时并发调用 http-request；但后端
+    // saveMobileModel/updateMobileModelScreenCfg 对同一 version 的机型屏幕参数配置文件是无锁的
+    // 读-改-写，并发写入会互相覆盖、丢失部分文件的屏幕参数。这里用一条 promise 链把多次上传强制
+    // 串行化，改成前端排队逐个上传，避免触发后端的并发写竞争。
+    private uploadChain: Promise<void> = Promise.resolve();
+
     // el-upload 自定义上传：调用 super sdk 接口上传机型文件
-    private async handleUpload(option: { file: File; onSuccess?: (res: any) => void; onError?: (err: any) => void; }) {
+    private handleUpload(option: { file: File; onSuccess?: (res: any) => void; onError?: (err: any) => void; }) {
+        const run = () => this.uploadOne(option);
+        this.uploadChain = this.uploadChain.then(run, run);
+        return this.uploadChain;
+    }
+
+    private async uploadOne(option: { file: File; onSuccess?: (res: any) => void; onError?: (err: any) => void; }) {
         if (!this.ip) {
             option.onError?.(new Error("ip is empty"));
             return;
@@ -611,8 +623,7 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                     action="#"
                     drag
                     show-file-list={false}
-                    multiple={false}
-                    disabled={this.uploading}
+                    multiple
                     http-request={this.handleUpload}
                     style={{ width: "100%" }}
                 >
