@@ -534,19 +534,6 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         this.$emit("changed", data.hostIp);
     }
 
-    // 安卓14与安卓12容器共享宿主机内核，二者不能同时正常运行：宿主机上已有某一版本的云机在跑时，
-    // 再启动另一版本的云机，内核仍处于原版本模式，新启动的云机大概率异常。这里只是提示，
-    // 不拦截启动请求——用户可以先看效果，按提示自行处理（关另一版本云机后重启这台）。两个方向
-    // （安卓12运行中启动安卓14 / 安卓14运行中启动安卓12）共用同一套判断，仅提示文案不同。
-    private hasRunningConflictingSibling(data: DeviceInfo, startedIsAndroid14: boolean): boolean {
-        const host = this.hosts.find(h => h.address === data.hostIp);
-        return !!host?.devices?.some(d => {
-            if (d.state !== "running" || d.key === data.key) return false;
-            const version = this.images.find(img => img.address === d.image_addr)?.android_version;
-            return startedIsAndroid14 ? version !== 14 : version === 14;
-        });
-    }
-
     @ErrorProxy({ confirm: t("confirm.startTitle"), success: i18n.t("success") })
     private async start(data: DeviceInfo) {
         const l = this.$loading({
@@ -554,8 +541,6 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             text: i18n.t("loading").toString(),
         });
         try {
-            const startedIsAndroid14 = this.images.find(img => img.address === data.image_addr)?.android_version === 14;
-            const shouldWarnAndroidConflict = this.hasRunningConflictingSibling(data, startedIsAndroid14);
             const imageAddress = await deviceApi.start(data.hostIp, data.name).finally(() => {
                 l.close();
             });
@@ -567,13 +552,6 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                 if (re?.canceled) return false;
                 if (re?.error) throw new Error(re.error);
                 await deviceApi.start(data.hostIp, data.name);
-            }
-            if (shouldWarnAndroidConflict) {
-                this.$notify({
-                    type: "warning",
-                    title: this.$t("tip").toString(),
-                    message: this.$t(startedIsAndroid14 ? "android12ConflictOnStart" : "android14ConflictOnStart").toString(),
-                });
             }
             this.$emit("changed", data.hostIp);
         } catch (e) {
