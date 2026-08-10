@@ -793,11 +793,12 @@ class DeviceApi extends ApiBase {
     }
 
     // ---- 启动项（host_server 托管的外部程序，端口82）----
-    // 列表/启停/重启/编辑/批量删除/查日志全部合并进一条 GET，用 act 区分（对齐 host_server
-    // 侧 startupHandler.Act 的 0~6），跟机型文件接口的 makeMobileModelUrl 是同一个套路；
-    // 新增（要带文件）和日志 SSE（长连接）GET 扛不住，各自单独留一个接口。
+    // 列表/启停/重启/编辑/批量删除/查日志/设置自动更新全部合并进一条 GET，用 act 区分
+    // （对齐 host_server 侧 startupHandler.Act 的 0~7），跟机型文件接口的
+    // makeMobileModelUrl 是同一个套路；新增（要带文件）和日志 SSE（长连接）GET 扛不住，
+    // 各自单独留一个接口。
 
-    private makeStartupActUrl(ip: string, act: 0 | 1 | 2 | 3 | 4 | 5 | 6) {
+    private makeStartupActUrl(ip: string, act: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7) {
         const url = makeHostVmApiUrl("startup", ip);
         url.searchParams.set("act", act.toString());
         return url;
@@ -874,6 +875,50 @@ class DeviceApi extends ApiBase {
         return { promise, cancel: () => xhr.abort() };
     }
 
+    /**
+     * 手动给已有启动项换一个可执行文件——跟自动更新（setStartupAutoUpdate 配置的地址）
+     * 走的是 host_server 同一套备份/替换/重启/健康检查回滚逻辑，区别只是文件来源：这里
+     * 直接用挑选的本地文件，不比对/校验任何 digest，也不要求该项配置了自动更新地址。
+     * 同 addStartup，用 XMLHttpRequest 拿上传进度。
+     */
+    public replaceStartup(
+        ip: string,
+        id: number,
+        file: File,
+        onProgress?: (percent: number) => void
+    ): { promise: Promise<void>, cancel: () => void; } {
+        const xhr = new XMLHttpRequest();
+        const promise = new Promise<void>((resolve, reject) => {
+            xhr.open("POST", makeHostVmApiUrl("startup/replace", ip).toString(), true);
+            xhr.upload.onprogress = event => {
+                if (onProgress && event.lengthComputable) {
+                    onProgress(Math.round(event.loaded / event.total * 100));
+                }
+            };
+            xhr.onload = () => {
+                try {
+                    const json = JSON.parse(xhr.responseText);
+                    if (xhr.status >= 200 && xhr.status < 300 && json.code === 200) {
+                        resolve();
+                    } else {
+                        reject(new Error(json.err || `Upload failed: ${xhr.status} ${xhr.statusText}`));
+                    }
+                } catch {
+                    reject(new Error(`Invalid response: ${xhr.status} ${xhr.statusText}`));
+                }
+            };
+            xhr.onerror = () => reject(new Error("Network error during startup replace"));
+            xhr.onabort = () => reject("aborted");
+
+            const formData = new FormData();
+            formData.append("id", id.toString());
+            formData.append("file", file);
+            xhr.send(formData);
+        });
+
+        return { promise, cancel: () => xhr.abort() };
+    }
+
     /** 修改名称、启动命令与退出后处理策略；命令的改动要重启该启动项才会生效 */
     public async updateStartup(ip: string, id: number, name: string, command: string, restartPolicy: StartupRestartPolicy) {
         const url = this.makeStartupActUrl(ip, 4);
@@ -920,6 +965,21 @@ class DeviceApi extends ApiBase {
         url.searchParams.set("id", id.toString());
         const result = await fetch(url);
         return (await this.handleError(result)) ?? "";
+    }
+
+    /**
+     * 开启/关闭一个启动项的自动更新；开启时 updateUrl 必填。
+     * 目标地址的 HEAD 和 GET 响应都要带 X-Sha256-Digest 头（文件内容的 SHA256，
+     * 小写十六进制）——host_server 定期 HEAD 比对本地文件摘要，不一致时才会真正下载
+     * （见 host_server startup/autoupdate.go）。
+     */
+    public async setStartupAutoUpdate(ip: string, id: number, enabled: boolean, updateUrl: string) {
+        const url = this.makeStartupActUrl(ip, 7);
+        url.searchParams.set("id", id.toString());
+        url.searchParams.set("auto_update_enabled", enabled ? "1" : "0");
+        url.searchParams.set("update_url", updateUrl);
+        const result = await fetch(url);
+        return await this.handleError(result);
     }
 
     /**

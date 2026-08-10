@@ -27,6 +27,8 @@ export class StartupFormDialog extends CommonDialog<StartupFormData, boolean> {
     protected name: string = "";
     protected command: string = "";
     protected restartPolicy: StartupRestartPolicy = "on_failure";
+    protected autoUpdateEnabled: boolean = false;
+    protected updateUrl: string = "";
     protected file: File | null = null;
     protected submitting: boolean = false;
     protected uploadProgress: number = 0;
@@ -42,8 +44,12 @@ export class StartupFormDialog extends CommonDialog<StartupFormData, boolean> {
             this.name = data.item.name;
             this.command = data.item.command;
             this.restartPolicy = data.item.restart_policy;
+            this.autoUpdateEnabled = data.item.auto_update_enabled;
+            this.updateUrl = data.item.update_url;
         } else {
             this.restartPolicy = "on_failure";
+            this.autoUpdateEnabled = false;
+            this.updateUrl = "";
         }
         return super.show(data);
     }
@@ -72,14 +78,20 @@ export class StartupFormDialog extends CommonDialog<StartupFormData, boolean> {
             this.$message.error(this.$t("startup.fileRequired").toString());
             return;
         }
+        if (this.autoUpdateEnabled && !this.updateUrl.trim()) {
+            this.$message.error(this.$t("startup.autoUpdateUrlRequired").toString());
+            return;
+        }
 
         this.submitting = true;
         this.uploadProgress = 0;
         try {
+            let id: number;
             if (this.isEditMode) {
+                id = this.data.item!.id;
                 await deviceApi.updateStartup(
                     this.data.host.address,
-                    this.data.item!.id,
+                    id,
                     this.name.trim(),
                     this.command.trim(),
                     this.restartPolicy
@@ -96,8 +108,9 @@ export class StartupFormDialog extends CommonDialog<StartupFormData, boolean> {
                     },
                     percent => this.uploadProgress = Math.max(0, Math.min(100, percent))
                 );
-                await this.uploadTask.promise;
+                id = (await this.uploadTask.promise).id;
             }
+            await deviceApi.setStartupAutoUpdate(this.data.host.address, id, this.autoUpdateEnabled, this.updateUrl.trim());
             this.$message.success(this.$t("startup.saveSuccess").toString());
             await this.close(true);
         } catch (error) {
@@ -161,6 +174,20 @@ export class StartupFormDialog extends CommonDialog<StartupFormData, boolean> {
                     </el-select>
                     <div style={{ fontSize: "12px", color: "#909399", lineHeight: "1.6" }}>
                         {this.$t("startup.restartPolicyTip")}
+                    </div>
+                </el-form-item>
+                <el-form-item label={this.$t("startup.autoUpdate")}>
+                    <el-switch v-model={this.autoUpdateEnabled} disabled={this.submitting} />
+                    {this.autoUpdateEnabled && (
+                        <el-input
+                            v-model={this.updateUrl}
+                            disabled={this.submitting}
+                            placeholder={this.$t("startup.autoUpdateUrlPlaceholder")}
+                            style={{ marginTop: "8px" }}
+                        />
+                    )}
+                    <div style={{ fontSize: "12px", color: "#909399", lineHeight: "1.6" }}>
+                        {this.$t("startup.autoUpdateTip")}
                     </div>
                 </el-form-item>
                 {this.submitting && !this.isEditMode && (
@@ -367,6 +394,28 @@ export class StartupDialog extends CommonDialog<HostInfo, boolean> {
         this.$dialog(StartupLogsDialog).show({ host: this.data, item });
     }
 
+    /** 弹出一个不挂载到 DOM 的文件选择框，选完直接触发替换——跟新增时的 el-upload
+     * 不是一回事：这里不需要预览/移除已选文件那些交互，选中即视为确认要换。 */
+    private triggerReplace(item: StartupInfo) {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.onchange = () => {
+            const file = input.files?.[0];
+            if (file) this.replaceItem(item, file);
+        };
+        input.click();
+    }
+
+    @ErrorProxy({
+        confirm: (_: StartupDialog, item: StartupInfo, _file: File) => i18n.t("startup.replaceConfirm", [item.name]),
+        success: i18n.t("startup.replaceSuccess"),
+        loading: i18n.t("loading"),
+    })
+    private async replaceItem(item: StartupInfo, file: File) {
+        await deviceApi.replaceStartup(this.data.address, item.id, file).promise;
+        await this.loadStartups();
+    }
+
     @ErrorProxy({ success: i18n.t("startup.startSuccess"), loading: i18n.t("loading") })
     private async startItem(item: StartupInfo) {
         await deviceApi.startStartup(this.data.address, item.id);
@@ -496,7 +545,7 @@ export class StartupDialog extends CommonDialog<HostInfo, boolean> {
                     />
                     <el-table-column
                         label={this.$t("action")}
-                        min-width="180"
+                        min-width="240"
                         align="center"
                         scopedSlots={{
                             default: ({ row }: { row: StartupInfo; }) => (
@@ -515,6 +564,9 @@ export class StartupDialog extends CommonDialog<HostInfo, boolean> {
                                     </el-button>
                                     <el-button type="text" onClick={() => this.editStartup(row)}>
                                         {this.$t("startup.edit")}
+                                    </el-button>
+                                    <el-button type="text" onClick={() => this.triggerReplace(row)}>
+                                        {this.$t("startup.replace")}
                                     </el-button>
                                     <el-button type="text" onClick={() => this.showLogs(row)}>
                                         {this.$t("startup.logs")}

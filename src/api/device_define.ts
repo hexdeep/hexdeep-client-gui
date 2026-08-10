@@ -288,6 +288,11 @@ export interface StartupInfo {
     /** 后端实时探测的运行状态，不是库里的字段 */
     running: boolean;
     created_at: string;
+    /** 是否开启自动更新（见 host_server startup/autoupdate.go） */
+    auto_update_enabled: boolean;
+    /** 自动更新检查地址；开启时必填。目标地址的 HEAD/GET 响应都要带
+     * X-Sha256-Digest 头（文件内容的 SHA256，小写十六进制） */
+    update_url: string;
 }
 
 export interface NvmeInfo {
