@@ -337,6 +337,19 @@ export interface IscsiInfo {
     [property: string]: any;
 }
 
+export interface IscsiLunInfo {
+    device: string;
+    image_size_gb: number;
+    lun: number;
+    [property: string]: any;
+}
+
+export interface IscsiTargetInfo {
+    target: string;
+    luns: IscsiLunInfo[];
+    [property: string]: any;
+}
+
 export interface NbdInfo {
     /**
      * nbd服务ip

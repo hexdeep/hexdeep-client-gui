@@ -4,7 +4,7 @@ import { VNode } from "vue";
 import { deviceApi } from '@/api/device_api';
 import { i18n } from "@/i18n/i18n";
 import { sleep } from "@/common/common";
-import { HostInfo, DiskItem, IscsiInfo, NbdInfo } from "@/api/device_define";
+import { HostInfo, DiskItem, IscsiInfo, IscsiLunInfo, IscsiTargetInfo, NbdInfo } from "@/api/device_define";
 import { MyButton } from "@/lib/my_button";
 import { Icon } from '@iconify/vue2';
 import hardDiskRounded from '@iconify-icons/material-symbols/hard-drive';
@@ -20,6 +20,8 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
 
     protected disks: DiskItem[] = [];
     protected currentDisk = "";
+    protected iscsiTargets: IscsiTargetInfo[] = [];
+    protected iscsiTargetsLoading = false;
     protected form = {
         disk: "",   // 选中的磁盘
         iscsi_ip: "",
@@ -49,6 +51,10 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
             this.form.iscsi_password = res.iscsi_info.password;
             this.form.iscsi_target = res.iscsi_info.target;
             this.form.iscsi_lun = res.iscsi_info.lun;
+            this.iscsiTargets = [{
+                target: res.iscsi_info.target,
+                luns: [{ device: "", image_size_gb: 0, lun: res.iscsi_info.lun }]
+            }];
         }
         if (res.nbd_info) {
             this.form.nbd_ip = res.nbd_info.ip;
@@ -107,27 +113,6 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
         this.close(true);
     }
 
-    // 校验 iSCSI Target 是否为合法的 IQN/EUI/NAA 格式，减少符号误输入
-    private validateTarget(_rule: any, value: string, callback: (error?: Error) => void) {
-        const target = (value || "").trim();
-        // 为空交给 required 规则处理
-        if (!target) {
-            callback();
-            return;
-        }
-        // IQN: iqn.YYYY-MM.<反向域名>[:<唯一标识>]，如 iqn.2003-01.com.example:storage.disk1
-        const iqn = /^iqn\.\d{4}-\d{2}\.[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*(?::[A-Za-z0-9._:-]+)?$/;
-        // EUI-64: eui. + 16 位十六进制
-        const eui = /^eui\.[0-9A-Fa-f]{16}$/;
-        // NAA: naa. + 16 或 32 位十六进制
-        const naa = /^naa\.[0-9A-Fa-f]{16}(?:[0-9A-Fa-f]{16})?$/;
-        if (iqn.test(target) || eui.test(target) || naa.test(target)) {
-            callback();
-        } else {
-            callback(new Error(i18n.t("vmDetail.iscsi.targetInvalid").toString()));
-        }
-    }
-
     private get formRules() {
         return {
             iscsi_ip: [
@@ -137,11 +122,10 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
                 { required: true, message: i18n.t("notNull"), trigger: "blur" }
             ],
             iscsi_target: [
-                { required: true, message: i18n.t("notNull"), trigger: "blur" },
-                { validator: this.validateTarget, trigger: "blur" }
+                { required: true, message: i18n.t("notNull"), trigger: "change" }
             ],
             iscsi_lun: [
-                { required: true, message: i18n.t("notNull"), trigger: "blur" },
+                { required: true, message: i18n.t("notNull"), trigger: "change" },
                 { type: 'number', min: 0, message: "Lun >= 0", trigger: 'blur' }
             ],
             nbd_ip: [
@@ -152,6 +136,60 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
                 { type: 'number', min: 1, message: "Port >= 1", trigger: 'blur' }
             ],
         };
+    }
+
+    private get selectedIscsiLuns(): IscsiLunInfo[] {
+        return this.iscsiTargets.find(x => x.target === this.form.iscsi_target)?.luns ?? [];
+    }
+
+    private get canQueryIscsiTargets() {
+        return !!this.form.iscsi_ip.trim() && Number(this.form.iscsi_port) > 0;
+    }
+
+    private resetIscsiTargetOptions() {
+        this.iscsiTargets = [];
+        this.form.iscsi_target = "";
+        this.form.iscsi_lun = 0;
+    }
+
+    private selectFirstIscsiLun(target?: IscsiTargetInfo) {
+        const firstLun = target?.luns?.[0];
+        this.form.iscsi_lun = firstLun ? firstLun.lun : 0;
+    }
+
+    private onIscsiTargetChange(target: string) {
+        this.form.iscsi_target = target;
+        this.selectFirstIscsiLun(this.iscsiTargets.find(x => x.target === target));
+    }
+
+    private formatIscsiLun(lun: IscsiLunInfo) {
+        const parts = [`LUN ${lun.lun}`];
+        if (lun.device) parts.push(lun.device);
+        if (lun.image_size_gb) parts.push(`${lun.image_size_gb}GB`);
+        return parts.join(" / ");
+    }
+
+    private async queryIscsiTargets() {
+        if (!this.canQueryIscsiTargets || this.iscsiTargetsLoading) return;
+
+        this.iscsiTargetsLoading = true;
+        try {
+            const targets = await deviceApi.getIscsiTargets(this.data.address, {
+                ip: this.form.iscsi_ip,
+                port: this.form.iscsi_port,
+                username: this.form.iscsi_username,
+                password: this.form.iscsi_password,
+            });
+
+            this.iscsiTargets = targets ?? [];
+            const selectedTarget = this.iscsiTargets.find(x => x.target === this.form.iscsi_target) ?? this.iscsiTargets[0];
+            this.form.iscsi_target = selectedTarget?.target ?? "";
+            this.selectFirstIscsiLun(selectedTarget);
+        } catch (e: any) {
+            this.$message.error(e?.message ?? "iSCSI targets query failed");
+        } finally {
+            this.iscsiTargetsLoading = false;
+        }
     }
 
     @ErrorProxy({ confirm: i18n.t("vmDetail.formatDiskConfirm"), success: i18n.t("vmDetail.formatDiskSuccess"), loading: i18n.t("loading") })
@@ -202,22 +240,51 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
                         rules={this.formRules}
                     >
                         <el-form-item label={this.$t("vmDetail.iscsi.ip")} prop="iscsi_ip">
-                            <el-input v-model={this.form.iscsi_ip} />
+                            <el-input value={this.form.iscsi_ip} onInput={(v: string) => { this.form.iscsi_ip = v; this.resetIscsiTargetOptions(); }} />
                         </el-form-item>
                         <el-form-item label={this.$t("vmDetail.iscsi.port")} prop="iscsi_port">
-                            <el-input v-model={this.form.iscsi_port} type="number" onInput={(v: string) => this.form.iscsi_port = Number(v)} />
+                            <el-input value={this.form.iscsi_port} type="number" onInput={(v: string) => { this.form.iscsi_port = Number(v); this.resetIscsiTargetOptions(); }} />
                         </el-form-item>
                         <el-form-item label={this.$t("vmDetail.iscsi.username")} prop="iscsi_username">
-                            <el-input v-model={this.form.iscsi_username} />
+                            <el-input value={this.form.iscsi_username} onInput={(v: string) => { this.form.iscsi_username = v; this.resetIscsiTargetOptions(); }} />
                         </el-form-item>
                         <el-form-item label={this.$t("vmDetail.iscsi.password")} prop="iscsi_password">
-                            <el-input type="password" v-model={this.form.iscsi_password} show-password />
+                            <el-input type="password" value={this.form.iscsi_password} show-password onInput={(v: string) => { this.form.iscsi_password = v; this.resetIscsiTargetOptions(); }} />
+                        </el-form-item>
+                        <el-form-item label=" ">
+                            <el-button
+                                type="primary"
+                                size="small"
+                                loading={this.iscsiTargetsLoading}
+                                disabled={!this.canQueryIscsiTargets}
+                                onClick={() => this.queryIscsiTargets()}
+                            >
+                                {this.$t("vmDetail.iscsi.queryTargets")}
+                            </el-button>
                         </el-form-item>
                         <el-form-item label={this.$t("vmDetail.iscsi.target")} prop="iscsi_target">
-                            <el-input v-model={this.form.iscsi_target} placeholder={this.$t("vmDetail.iscsi.targetPlaceholder")} />
+                            <el-select
+                                v-model={this.form.iscsi_target}
+                                style={{ width: "100%" }}
+                                disabled={this.iscsiTargets.length === 0}
+                                placeholder={this.$t("vmDetail.iscsi.targetPlaceholder")}
+                                onChange={this.onIscsiTargetChange}
+                            >
+                                {this.iscsiTargets.map(item => (
+                                    <el-option key={item.target} label={item.target} value={item.target} />
+                                ))}
+                            </el-select>
                         </el-form-item>
                         <el-form-item label={this.$t("vmDetail.iscsi.lun")} prop="iscsi_lun">
-                            <el-input v-model={this.form.iscsi_lun} type="number" min="0" onInput={(v: string) => this.form.iscsi_lun = Number(v)} />
+                            <el-select
+                                v-model={this.form.iscsi_lun}
+                                style={{ width: "100%" }}
+                                disabled={this.selectedIscsiLuns.length === 0}
+                            >
+                                {this.selectedIscsiLuns.map(lun => (
+                                    <el-option key={lun.lun} label={this.formatIscsiLun(lun)} value={lun.lun} />
+                                ))}
+                            </el-select>
                         </el-form-item>
                     </el-form>
                 ) : null}
