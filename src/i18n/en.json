@@ -405,6 +405,12 @@
             "targetPlaceholder": "e.g. iqn.2003-01.com.example:storage.disk1",
             "targetInvalid": "Invalid Target format. It should be an IQN, e.g. iqn.2003-01.com.example:storage.disk1",
             "lun": "Lun"
+        },
+        "nbd": {
+            "ip": "NBD IP",
+            "port": "NBD Port",
+            "file": "Device File",
+            "name": "Export Name"
         }
     },
     "changeImage": {

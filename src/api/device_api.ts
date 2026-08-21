@@ -4,7 +4,7 @@ import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
-import { CloneVmParam, CreateParam, IscsiInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile, DockerImageUsageInfo, NvmeInfo, StartupInfo, StartupRestartPolicy } from "./device_define";
+import { CloneVmParam, CreateParam, IscsiInfo, NbdInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile, DockerImageUsageInfo, NvmeInfo, StartupInfo, StartupRestartPolicy } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
@@ -735,7 +735,8 @@ class DeviceApi extends ApiBase {
     public async switchDisk(
         ip: string,
         disk: string,
-        iscsiInfo?: IscsiInfo
+        iscsiInfo?: IscsiInfo,
+        nbdInfo?: NbdInfo
     ) {
         const params = new URLSearchParams({
             disk,
@@ -750,6 +751,11 @@ class DeviceApi extends ApiBase {
             // 下面两个可选，看你后端是否需要
             params.append("iscsi_username", iscsiInfo.username ?? "");
             params.append("iscsi_password", iscsiInfo.password ?? "");
+        }
+
+        if (nbdInfo) {
+            params.append("nbd_ip", nbdInfo.ip);
+            params.append("nbd_port", String(nbdInfo.port));
         }
 
         const url =

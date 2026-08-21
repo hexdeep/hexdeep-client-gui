@@ -4,7 +4,7 @@ import { VNode } from "vue";
 import { deviceApi } from '@/api/device_api';
 import { i18n } from "@/i18n/i18n";
 import { sleep } from "@/common/common";
-import { HostInfo, DiskItem, IscsiInfo } from "@/api/device_define";
+import { HostInfo, DiskItem, IscsiInfo, NbdInfo } from "@/api/device_define";
 import { MyButton } from "@/lib/my_button";
 import { Icon } from '@iconify/vue2';
 import hardDiskRounded from '@iconify-icons/material-symbols/hard-drive';
@@ -28,6 +28,8 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
         iscsi_password: "",
         iscsi_target: "",
         iscsi_lun: 0,
+        nbd_ip: "",
+        nbd_port: 10809,
     };
 
     public override async show(data: HostInfo) {
@@ -48,18 +50,23 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
             this.form.iscsi_target = res.iscsi_info.target;
             this.form.iscsi_lun = res.iscsi_info.lun;
         }
+        if (res.nbd_info) {
+            this.form.nbd_ip = res.nbd_info.ip;
+            this.form.nbd_port = res.nbd_info.port;
+        }
 
         return super.show(data);
     }
 
     @ErrorProxy({ success: i18n.t("instance.switchSDKSuccess"), loading: i18n.t("loading") })
     protected override async onConfirm() {
-        if (this.form.disk === this.currentDisk && this.form.disk !== "iscsi") {
+        if (this.form.disk === this.currentDisk && this.form.disk !== "iscsi" && this.form.disk !== "nbd") {
             this.close(false);
             return;
         }
 
         let iscsiInfo: IscsiInfo | undefined;
+        let nbdInfo: NbdInfo | undefined;
         if (this.form.disk === 'iscsi') {
             // 提交前校验 iSCSI 表单（含 Target 格式），不通过则中止
             const form = this.$refs.iscsiForm as { validate: () => Promise<boolean> } | undefined;
@@ -74,8 +81,17 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
                 lun: this.form.iscsi_lun
             };
         }
+        if (this.form.disk === 'nbd') {
+            const form = this.$refs.nbdForm as { validate: () => Promise<boolean> } | undefined;
+            const valid = await form?.validate().catch(() => false);
+            if (!valid) return false;
+            nbdInfo = {
+                ip: this.form.nbd_ip,
+                port: this.form.nbd_port
+            };
+        }
 
-        await deviceApi.switchDisk(this.data.address, this.form.disk, iscsiInfo);
+        await deviceApi.switchDisk(this.data.address, this.form.disk, iscsiInfo, nbdInfo);
 
         //检测是否切换成功
         for (var i = 0; i < 10; i++) {
@@ -128,6 +144,13 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
                 { required: true, message: i18n.t("notNull"), trigger: "blur" },
                 { type: 'number', min: 0, message: "Lun >= 0", trigger: 'blur' }
             ],
+            nbd_ip: [
+                { required: true, message: i18n.t("notNull"), trigger: "blur" }
+            ],
+            nbd_port: [
+                { required: true, message: i18n.t("notNull"), trigger: "blur" },
+                { type: 'number', min: 1, message: "Port >= 1", trigger: 'blur' }
+            ],
         };
     }
 
@@ -143,6 +166,7 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
         if (d.includes("usb")) return usbPlugFill;
         if (d.includes("emmc")) return chip;
         if (d.includes("iscsi")) return serverNetwork;
+        if (d.includes("nbd")) return serverNetwork;
         return harddisk;
     }
 
@@ -194,6 +218,23 @@ export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
                         </el-form-item>
                         <el-form-item label={this.$t("vmDetail.iscsi.lun")} prop="iscsi_lun">
                             <el-input v-model={this.form.iscsi_lun} type="number" min="0" onInput={(v: string) => this.form.iscsi_lun = Number(v)} />
+                        </el-form-item>
+                    </el-form>
+                ) : null}
+
+                {this.form.disk === 'nbd' ? (
+                    <el-form
+                        ref="nbdForm"
+                        label-position="left"
+                        label-width="120px"
+                        props={{ model: this.form }}
+                        rules={this.formRules}
+                    >
+                        <el-form-item label={this.$t("vmDetail.nbd.ip")} prop="nbd_ip">
+                            <el-input v-model={this.form.nbd_ip} />
+                        </el-form-item>
+                        <el-form-item label={this.$t("vmDetail.nbd.port")} prop="nbd_port">
+                            <el-input v-model={this.form.nbd_port} type="number" min="1" onInput={(v: string) => this.form.nbd_port = Number(v)} />
                         </el-form-item>
                     </el-form>
                 ) : null}
