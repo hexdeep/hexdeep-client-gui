@@ -376,6 +376,11 @@ class DeviceApi extends ApiBase {
         return await this.handleError(result);
     }
 
+    public async checkDisk(ip: string): Promise<string> {
+        const result = await fetch(makeHostVmApiUrl("entry/check_disk", ip, ip));
+        return await this.handleError(result);
+    }
+
     public async getNvmeInfo(ip: string): Promise<NvmeInfo> {
         const result = await fetch(makeHostVmApiUrl("entry/nvme_info", ip));
         return await this.handleError(result);
