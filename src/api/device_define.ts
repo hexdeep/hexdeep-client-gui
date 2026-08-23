@@ -253,6 +253,7 @@ export interface DiskListInfo {
     [property: string]: any;
 
     iscsi_info?: IscsiInfo;
+    nbd_info?: NbdInfo;
 }
 
 export interface DiskItem {
@@ -333,6 +334,31 @@ export interface IscsiInfo {
      * iscsi服务登录用户名
      */
     username: string;
+    [property: string]: any;
+}
+
+export interface IscsiLunInfo {
+    device: string;
+    image_size_gb: number;
+    lun: number;
+    [property: string]: any;
+}
+
+export interface IscsiTargetInfo {
+    target: string;
+    luns: IscsiLunInfo[];
+    [property: string]: any;
+}
+
+export interface NbdInfo {
+    /**
+     * nbd服务ip
+     */
+    ip: string;
+    /**
+     * nbd服务端口
+     */
+    port: number;
     [property: string]: any;
 }
 
