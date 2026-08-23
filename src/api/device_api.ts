@@ -555,14 +555,16 @@ class DeviceApi extends ApiBase {
         return { promise, cancel };
     }
 
-    // exportImageArchiveSSE 用于压缩格式（tar.gz）的镜像导出：压缩在服务端完成，通过 SSE 持续
-    // 推送压缩进度（写法照抄 pullImages/loadImageSSE 的 EventSource 实现），压缩完成后终态事件
-    // 携带一次性 token，前端再用该 token 拼出 export_archive_download 的 URL 触发浏览器下载。
-    // 未压缩的 tar 格式不走这个接口，直接用 export_archive 一次性下载即可（无需进度反馈）。
+    // exportImageArchiveSSE 用于镜像导出（tar 或 tar.gz 都走这一个接口）：docker save 本身在
+    // 服务端完成，通过 SSE 持续推送导出/压缩进度（写法照抄 pullImages/loadImageSSE 的 EventSource
+    // 实现，tar 模式下后端同样借助 ImageInspect 得到的镜像大小估算真实进度，不是纯粹的空等）。
+    // 完成后终态事件携带一次性 token，前端再用该 token 拼出 export_archive_download 的 URL 触发
+    // 浏览器下载——不在这里直接 window.open，因为 SSE 完成的时刻不在用户点击的调用栈里，直接开
+    // 新标签页大概率被浏览器弹窗拦截拦下，调用方需要在真正的用户手势（比如按钮点击）里再开一次。
     public exportImageArchiveSSE(
         ip: string,
         imageName: string,
-        format: "gz",
+        format: "tar" | "gz",
         onProgress?: (percent: number, status: string) => void
     ): { promise: Promise<{ token: string; filename: string; }>, cancel: () => void; } {
         const url = new URL(makeVmApiUrl("image_api/export_archive_sse", ip).toString());

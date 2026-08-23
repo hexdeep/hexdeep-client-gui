@@ -6,7 +6,7 @@ import { i18n } from "@/i18n/i18n";
 import { HostInfo, DockerImageUsageInfo, ImageInfo } from "@/api/device_define";
 import { Column, Row } from "@/lib/container";
 import { MyButton } from "@/lib/my_button";
-import { Tools, makeVmApiUrl } from "@/common/common";
+import { Tools } from "@/common/common";
 import s from "./manage_images_dialog.module.less";
 
 interface ImageTable {
@@ -286,6 +286,12 @@ export class ExportImageDialog extends CommonDialog<ExportImageDialogData, boole
     protected progress: number = 0;
     protected progressStatus: string = "";
     protected exportTask: { promise: Promise<any>, cancel: () => void; } | null = null;
+    // 导出完成后的下载信息：SSE 完成的那一刻不在用户点击的调用栈里，直接 window.open 大概率被浏览器
+    // 弹窗拦截拦下且不一定有任何报错回调可感知，所以这里先尝试自动打开一次做兜底，同时把 token 拼出
+    // 的下载地址留着、对话框保持打开，footer 的主按钮切换成"下载"，让用户可以在真实的点击事件里再触发
+    // 一次（一定不会被拦截）。
+    protected downloadUrl: string | null = null;
+    protected downloadFilename: string | null = null;
 
     public override show(data: ExportImageDialogData) {
         this.title = this.$t("vmDetail.exportImageTitle").toString();
@@ -297,30 +303,38 @@ export class ExportImageDialog extends CommonDialog<ExportImageDialogData, boole
         return super.close(result);
     }
 
+    private get ready(): boolean {
+        return this.downloadUrl !== null;
+    }
+
     protected override async onConfirm() {
         if (this.submitting) return;
+        if (this.downloadUrl) {
+            // 已经导出完成：这次点击就是一次真实的用户手势，重新打开一次下载地址一定不会被拦截
+            window.open(this.downloadUrl, "_blank");
+            return;
+        }
+
         this.submitting = true;
         this.progress = 0;
         this.progressStatus = "";
         try {
-            if (this.format === "tar") {
-                const url = makeVmApiUrl("image_api/export_archive", this.data.host.address);
-                url.searchParams.set("image_name", this.data.image.id);
-                window.open(url.toString(), "_blank");
-            } else {
-                this.exportTask = deviceApi.exportImageArchiveSSE(
-                    this.data.host.address,
-                    this.data.image.id,
-                    "gz",
-                    (percent, status) => {
-                        this.progress = Math.max(0, Math.min(100, percent));
-                        this.progressStatus = status;
-                    }
-                );
-                const { token } = await this.exportTask.promise;
-                window.open(deviceApi.exportImageArchiveDownloadUrl(this.data.host.address, token), "_blank");
-            }
-            await this.close(true);
+            // tar 和 tar.gz 都走 SSE：docker save 本身没有原生进度，但后端会用镜像大小估算出真实的
+            // 百分比，界面等到真正打包/压缩完成拿到 token 后再触发下载，而不是一点确定就立刻打开一个
+            // 空白标签页干等 docker save 跑完。
+            this.exportTask = deviceApi.exportImageArchiveSSE(
+                this.data.host.address,
+                this.data.image.id,
+                this.format,
+                (percent, status) => {
+                    this.progress = Math.max(0, Math.min(100, percent));
+                    this.progressStatus = status;
+                }
+            );
+            const { token, filename } = await this.exportTask.promise;
+            this.downloadUrl = deviceApi.exportImageArchiveDownloadUrl(this.data.host.address, token);
+            this.downloadFilename = filename;
+            window.open(this.downloadUrl, "_blank");
         } catch (error) {
             if (error !== "aborted") {
                 this.$alert(`${error}`, this.$t("error").toString(), { type: "error" });
@@ -332,21 +346,30 @@ export class ExportImageDialog extends CommonDialog<ExportImageDialogData, boole
     }
 
     protected renderDialog(): VNode {
+        const locked = this.submitting || this.ready;
         return (
             <el-form label-position="top" style={{ padding: "20px" }}>
                 <el-form-item label={this.$t("vmDetail.exportFormat")}>
-                    <el-radio-group v-model={this.format} disabled={this.submitting}>
+                    <el-radio-group v-model={this.format} disabled={locked}>
                         <el-radio-button label="tar">tar</el-radio-button>
                         <el-radio-button label="gz">tar.gz</el-radio-button>
                     </el-radio-group>
                 </el-form-item>
-                {this.submitting && this.format === "gz" && (
+                {this.submitting && (
                     <el-form-item>
                         <el-progress percentage={this.progress} />
                         {this.progressStatus && (
                             <div style={{ fontSize: "12px", color: "#909399" }}>{this.$t("vmDetail.exportStatusExporting")}</div>
                         )}
                     </el-form-item>
+                )}
+                {this.ready && (
+                    <el-alert
+                        type="success"
+                        closable={false}
+                        title={this.$t("vmDetail.exportReadyTitle").toString()}
+                        description={this.$t("vmDetail.exportReadyDesc", [this.downloadFilename ?? ""]).toString()}
+                    />
                 )}
             </el-form>
         );
@@ -358,10 +381,10 @@ export class ExportImageDialog extends CommonDialog<ExportImageDialogData, boole
                 <MyButton
                     type="primary"
                     disabled={this.submitting}
-                    text={this.submitting ? this.$t("loading") : this.$t("confirm.ok")}
+                    text={this.submitting ? this.$t("loading") : (this.ready ? this.$t("vmDetail.downloadFile") : this.$t("confirm.ok"))}
                     onClick={() => this.onConfirm()}
                 />
-                <MyButton text={this.$t("confirm.cancel")} onClick={() => this.close()} />
+                <MyButton text={this.$t("confirm.cancel")} onClick={() => this.close(this.ready)} />
             </div>
         );
     }
