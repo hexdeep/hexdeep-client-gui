@@ -529,15 +529,30 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         );
     }
 
+    // Element UI 的下拉框宽度只在 select 组件 mounted 之后 inputWidth 发生变化时才会同步（其内部靠
+    // ResizeObserver 监听 select 根元素的布局盒尺寸）。而本弹窗打开时用 transform: scale() 做入场动画
+    // （见 dialog.less 的 dialog-scale-in），select 在动画途中 mounted 时测得的宽度是被缩放压小的值，
+    // 之后布局盒尺寸并未真正变化（只是 transform 在变），ResizeObserver 不会再触发，宽度就一直错下去。
+    // 这里在下拉框每次展开时用当时的真实尺寸强制刷新一次 popper 的 minWidth 来规避这个问题。
+    private fixSelectDropdownWidth(visible: boolean, refName: string) {
+        if (!visible) return;
+        const select: any = this.$refs[refName];
+        const referenceEl: HTMLElement | undefined = select?.$refs?.reference?.$el;
+        if (!referenceEl || !select?.popperElm) return;
+        select.popperElm.style.minWidth = `${referenceEl.getBoundingClientRect().width}px`;
+    }
+
     // 预设机型：品牌 select + 具体型号 select（均含「随机」项，且为第一项）
     private renderPreset(): VNode[] {
         const items: VNode[] = [
             <el-form-item label={this.$t("modelSelector.brand")}>
                 <el-select
+                    ref="brandSelect"
                     value={this.selectedBrand}
                     placeholder={this.$t("modelSelector.brand")}
                     style={{ width: "100%" }}
                     onChange={(v: string) => this.onBrandChange(v)}
+                    on-visible-change={(v: boolean) => this.fixSelectDropdownWidth(v, "brandSelect")}
                 >
                     <el-option key={RANDOM_BRAND} label={this.$t("random")} value={RANDOM_BRAND} />
                     {this.presetGroups.map((g) => (
@@ -550,36 +565,40 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         if (this.selectedBrand !== RANDOM_BRAND) {
             items.push(
                 <el-form-item label={this.$t("modelSelector.model")}>
-                    <el-select v-model={this.value} placeholder={this.$t("modelSelector.notSelect")} style={{ width: "100%" }}>
+                    <el-select
+                        ref="modelSelect"
+                        v-model={this.value}
+                        placeholder={this.$t("modelSelector.notSelect")}
+                        style={{ width: "100%" }}
+                        on-visible-change={(v: boolean) => this.fixSelectDropdownWidth(v, "modelSelect")}
+                    >
                         <el-option key={RANDOM_MODEL_VALUE} label={this.$t("random")} value={RANDOM_MODEL_VALUE} />
-                        {this.currentModelOptions.map((o) => (
-                            <el-option
-                                key={o.value}
-                                label={o.label}
-                                value={o.value}
-                                style={this.version === "v3" ? { height: "auto", lineHeight: "1.4", padding: "6px 20px" } : undefined}
-                            >
-                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
-                                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.label}</span>
-                                    <el-button
-                                        type="text"
-                                        size="mini"
-                                        icon="el-icon-download"
-                                        nativeOnClick={(event: Event) => this.downloadPresetModel(o, event)}
-                                    >
-                                        {this.$t("modelSelector.download")}
-                                    </el-button>
-                                </div>
-                                {this.version === "v3" && (o.meta?.android_version || o.meta?.git_id) && (
-                                    <div style={{ fontSize: "12px", color: "#909399", whiteSpace: "nowrap" }}>
-                                        {[
-                                            o.meta?.android_version ? `${this.$t("modelSelector.androidVersion")} ${o.meta.android_version}` : "",
-                                            o.meta?.git_id ? `${this.$t("modelSelector.gitId")} ${o.meta.git_id}` : "",
-                                        ].filter(Boolean).join(" · ")}
+                        {this.currentModelOptions.map((o) => {
+                            const extra = this.version === "v3"
+                                ? [
+                                    o.meta?.android_version ? `Android ${o.meta.android_version}` : "",
+                                    o.meta?.git_id ? `${this.$t("modelSelector.gitId")} ${o.meta.git_id}` : "",
+                                ].filter(Boolean).join(" · ")
+                                : "";
+                            return (
+                                <el-option key={o.value} label={o.label} value={o.value}>
+                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                            {o.label}
+                                            {extra && <span style={{ color: "#909399", fontSize: "12px", marginLeft: "6px" }}>{extra}</span>}
+                                        </span>
+                                        <el-button
+                                            type="text"
+                                            size="mini"
+                                            icon="el-icon-download"
+                                            nativeOnClick={(event: Event) => this.downloadPresetModel(o, event)}
+                                        >
+                                            {this.$t("modelSelector.download")}
+                                        </el-button>
                                     </div>
-                                )}
-                            </el-option>
-                        ))}
+                                </el-option>
+                            );
+                        })}
                     </el-select>
                 </el-form-item>,
             );
@@ -592,6 +611,7 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
         return [
             <el-form-item label={this.$t("modelSelector.uploadedLabel")}>
                 <el-select
+                    ref="uploadedSelect"
                     value={this.source}
                     placeholder={this.$t("modelSelector.selectUploaded")}
                     loading={this.uploadedLoading}
@@ -600,6 +620,7 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                         this.source = v || "";
                         this.value = CUSTOM_MODEL_VALUE;
                     }}
+                    on-visible-change={(v: boolean) => this.fixSelectDropdownWidth(v, "uploadedSelect")}
                 >
                     {this.uploadedModels.length > 0 && (
                         <el-option key="__random_source__" label={this.$t("random")} value="" />

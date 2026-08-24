@@ -540,7 +540,6 @@
         "download": "Download",
         "dimensions": "Screen params",
         "overrideToForm": "Apply to form",
-        "androidVersion": "Android version",
         "gitId": "Git ID"
     },
     "v2Tool": {
