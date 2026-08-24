@@ -140,6 +140,9 @@ export interface MobileModelDimensions {
     screen_xdpi?: number;
     screen_ydpi?: number;
     download_url?: string;
+    // v3 专有：原始安卓版本 + git id，v2 无此字段
+    android_version?: string;
+    git_id?: string;
 }
 
 export interface MobileModelInfo extends MobileModelDimensions {

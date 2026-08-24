@@ -553,7 +553,12 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                     <el-select v-model={this.value} placeholder={this.$t("modelSelector.notSelect")} style={{ width: "100%" }}>
                         <el-option key={RANDOM_MODEL_VALUE} label={this.$t("random")} value={RANDOM_MODEL_VALUE} />
                         {this.currentModelOptions.map((o) => (
-                            <el-option key={o.value} label={o.label} value={o.value}>
+                            <el-option
+                                key={o.value}
+                                label={o.label}
+                                value={o.value}
+                                style={this.version === "v3" ? { height: "auto", lineHeight: "1.4", padding: "6px 20px" } : undefined}
+                            >
                                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
                                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.label}</span>
                                     <el-button
@@ -565,6 +570,14 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                                         {this.$t("modelSelector.download")}
                                     </el-button>
                                 </div>
+                                {this.version === "v3" && (o.meta?.android_version || o.meta?.git_id) && (
+                                    <div style={{ fontSize: "12px", color: "#909399", whiteSpace: "nowrap" }}>
+                                        {[
+                                            o.meta?.android_version ? `${this.$t("modelSelector.androidVersion")} ${o.meta.android_version}` : "",
+                                            o.meta?.git_id ? `${this.$t("modelSelector.gitId")} ${o.meta.git_id}` : "",
+                                        ].filter(Boolean).join(" · ")}
+                                    </div>
+                                )}
                             </el-option>
                         ))}
                     </el-select>
