@@ -574,11 +574,8 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                     >
                         <el-option key={RANDOM_MODEL_VALUE} label={this.$t("random")} value={RANDOM_MODEL_VALUE} />
                         {this.currentModelOptions.map((o) => {
-                            const extra = this.version === "v3"
-                                ? [
-                                    o.meta?.android_version ? `Android ${o.meta.android_version}` : "",
-                                    o.meta?.git_id ? `${this.$t("modelSelector.gitId")} ${o.meta.git_id}` : "",
-                                ].filter(Boolean).join(" · ")
+                            const extra = this.version === "v3" && o.meta?.android_version && o.meta?.git_id
+                                ? `${o.meta.android_version}/${o.meta.git_id}`
                                 : "";
                             return (
                                 <el-option key={o.value} label={o.label} value={o.value}>

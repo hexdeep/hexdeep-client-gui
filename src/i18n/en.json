@@ -539,8 +539,7 @@
         "deleteSuccess": "Model file deleted successfully",
         "download": "Download",
         "dimensions": "Screen params",
-        "overrideToForm": "Apply to form",
-        "gitId": "Git ID"
+        "overrideToForm": "Apply to form"
     },
     "v2Tool": {
         "entry": "Download extraction tool",

@@ -543,8 +543,7 @@
         "deleteSuccess": "机型文件删除成功",
         "download": "下载",
         "dimensions": "屏幕参数",
-        "overrideToForm": "覆盖到表单",
-        "gitId": "Git ID"
+        "overrideToForm": "覆盖到表单"
     },
     "v2Tool": {
         "entry": "下载提取工具",
