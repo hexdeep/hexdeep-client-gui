@@ -16,7 +16,7 @@ import harddisk from '@iconify-icons/mdi/harddisk';
 
 @Dialog
 export class SwitchDiskDialog extends CommonDialog<HostInfo, boolean> {
-    public override width: string = "600px";
+    public override width: string = "700px";
 
     protected disks: DiskItem[] = [];
     protected currentDisk = "";
