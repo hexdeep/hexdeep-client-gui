@@ -534,12 +534,13 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
     // （见 dialog.less 的 dialog-scale-in），select 在动画途中 mounted 时测得的宽度是被缩放压小的值，
     // 之后布局盒尺寸并未真正变化（只是 transform 在变），ResizeObserver 不会再触发，宽度就一直错下去。
     // 这里在下拉框每次展开时用当时的真实尺寸强制刷新一次 popper 的 minWidth 来规避这个问题。
-    private fixSelectDropdownWidth(visible: boolean, refName: string) {
+    // widthRatio：弹出框宽度相对输入框的倍数，只改 popperElm（弹出层），不影响 el-select 输入框本身的宽度
+    private fixSelectDropdownWidth(visible: boolean, refName: string, widthRatio: number = 1) {
         if (!visible) return;
         const select: any = this.$refs[refName];
         const referenceEl: HTMLElement | undefined = select?.$refs?.reference?.$el;
         if (!referenceEl || !select?.popperElm) return;
-        select.popperElm.style.minWidth = `${referenceEl.getBoundingClientRect().width}px`;
+        select.popperElm.style.minWidth = `${referenceEl.getBoundingClientRect().width * widthRatio}px`;
     }
 
     // 预设机型：品牌 select + 具体型号 select（均含「随机」项，且为第一项）
@@ -617,15 +618,22 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                         this.source = v || "";
                         this.value = CUSTOM_MODEL_VALUE;
                     }}
-                    on-visible-change={(v: boolean) => this.fixSelectDropdownWidth(v, "uploadedSelect")}
+                    on-visible-change={(v: boolean) => this.fixSelectDropdownWidth(v, "uploadedSelect", 1.25)}
                 >
                     {this.uploadedModels.length > 0 && (
                         <el-option key="__random_source__" label={this.$t("random")} value="" />
                     )}
-                    {this.uploadedModels.map((m) => (
+                    {this.uploadedModels.map((m) => {
+                        const extra = this.version === "v3" && m.android_version && m.git_id
+                            ? `机型原始 Android ${m.android_version}/${m.git_id}`
+                            : "";
+                        return (
                         <el-option key={m.path} label={m.name} value={m.path}>
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.name}</span>
+                                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                    {m.name}
+                                    {extra && <span style={{ color: "#909399", fontSize: "12px", marginLeft: "6px" }}>{extra}</span>}
+                                </span>
                                 <el-button
                                     class="ms-auto"
                                     type="text"
@@ -646,7 +654,8 @@ export class ModelSelectotDialog extends CommonDialog<IModelDialogData, IModelSe
                                 </el-button>
                             </div>
                         </el-option>
-                    ))}
+                        );
+                    })}
                 </el-select>
             </el-form-item>,
             <el-form-item label={this.$t("modelSelector.uploadLabel")}>
