@@ -67,8 +67,8 @@ export class CreateFormVersionFields extends tsx.Component<IProps, IEvents, {}> 
                 <Row>
                     <el-form-item label={this.$t("create.mobile_model_version")} prop="mobile_model_version">
                         <el-radio-group v-model={this.data.mobile_model_version}>
-                            {/* 安卓14镜像依赖v3机型，此 tab 固定为安卓14时禁止选v2，见 CreateForm 的 onAndroidVersionFilterChange */}
-                            <el-radio label="v2" disabled={this.androidVersion === 14}>v2</el-radio>
+                            {/* 安卓14镜像依赖v3机型，此 tab 下不展示v2，见 CreateForm 的 onAndroidVersionFilterChange */}
+                            {this.androidVersion !== 14 && <el-radio label="v2">v2</el-radio>}
                             <el-radio label="v3">v3</el-radio>
                         </el-radio-group>
                     </el-form-item>
