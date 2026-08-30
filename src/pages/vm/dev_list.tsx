@@ -284,6 +284,9 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         const download = img ? (img.id === "" || row.image_digest === img.id) : false;
         const imageText = img ? img.name : row.image_addr;
         const gitText = `${row.git_commit_id ?? ""}${row.create_req?.mobile_model_version === "v3" ? "[v3]" : ""}`;
+        const imageStatusTitle = download
+            ? this.$t("create.already_latest").toString()
+            : this.$t("create.need_update_detail", [row.image_digest || "-", img?.id || "-"]).toString();
         return [
             <div class={[s.listCell, s.colSelection]}>
                 {/* el-checkbox 在没有默认插槽内容时会把 label 当作可见文本回退显示，这里传入空 span 阻止该行为 */}
@@ -318,7 +321,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                             color: download ? "#67c23a" : "#f56c6c",
                             borderRadius: "3px",
                         }}
-                        title={download ? this.$t("create.already_latest").toString() : this.$t("create.need_update").toString()}>
+                        title={imageStatusTitle}>
                         {download && <i class="el-icon-check" />}
                         {!download && <i class="el-icon-close" />}
                     </span>}

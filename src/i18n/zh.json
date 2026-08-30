@@ -128,6 +128,7 @@
         "downloaded": "已下载",
         "unDownloaded": "未下载",
         "need_update": "有更新",
+        "need_update_detail": "有更新（镜像摘要：当前 {0}；最新 {1}）",
         "already_latest": "已是最新",
         "image_type": "镜像类型",
         "image_type_all": "全部",
