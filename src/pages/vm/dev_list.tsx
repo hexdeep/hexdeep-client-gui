@@ -289,8 +289,6 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             : this.$t("create.need_update_detail", [
                 row.git_commit_id || "-",
                 img?.git_id || "-",
-                row.image_digest || "-",
-                img?.id || "-",
             ]).toString();
         return [
             <div class={[s.listCell, s.colSelection]}>
