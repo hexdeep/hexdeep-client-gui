@@ -278,10 +278,13 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         const name = getSuffixName(row.name);
         const colorClass = this.getHostColorIndex(row.hostIp) % 2 === 0 ? 'text-green-600' : 'text-blue-600';
         const img = this.renderVmImage(row);
-        // 临时修复：跨主机合并镜像列表时 e.id 可能被未拉取该镜像的主机记录覆盖为 ""，
-        // 此时无法判断真实下载状态，暂按"已是最新"处理，避免误报叉号。
-        // 根因见 /root/vm_image_cross_investigation.md，需要按 host 隔离镜像列表后移除。
-        const download = img ? (img.id === "" || row.image_digest === img.id) : false;
+        // 临时按 Git ID 判断是否需要更新，使红叉/绿勾的依据与 tooltip 展示的“版本号”一致。
+        // 任一侧未提供 Git ID 时无法可靠比较，暂按“已是最新”处理，避免误报红叉。
+        const download = img ? (!row.git_commit_id || !img.git_id || row.git_commit_id === img.git_id) : false;
+
+        // 旧逻辑按镜像 digest 判断，能识别同一 Git 版本重新打包产生的镜像变化；
+        // 当前按需求临时停用，后续需要恢复内容级比较时启用下面代码。
+        // const download = img ? (img.id === "" || row.image_digest === img.id) : false;
         const imageText = img ? img.name : row.image_addr;
         const gitText = `${row.git_commit_id ?? ""}${row.create_req?.mobile_model_version === "v3" ? "[v3]" : ""}`;
         const imageStatusTitle = download
