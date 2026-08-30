@@ -357,10 +357,13 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         const ipFragment = e.hostIp.split('.').slice(-2).join('.');
         const ipParts = ipFragment.split('.');
         const displayIp = (name.length > 12 && ipParts.length > 1) ? ipParts[1] : ipFragment;
+        // RecycleScroller 会保留并复用离开列表的 DOM。实例位删除后以同名重建时 e.key 不变，
+        // created_at 用于区分两代容器，确保旧 canvas 被销毁而不是交给新云机继续使用。
+        const deviceInstanceKey = `${e.key}|${e.created_at}`;
 
-        return <Column key={`parent_${e.key}`} class={[s.img_box, e.state == "running" ? s.running : s.no_run]}>
+        return <Column key={`parent_${deviceInstanceKey}`} class={[s.img_box, e.state == "running" ? s.running : s.no_run]}>
             <div style="position: relative; display: inline-block; padding: 0;" onDblclick={() => this.openAdbShell(e)}>
-                <Screenshot data-key={e.key} key={e.key} device={e} />
+                <Screenshot data-key={deviceInstanceKey} key={deviceInstanceKey} device={e} />
                 {e.state !== 'running' &&
                     <div class={s.power_overlay}>
                         <el-button type="primary" icon="el-icon-switch-button" circle style="font-size: 24px; padding: 15px;" nativeOnClick={(event: Event) => {

@@ -1,67 +1,57 @@
-import { Component, InjectReactive, Prop, Ref } from 'vue-property-decorator';
+import { Component, InjectReactive, Prop, Ref, Watch } from 'vue-property-decorator';
 import * as tsx from 'vue-tsx-support';
 import { deviceApi } from '@/api/device_api';
 import s from './dev_list.module.less';
 import Vue from 'vue';
 import { DeviceInfo, MyConfig } from '@/api/device_define';
 
-interface ScreenshotCacheEntry {
-    blob: Blob;
-    time: number;
-}
-
 @Component
 export class Screenshot extends tsx.Component<IProps> {
     private static eventBus = new Vue();
-    // 按云机缓存最近一次截图。勾选变化会导致网格重排、Screenshot 组件被销毁重建，
-    // 缓存让重建的组件能立即重绘旧图，避免整屏闪烁，同时跳过多余的重复请求。
-    private static cache = new Map<string, ScreenshotCacheEntry>();
     public static refresh() {
         this.eventBus.$emit("refresh");
     }
     @InjectReactive() config!: MyConfig;
     @Prop() private device!: DeviceInfo;
     @Ref() private canvasRef!: HTMLCanvasElement;
-    private busy = false;
+    private generation = 0;
+    private busyGeneration: number | null = null;
 
-    private get cacheKey(): string {
-        return this.device.key ?? this.device.android_sdk;
+    // device.key 只包含 host/index/name，同一实例位删除后重建时可能完全相同。
+    // created_at 表示容器代际，用它避免虚拟滚动复用旧云机的 canvas。
+    private get deviceInstanceKey(): string {
+        return `${this.device.key ?? this.device.android_sdk}|${this.device.created_at}`;
+    }
+
+    private get deviceRenderSignature(): string {
+        return `${this.deviceInstanceKey}|${this.device.state}`;
     }
 
     protected async created() {
         this.refresh = async () => {
             if (this.device.state != "running") {
-                var c = this.canvasRef;
-                if (c) {
-                    var ctx = c.getContext("2d")!;
-                    if (ctx) ctx.clearRect(0, 0, c.width, c.height);
-                }
+                this.clearCanvas();
                 return;
             }
-            if (this.busy) return;
+
+            const generation = this.generation;
+            const deviceInstanceKey = this.deviceInstanceKey;
+            const androidSdk = this.device.android_sdk;
+            if (this.busyGeneration === generation) return;
+
             try {
-                this.busy = true;
-                var b = await deviceApi.screenshotMacvlan(this.device.android_sdk);
-                if (b?.size > 100) {
-                    Screenshot.cache.set(this.cacheKey, { blob: b, time: Date.now() });
-                    this.updateImg(b);
+                this.busyGeneration = generation;
+                const blob = await deviceApi.screenshotMacvlan(androidSdk);
+                if (blob?.size > 100 && this.isCurrentDevice(generation, deviceInstanceKey)) {
+                    this.updateImg(blob, generation, deviceInstanceKey);
                 }
             } catch (error) {
                 // console.error(error);
             } finally {
-                this.busy = false;
+                if (this.busyGeneration === generation) this.busyGeneration = null;
             }
         };
         Screenshot.eventBus.$on("refresh", this.refresh);
-
-        // 优先使用缓存立即绘制（等 canvas 挂载后），消除重排导致的闪烁；
-        // 缓存足够新时直接复用，不再发起网络请求，避免整个列表同时重新拉取截图。
-        const cached = Screenshot.cache.get(this.cacheKey);
-        if (cached && this.device.state == "running") {
-            const freshMs = (this.config?.refreshDuration ?? 15) * 1000;
-            this.$nextTick(() => this.updateImg(cached.blob));
-            if (Date.now() - cached.time < freshMs) return;
-        }
         this.refresh();
     }
 
@@ -71,9 +61,34 @@ export class Screenshot extends tsx.Component<IProps> {
 
     private refresh!: () => void;
 
-    private async updateImg(blob: Blob) {
+    @Watch("deviceRenderSignature")
+    private deviceChanged() {
+        this.generation++;
+        this.clearCanvas();
+        this.refresh();
+    }
+
+    private isCurrentDevice(generation: number, deviceInstanceKey: string) {
+        return generation === this.generation
+            && deviceInstanceKey === this.deviceInstanceKey
+            && this.device.state === "running";
+    }
+
+    private clearCanvas() {
+        const canvas = this.canvasRef;
+        const ctx = canvas?.getContext("2d");
+        if (!canvas || !ctx) return;
+        ctx.resetTransform();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    private async updateImg(blob: Blob, generation: number, deviceInstanceKey: string) {
         const img = await createImageBitmap(blob);
         if (!img) return;
+        if (!this.isCurrentDevice(generation, deviceInstanceKey)) {
+            img.close();
+            return;
+        }
         var c = this.canvasRef;
         if (c) {
             if ((this.config.view == "vertical" && img.width < img.height) || (this.config.view == "horizontal" && img.width > img.height)) {
