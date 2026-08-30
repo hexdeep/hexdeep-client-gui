@@ -127,7 +127,7 @@
         "downloaded": "Downloaded",
         "unDownloaded": "Not downloaded",
         "need_update": "need to update",
-        "need_update_detail": "Update available (image digest: current {0}; latest {1})",
+        "need_update_detail": "Update available\nGit ID: current {0}; latest {1}\nComparison basis (image digest): current {2}; latest {3}",
         "already_latest": "already the latest",
         "image_type": "Image Type",
         "image_type_all": "All",

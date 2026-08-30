@@ -89,6 +89,7 @@ export interface ImageInfo {
     android_version: number;
     download: boolean;
     id: string;
+    git_id?: string;
     created_at: string;
     updated_at: string;
     is_vip?: boolean;
