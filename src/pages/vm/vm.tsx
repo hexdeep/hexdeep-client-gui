@@ -286,17 +286,17 @@ export default class VMPage extends Vue {
         }
         this.batchOperateName = i18n.t(`batch.${operate}`, [arr.length]).toString();
 
-        await this.batchOperateIng(arr, callback);
+        await this.batchOperateIng(arr, callback, operate);
     }
 
     @ErrorProxy({
-        confirm: (self, _1, _2) => {
+        confirm: (self, _1, _2, _operate) => {
             return undefined;
         },
         success: i18n.t("batch.success"),
         loading: i18n.t("loading")
     })
-    protected async batchOperateIng(arr: DeviceInfo[], callback: (data: DeviceInfo) => Promise<void>) {
+    protected async batchOperateIng(arr: DeviceInfo[], callback: (data: DeviceInfo) => Promise<void>, operate: string) {
         const map = new Map<string, DeviceInfo[]>();
         arr.forEach(x => {
             if (!map.has(x.hostIp)) map.set(x.hostIp, []);
@@ -310,7 +310,7 @@ export default class VMPage extends Vue {
         }).join("");
         const listHtml = `<div style="margin-top: 10px; max-height: 200px; overflow-y: auto;"><ul>${deviceListHtml}</ul></div>`;
 
-        if (this.batchOperateName.includes(i18n.t("batch.delete").toString()) || this.batchOperateName.includes(i18n.t("batch.reset").toString())) {
+        if (operate === "delete" || operate === "reset") {
             const n1 = Math.floor(Math.random() * 10) + 1;
             const n2 = Math.floor(Math.random() * 10) + 1;
             try {
