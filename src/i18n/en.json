@@ -135,6 +135,8 @@
         "image_type_magisk": "Magisk",
         "image_type_gms": "GMS",
         "image_type_pine": "Pine",
+        "gms_enable": "Enable GMS",
+        "gms_enable_tip": "Only supported on Android 14. Starts Google Mobile Services at boot.",
         "slots": "Instance Slots",
         "ipMultiTip": "When creating multiple VMs at once, this is the IP of the first VM; the rest get the last octet auto-incremented in order (wraps back to 2 after 254).",
         "slotNormal": "Not expiring",

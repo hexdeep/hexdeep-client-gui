@@ -136,6 +136,8 @@
         "image_type_magisk": "框架版",
         "image_type_gms": "海外版",
         "image_type_pine": "Pine版",
+        "gms_enable": "启用GMS",
+        "gms_enable_tip": "仅Android 14支持，开机时启用Google服务。",
         "slots": "实例位选择",
         "ipMultiTip": "多选创建时，这里填第一台云机的IP，后面每台按顺序自动递增末段（超过254从2重新开始）。",
         "slotNormal": "未到期",

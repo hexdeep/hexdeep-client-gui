@@ -38,6 +38,18 @@ export class CreateFormVersionFields extends tsx.Component<IProps, IEvents, {}> 
         return Math.round(value * 1000) / 1000;
     }
 
+    // 带信息图标 + 悬停提示的表单项标签
+    private labelWithTip(label: string, tip: string): VNode {
+        return (
+            <span>
+                {label}
+                <el-tooltip content={tip} placement="top" effect="dark" transition="">
+                    <i class="el-icon-info" style="margin-left: 4px; color: #909399; cursor: help;"></i>
+                </el-tooltip>
+            </span>
+        );
+    }
+
     private get isCustomModelSelected() {
         return Number(this.data.model_id ?? 0) === CUSTOM_MODEL_VALUE;
     }
@@ -102,15 +114,30 @@ export class CreateFormVersionFields extends tsx.Component<IProps, IEvents, {}> 
                     </el-form-item>
                 )}
 
-                <el-form-item label={this.$t("create.image_type")}>
-                    <el-radio-group v-model={this.filterState.imageType}>
-                        {/*<el-radio label="all">{this.$t("create.image_type_all")}</el-radio>*/}
-                        <el-radio label="base">{this.$t("create.image_type_base")}</el-radio>
-                        <el-radio label="magisk">{this.$t("create.image_type_magisk")}</el-radio>
-                        <el-radio label="gms">{this.$t("create.image_type_gms")}</el-radio>
-                        <el-radio label="pine">{this.$t("create.image_type_pine")}</el-radio>
-                    </el-radio-group>
-                </el-form-item>
+                <Row>
+                    <el-form-item label={this.$t("create.image_type")}>
+                        <el-radio-group v-model={this.filterState.imageType}>
+                            {/*<el-radio label="all">{this.$t("create.image_type_all")}</el-radio>*/}
+                            <el-radio label="base">{this.$t("create.image_type_base")}</el-radio>
+                            <el-radio label="magisk">{this.$t("create.image_type_magisk")}</el-radio>
+                            <el-radio label="gms">{this.$t("create.image_type_gms")}</el-radio>
+                            <el-radio label="pine">{this.$t("create.image_type_pine")}</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+
+                    {/* GMS 由安卓侧开机流程读取 etc 目录下的配置文件决定是否启用，该读取逻辑目前只有
+                        Android 14 支持，故该开关仅在 Android 14 tab 下展示。 */}
+                    {this.androidVersion === 14 && (
+                        <el-form-item
+                            label={this.$t("create.gms_enable")}
+                            prop="gms_enable"
+                            style="flex: 0 0 auto; width: auto;"
+                            scopedSlots={{ label: () => this.labelWithTip(this.$t("create.gms_enable") as string, this.$t("create.gms_enable_tip") as string) }}
+                        >
+                            <el-switch v-model={this.data.gms_enable} active-value={1} inactive-value={0} />
+                        </el-form-item>
+                    )}
+                </Row>
 
                 <el-form-item label={this.$t("create.image_addr")} prop="image_addr">
                     <ImageSelector2
