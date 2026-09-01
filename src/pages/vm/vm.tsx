@@ -1,6 +1,6 @@
 import { deviceApi } from "@/api/device_api";
 import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from "@/api/device_define";
-import { filterWithConfig, getSuffixName, sortDevices } from "@/common/common";
+import { compareVersion, filterWithConfig, getSuffixName, sortDevices } from "@/common/common";
 import { Config } from "@/common/Config";
 import { i18n } from "@/i18n/i18n";
 import { Column, Row } from "@/lib/container";
@@ -16,6 +16,7 @@ import { ChangeImageDialog } from "./dialog/change_image";
 import { ImportVmDialog } from "./dialog/import_vm";
 import { UploadFileDialog } from "./dialog/upload_file";
 import { BatchSwitchFirmwareDialog } from "./dialog/batch_switch_firmware";
+import { SwitchSDKDialog } from "@/pages/instance/dialog/switch_sdk";
 import { Screenshot } from "./screenshot";
 import s from './vm.module.less';
 
@@ -40,6 +41,10 @@ export default class VMPage extends Vue {
     private imgRefreshTimer: any;
     protected batchOperateName: string = "";
 
+    // SDK版本更新提示：命中更新的主机 + 最新版本号；未检测到更新或current_version为定制版时为空
+    private sdkUpdateHost: HostInfo | undefined = undefined;
+    private sdkLatestVersion: string = "";
+
     protected async created() {
         try {
             this.config = JSON.parse(localStorage.getItem("config") || "");
@@ -47,7 +52,60 @@ export default class VMPage extends Vue {
             console.log(ex);
         }
         await this.refreshImages();
-        this.refreshHost();
+        this.refreshHost().then(() => this.checkSdkUpdate());
+    }
+
+    private get sdkUpdateAvailable(): boolean {
+        return !!this.sdkUpdateHost;
+    }
+
+    private async checkSdkUpdate() {
+        for (const host of this.hosts) {
+            try {
+                const res = await deviceApi.getSDKImages(host.address);
+                const current = res.images.find(x => x.version === res.current_version);
+                // current_version在版本列表中没有命中，说明是定制版，不提示更新
+                if (!current) continue;
+                const newer = res.images
+                    .filter(x => compareVersion(x.version, current.version) > 0)
+                    .sort((a, b) => compareVersion(b.version, a.version))[0];
+                if (newer) {
+                    this.sdkUpdateHost = host;
+                    this.sdkLatestVersion = newer.version;
+                    this.notifySdkUpdate(newer.version);
+                    return;
+                }
+            } catch (e) {
+                console.warn(`检测SDK版本更新失败(${host.address}):`, e);
+            }
+        }
+    }
+
+    private notifySdkUpdate(version: string) {
+        this.$notify({
+            title: this.$t("changeSdk.updateNotifyTitle") as string,
+            type: "info",
+            duration: 0,
+            message: (
+                <div>
+                    <div>{this.$t("changeSdk.updateAvailable", [version])}</div>
+                    <el-button type="text" style="padding: 0; margin-top: 6px;" onClick={() => this.openSdkSwitch()}>
+                        {this.$t("changeSdk.updateNotifyButton")}
+                    </el-button>
+                </div>
+            ) as any
+        });
+    }
+
+    private async openSdkSwitch() {
+        if (!this.sdkUpdateHost) return;
+        const host = this.sdkUpdateHost;
+        const result = await this.$dialog(SwitchSDKDialog).show(host);
+        if (result) {
+            this.sdkUpdateHost = undefined;
+            this.sdkLatestVersion = "";
+            this.refreshHost();
+        }
     }
 
     protected async refreshImages() {
@@ -443,6 +501,11 @@ export default class VMPage extends Vue {
                             </el-dropdown>}
                         </Row>
                         <Row gap={8} crossAlign="center">
+                            {this.sdkUpdateAvailable && (
+                                <span class={s.sdkUpdateHint} onClick={() => this.openSdkSwitch()}>
+                                    {this.$t("changeSdk.toolbarHint", [this.sdkLatestVersion])}
+                                </span>
+                            )}
                             <MyButton type="primary" text={this.$t("import.btn")} onClick={this.importVm} />
                         </Row>
                     </Row>

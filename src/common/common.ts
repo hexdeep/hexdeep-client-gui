@@ -273,3 +273,17 @@ export function isImageVersionCompatibleByModelVersion(mobileModelVersion: strin
     }
     return target !== "v3";
 }
+
+/**
+ * 比较两个 "major.minor" 形式的版本号字符串，如 "3.1" vs "3.0"。
+ * 返回正数表示a>b，负数表示a<b，0表示相等；缺失的段按0处理。
+ */
+export function compareVersion(a: string, b: string): number {
+    const partsA = a.split(".").map(part => parseInt(part, 10) || 0);
+    const partsB = b.split(".").map(part => parseInt(part, 10) || 0);
+    for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+        const diff = (partsA[i] || 0) - (partsB[i] || 0);
+        if (diff !== 0) return diff;
+    }
+    return 0;
+}

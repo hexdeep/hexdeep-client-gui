@@ -432,7 +432,11 @@
         "versionMismatch": "镜像版本不兼容：v2 镜像不能更新到 v3，v3 镜像也不能更新到 v2。v2 镜像之间可以互相更新。"
     },
     "changeSdk": {
-      "label": "SDK版本"
+      "label": "SDK版本",
+      "updateAvailable": "检测到SDK新版本 {0} 可用",
+      "updateNotifyTitle": "SDK版本更新",
+      "updateNotifyButton": "立即切换",
+      "toolbarHint": "SDK有更新({0})"
     },
     "customSdk": "自定义SDK",
     "instance": {

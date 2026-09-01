@@ -429,7 +429,11 @@
         "versionMismatch": "Incompatible image versions: v1/v2 images cannot be updated to v3, and v3 images cannot be updated to v1/v2. v1 and v2 can update each other."
     },
     "changeSdk": {
-      "label": "SDK Version"
+      "label": "SDK Version",
+      "updateAvailable": "New SDK version {0} is available",
+      "updateNotifyTitle": "SDK Update",
+      "updateNotifyButton": "Switch Now",
+      "toolbarHint": "SDK update available ({0})"
     },
     "customSdk": "Custom SDK",
     "instance": {
