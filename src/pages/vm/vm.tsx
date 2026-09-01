@@ -42,9 +42,10 @@ export default class VMPage extends Vue {
     protected batchOperateName: string = "";
 
     // SDK版本更新提示：命中更新的主机 + 最新版本号；未检测到更新或current_version为定制版时为空
-    // 用@ProvideReactive而非普通字段：tsconfig的useDefineForClassFields与vue-class-component 7.x
-    // 组合时，普通类字段不会被收集进响应式data，赋值后不会触发重渲染（见本文件其余状态字段的写法）
-    @ProvideReactive() private sdkUpdateHost: HostInfo | undefined = undefined;
+    // 初始值不能是undefined：vue-class-component的collectDataFromConstructor会把初始值为undefined的
+    // 字段整个排除出响应式data(见node_modules/vue-class-component/lib/data.js)，导致后续赋值不触发重渲染；
+    // 用null作为"未命中"的初始值即可被正常收集为响应式数据。
+    @ProvideReactive() private sdkUpdateHost: HostInfo | null = null;
     @ProvideReactive() private sdkLatestVersion: string = "";
 
     protected async created() {
@@ -105,9 +106,8 @@ export default class VMPage extends Vue {
         const host = this.sdkUpdateHost;
         const result = await this.$dialog(SwitchSDKDialog).show(host);
         if (result) {
-            this.sdkUpdateHost = undefined;
-            this.sdkLatestVersion = "";
-            this.refreshHost();
+            // 与host_detail_new.tsx的switchSDK()保持一致：切换成功后整页刷新
+            location.reload();
         }
     }
 
