@@ -278,21 +278,24 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         const name = getSuffixName(row.name);
         const colorClass = this.getHostColorIndex(row.hostIp) % 2 === 0 ? 'text-green-600' : 'text-blue-600';
         const img = this.renderVmImage(row);
+
+        // 镜像列的“是否有更新”提示（绿勾/红叉图标）已按需求下线，不再展示；判断逻辑整体注释保留，
+        // 不确定后续是否要恢复，如需恢复把这里和下方 JSX 里对应注释掉的 span 一起取消注释即可。
         // 临时按 Git ID 判断是否需要更新，使红叉/绿勾的依据与 tooltip 展示的“版本号”一致。
         // 任一侧未提供 Git ID 时无法可靠比较，暂按“已是最新”处理，避免误报红叉。
-        const download = img ? (!row.git_commit_id || !img.git_id || row.git_commit_id === img.git_id) : false;
+        // const download = img ? (!row.git_commit_id || !img.git_id || row.git_commit_id === img.git_id) : false;
 
         // 旧逻辑按镜像 digest 判断，能识别同一 Git 版本重新打包产生的镜像变化；
         // 当前按需求临时停用，后续需要恢复内容级比较时启用下面代码。
         // const download = img ? (img.id === "" || row.image_digest === img.id) : false;
         const imageText = img ? img.name : row.image_addr;
         const gitText = `${row.git_commit_id ?? ""}${row.create_req?.mobile_model_version === "v3" ? "[v3]" : ""}`;
-        const imageStatusTitle = download
-            ? this.$t("create.already_latest").toString()
-            : this.$t("create.need_update_detail", [
-                row.git_commit_id || "-",
-                img?.git_id || "-",
-            ]).toString();
+        // const imageStatusTitle = download
+        //     ? this.$t("create.already_latest").toString()
+        //     : this.$t("create.need_update_detail", [
+        //         row.git_commit_id || "-",
+        //         img?.git_id || "-",
+        //     ]).toString();
         return [
             <div class={[s.listCell, s.colSelection]}>
                 {/* el-checkbox 在没有默认插槽内容时会把 label 当作可见文本回退显示，这里传入空 span 阻止该行为 */}
@@ -317,6 +320,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             <div class={[s.listCell, s.colGit]} attrs={{ title: gitText }}>{gitText}</div>,
             <div class={[s.listCell, s.colImage]}>
                 <OverflowTooltip content={imageText} openDelay={1000}>
+                    {/* 镜像更新提示图标（绿勾=已是最新/红叉=需更新）已下线，保留代码待后续恢复：
                     {img?.android_version && <span
                         style={{
                             lineHeight: "20px",
@@ -331,6 +335,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                         {download && <i class="el-icon-check" />}
                         {!download && <i class="el-icon-close" />}
                     </span>}
+                    */}
                     <span>{imageText}</span>
                 </OverflowTooltip>
             </div>,
