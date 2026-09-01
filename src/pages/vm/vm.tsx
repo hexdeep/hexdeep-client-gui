@@ -42,8 +42,10 @@ export default class VMPage extends Vue {
     protected batchOperateName: string = "";
 
     // SDK版本更新提示：命中更新的主机 + 最新版本号；未检测到更新或current_version为定制版时为空
-    private sdkUpdateHost: HostInfo | undefined = undefined;
-    private sdkLatestVersion: string = "";
+    // 用@ProvideReactive而非普通字段：tsconfig的useDefineForClassFields与vue-class-component 7.x
+    // 组合时，普通类字段不会被收集进响应式data，赋值后不会触发重渲染（见本文件其余状态字段的写法）
+    @ProvideReactive() private sdkUpdateHost: HostInfo | undefined = undefined;
+    @ProvideReactive() private sdkLatestVersion: string = "";
 
     protected async created() {
         try {
