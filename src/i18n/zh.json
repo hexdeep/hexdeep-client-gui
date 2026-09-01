@@ -436,7 +436,11 @@
       "updateAvailable": "检测到SDK新版本 {0} 可用",
       "updateNotifyTitle": "SDK版本更新",
       "updateNotifyButton": "立即切换",
-      "toolbarHint": "SDK有更新({0})"
+      "toolbarHint": "SDK有更新({0})",
+      "desktopClientNotifyTitle": "请下载桌面客户端",
+      "desktopClientAvailable": "请下载桌面客户端",
+      "desktopClientDownloadButton": "下载桌面客户端",
+      "desktopClientToolbarHint": "请下载桌面客户端"
     },
     "customSdk": "自定义SDK",
     "instance": {

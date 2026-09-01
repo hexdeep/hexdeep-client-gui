@@ -48,6 +48,12 @@ export default class VMPage extends Vue {
     @ProvideReactive() private sdkUpdateHost: HostInfo | null = null;
     @ProvideReactive() private sdkLatestVersion: string = "";
 
+    // 3.1是Web版super_sdk的最后一个版本，之后过渡到桌面客户端；命中3.1时提示下载客户端，
+    // 与"有新版本可用"提示互斥（见checkSdkUpdate里两者的分支和return）
+    @ProvideReactive() private sdkClientMigrationNeeded: boolean = false;
+    private readonly hexClientDownloadUrl = "https://docs.hexdeep.com/hexclient/index.html";
+    private static readonly lastWebSdkVersion = "3.1";
+
     protected async created() {
         try {
             this.config = JSON.parse(localStorage.getItem("config") || "");
@@ -69,6 +75,11 @@ export default class VMPage extends Vue {
                 const current = res.images.find(x => x.version === res.current_version);
                 // current_version在版本列表中没有命中，说明是定制版，不提示更新
                 if (!current) continue;
+                if (current.version === VMPage.lastWebSdkVersion) {
+                    this.sdkClientMigrationNeeded = true;
+                    this.notifyDesktopClientMigration();
+                    return;
+                }
                 const newer = res.images
                     .filter(x => compareVersion(x.version, current.version) > 0)
                     .sort((a, b) => compareVersion(b.version, a.version))[0];
@@ -99,6 +110,27 @@ export default class VMPage extends Vue {
                 </div>
             ) as any
         });
+    }
+
+    private notifyDesktopClientMigration() {
+        this.$notify({
+            title: this.$t("changeSdk.desktopClientNotifyTitle") as string,
+            type: "warning",
+            duration: 0,
+            customClass: s.sdkUpdateNotify,
+            message: (
+                <div>
+                    <div>{this.$t("changeSdk.desktopClientAvailable")}</div>
+                    <el-button type="text" style="padding: 0; margin-top: 6px;" onClick={() => this.openDesktopClientDownload()}>
+                        {this.$t("changeSdk.desktopClientDownloadButton")}
+                    </el-button>
+                </div>
+            ) as any
+        });
+    }
+
+    private openDesktopClientDownload() {
+        window.open(this.hexClientDownloadUrl, "_blank");
     }
 
     private async openSdkSwitch() {
@@ -504,6 +536,11 @@ export default class VMPage extends Vue {
                             </el-dropdown>}
                         </Row>
                         <Row gap={8} crossAlign="center">
+                            {this.sdkClientMigrationNeeded && (
+                                <span class={s.sdkUpdateHint} onClick={() => this.openDesktopClientDownload()}>
+                                    {this.$t("changeSdk.desktopClientToolbarHint")}
+                                </span>
+                            )}
                             {this.sdkUpdateAvailable && (
                                 <span class={s.sdkUpdateHint} onClick={() => this.openSdkSwitch()}>
                                     {this.$t("changeSdk.toolbarHint", [this.sdkLatestVersion])}

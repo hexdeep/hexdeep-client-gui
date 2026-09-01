@@ -433,7 +433,11 @@
       "updateAvailable": "New SDK version {0} is available",
       "updateNotifyTitle": "SDK Update",
       "updateNotifyButton": "Switch Now",
-      "toolbarHint": "SDK update available ({0})"
+      "toolbarHint": "SDK update available ({0})",
+      "desktopClientNotifyTitle": "Please Download the Desktop Client",
+      "desktopClientAvailable": "Please download the desktop client",
+      "desktopClientDownloadButton": "Download Desktop Client",
+      "desktopClientToolbarHint": "Please download the desktop client"
     },
     "customSdk": "Custom SDK",
     "instance": {
