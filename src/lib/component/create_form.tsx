@@ -130,10 +130,16 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
     }
 
     // 安卓14容器目前只随v3机型出，选中安卓14筛选后自动切到v3（v2单选框同时被禁用，防止选回去）。
+    // 镜像类型的"海外版(gms)"在安卓14下由独立的GMS开关取代，不再作为镜像类型选项展示，
+    // filterState.imageType 是安卓12/14两个tab共用的同一个observable，从安卓12切过来时如果
+    // 还残留着"gms"筛选，安卓14这边的单选框已经没有这一项可选中，需要一并重置为"base"。
     @Watch("filterState.androidVersion")
     onAndroidVersionFilterChange(newVal: number) {
         if (newVal === 14 && this.data.mobile_model_version !== "v3") {
             this.$set(this.data, "mobile_model_version", "v3");
+        }
+        if (newVal === 14 && this.filterState.imageType === "gms") {
+            this.filterState.imageType = "base";
         }
     }
 

@@ -120,7 +120,8 @@ export class CreateFormVersionFields extends tsx.Component<IProps, IEvents, {}> 
                             {/*<el-radio label="all">{this.$t("create.image_type_all")}</el-radio>*/}
                             <el-radio label="base">{this.$t("create.image_type_base")}</el-radio>
                             <el-radio label="magisk">{this.$t("create.image_type_magisk")}</el-radio>
-                            <el-radio label="gms">{this.$t("create.image_type_gms")}</el-radio>
+                            {/* Android 14 用独立的 GMS 开关替代镜像类型里的海外版; Android 12 不受影响，保留原选项 */}
+                            {this.androidVersion !== 14 && <el-radio label="gms">{this.$t("create.image_type_gms")}</el-radio>}
                             <el-radio label="pine">{this.$t("create.image_type_pine")}</el-radio>
                         </el-radio-group>
                     </el-form-item>
