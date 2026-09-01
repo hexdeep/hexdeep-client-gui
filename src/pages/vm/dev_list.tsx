@@ -96,6 +96,19 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         this.fillGitCommitId(this.data2);
     }
 
+    // 机型信息(厂商/型号)不随 dc_api/get 一起返回，需要单独调用 dc_api/device_model/get 按主机批量拉取。
+    // 按当前展示涉及的主机集合去重，避免云机数量多时按台请求；已经拉取过的主机不重复请求。
+    private get deviceHostIps(): string[] {
+        return Array.from(new Set(this.data2.map(d => d.hostIp)));
+    }
+
+    private fetchedModelHostIps = new Set<string>();
+
+    @Watch("deviceHostIps", { immediate: true })
+    private onDeviceHostIpsChange(hostIps: string[]) {
+        hostIps.forEach(ip => this.fillDeviceModel(ip));
+    }
+
     private get itemsPerRow(): number {
         if (this.config.view !== 'vertical' && this.config.view !== 'horizontal') return 1;
         const step = DeviceList.CARD_WIDTH[this.config.view] + DeviceList.GRID_GAP;
@@ -177,6 +190,32 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         });
     }
 
+    private async fillDeviceModel(hostIp: string) {
+        if (this.fetchedModelHostIps.has(hostIp)) {
+            return;
+        }
+        this.fetchedModelHostIps.add(hostIp);
+
+        try {
+            const list = await deviceApi.getDeviceModels(hostIp);
+            const infoByName = new Map(list.map(m => [m.name, m]));
+            this.data2.forEach(device => {
+                if (device.hostIp !== hostIp) {
+                    return;
+                }
+                const info = infoByName.get(device.name);
+                if (info) {
+                    this.$set(device, 'model_manufacturer', info.manufacturer);
+                    this.$set(device, 'model_name', info.model);
+                }
+            });
+        } catch (e) {
+            // 拉取失败允许下次 deviceHostIps 变化(如切主机筛选)时重试
+            this.fetchedModelHostIps.delete(hostIp);
+            console.warn('Failed to load device model info:', e);
+        }
+    }
+
     public selectAll() {
         if (this.rightChecked.length == this.data2.length) {
             this.rightChecked.clear();
@@ -247,6 +286,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
                     <div class={[s.listCell, s.colAdb]}>{this.$t("vmDetail.adb")}</div>
                     <div class={[s.listCell, s.colCreatedAt]}>{this.$t("createdAt")}</div>
                     <div class={[s.listCell, s.colGit]}>{this.$t("vmDetail.containerGitCommitId")}</div>
+                    <div class={[s.listCell, s.colModel]}>{this.$t("vmDetail.model")}</div>
                     <div class={[s.listCell, s.colImage]}>{this.$t("vmImage")}</div>
                     <div class={[s.listCell, s.colState]}>{this.$t("state")}</div>
                     <div class={[s.listCell, s.colAction]}>{this.$t("action")}</div>
@@ -290,6 +330,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         // const download = img ? (img.id === "" || row.image_digest === img.id) : false;
         const imageText = img ? img.name : row.image_addr;
         const gitText = `${row.git_commit_id ?? ""}${row.create_req?.mobile_model_version === "v3" ? "[v3]" : ""}`;
+        const modelText = [row.model_manufacturer, row.model_name].filter(Boolean).join(" ");
         // const imageStatusTitle = download
         //     ? this.$t("create.already_latest").toString()
         //     : this.$t("create.need_update_detail", [
@@ -318,6 +359,9 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
             </div>,
             <div class={[s.listCell, s.colCreatedAt]}>{this.formatCreatedAt(row.created_at)}</div>,
             <div class={[s.listCell, s.colGit]} attrs={{ title: gitText }}>{gitText}</div>,
+            <div class={[s.listCell, s.colModel]}>
+                <OverflowTooltip content={modelText} />
+            </div>,
             <div class={[s.listCell, s.colImage]}>
                 <OverflowTooltip content={imageText} openDelay={1000}>
                     {/* 镜像更新提示图标（绿勾=已是最新/红叉=需更新）已下线，保留代码待后续恢复：

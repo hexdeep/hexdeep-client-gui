@@ -4,7 +4,7 @@ import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
 import { ApiBase } from "./api_base";
-import { CloneVmParam, CreateParam, IscsiInfo, IscsiTargetInfo, NbdInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile, DockerImageUsageInfo, NvmeInfo, StartupInfo, StartupRestartPolicy } from "./device_define";
+import { CloneVmParam, CreateParam, IscsiInfo, IscsiTargetInfo, NbdInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DeviceModelInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile, DockerImageUsageInfo, NvmeInfo, StartupInfo, StartupRestartPolicy } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
 
@@ -353,6 +353,12 @@ class DeviceApi extends ApiBase {
 
     public async getImages(ip: string): Promise<ImageInfo[]> {
         const result = await fetch(makeVmApiUrl("image_api/get", ip));
+        return await this.handleError(result);
+    }
+
+    // 按主机批量获取该主机下所有云机的机型信息(厂商/型号)，不传 name 时后端返回该主机全部容器
+    public async getDeviceModels(ip: string): Promise<DeviceModelInfo[]> {
+        const result = await fetch(makeVmApiUrl("dc_api/device_model/get", ip));
         return await this.handleError(result);
     }
 

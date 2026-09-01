@@ -285,6 +285,7 @@
         "data": "Data",
         "imageAddr": "Image Address",
         "containerGitCommitId": "Version",
+        "model": "Model",
         "adb": "ADB",
         "android_sdk": "Android SDK",
         "state": "Status",

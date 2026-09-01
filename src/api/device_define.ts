@@ -20,6 +20,18 @@ export interface DeviceInfo {
     hostIp: string;
     hostId: string;
     create_req: DeviceDetail;
+    // 机型信息(厂商/型号)不随 dc_api/get 一起返回，需单独调用 dc_api/device_model/get 按主机批量拉取后
+    // 合并进来，见 dev_list.tsx 的 fillDeviceModel；拉取完成前为 undefined。
+    model_manufacturer?: string;
+    model_name?: string;
+}
+
+// dc_api/device_model/get 的单条记录：name 为完整容器名(与 DeviceInfo.name 一致)，
+// manufacturer/model 未采集到时后端返回空字符串。
+export interface DeviceModelInfo {
+    name: string;
+    manufacturer: string;
+    model: string;
 }
 
 export interface HostInfo {
