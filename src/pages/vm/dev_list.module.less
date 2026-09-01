@@ -1,3 +1,7 @@
+// 各列宽度之和（colName 按其 min-width 算），列表区域窄于这个宽度时不再压缩列宽，
+// 改为让 .table 出现横向滚动条，见下方 .table 的 overflow-x 与 .listHeader/.listBody 的 min-width。
+@tableMinWidth: 45px + 40px + 90px + 140px + 90px + 110px + 110px + 144px + 90px + 120px;
+
 .deviceList {
     flex: 1;
     position: relative;
@@ -13,6 +17,9 @@
         // 与 el-table 默认样式保持一致（重写前的表格字号/字色），否则会继承外层 16px 的默认字号
         font-size: 12px;
         color: #606266;
+        // 列总宽度超过面板宽度时(主要是 colName 被压到 min-width 后仍不够)，不再挤压列，
+        // 改为让这个表格区域自己出现横向滚动条；只在这一层生效，不影响 app 其余部分的布局。
+        overflow-x: auto;
     }
 
     .listHeader,
@@ -28,6 +35,7 @@
         color: #909399;
         background: #fafafa;
         border-bottom: 1px solid #ebeef5;
+        min-width: @tableMinWidth;
     }
 
     .listRow {
@@ -60,7 +68,7 @@
 
     .colName {
         flex: 1;
-        min-width: 0;
+        min-width: 90px;
     }
 
     .colAdb {
@@ -108,6 +116,7 @@
     .listBody {
         flex: 1;
         min-height: 0;
+        min-width: @tableMinWidth;
         display: flex;
         flex-direction: column;
         // el-checkbox-group 自带 font-size:0（用于消除内联勾选框间的空白间隙），
