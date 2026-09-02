@@ -288,7 +288,23 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                 }
             }
             try {
-                await deviceApi.create({ info: this.data.info, hostId: this.data.hostId, obj });
+                const imageAddress = await deviceApi.create({ info: this.data.info, hostId: this.data.hostId, obj });
+                if (imageAddress) {
+                    // 后端 OSS digest 校验发现镜像本地缺失或已过期(5分钟缓存，同一地址批量创建
+                    // 时不会重复触发 HEAD 请求)，复用"镜像不存在"时的下载进度框，拉取/更新完成
+                    // 后再重新提交一次创建
+                    const re = await this.$dialog(PullImageDialog).show({
+                        hostIp: this.data.info.hostIp,
+                        imageAddress,
+                        dockerRegistry: obj.docker_registry,
+                    });
+                    if (re?.canceled) {
+                        failures.push({ index, name: obj.name!, message: this.$t("confirm.cancel").toString() });
+                        continue;
+                    }
+                    if (re?.error) throw new Error(re.error);
+                    await deviceApi.create({ info: this.data.info, hostId: this.data.hostId, obj });
+                }
                 createdVms.push({ index, name: obj.name! });
             } catch (e: any) {
                 failures.push({ index, name: obj.name!, message: e?.message ?? String(e) });

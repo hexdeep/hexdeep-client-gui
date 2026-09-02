@@ -1156,7 +1156,10 @@ class DeviceApi extends ApiBase {
         return result.blob();
     }
 
-    public async create(param: DockerEditParam): Promise<void> {
+    // 返回值为空表示创建成功；返回非空字符串表示镜像本地不存在或已过期(OSS digest 校验)，
+    // 值为需要拉取/更新的镜像地址，与 reboot/reset/start 的 code=4 处理方式一致，调用方需
+    // 弹出下载进度框、拉取完成后再重新调用一次本接口。
+    public async create(param: DockerEditParam): Promise<string | undefined> {
         var formData = qs.stringify(param.obj);
         const result = await fetch(makeVmApiUrl("dc_api/create", param.info.hostIp, param.obj.index!.toString(), param.obj.name), {
             method: "POST",
@@ -1165,7 +1168,14 @@ class DeviceApi extends ApiBase {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
         });
-        return await this.handleError(result);
+        const j = await result.json();
+        if (j.code == 4) {
+            return j.err;
+        } else if (j.code == 200) {
+            return;
+        } else {
+            throw j.err;
+        }
     }
 
     public async update(param: DockerEditParam): Promise<void> {
