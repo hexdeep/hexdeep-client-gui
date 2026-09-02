@@ -236,8 +236,23 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         return `${parts[0]}.${parts[1]}.${parts[2]}.${newLastByte}`;
     }
 
-    @ErrorProxy({ success: i18n.t("success"), loading: i18n.t("loading") })
+    // loading 遮罩改成手动管理（不再用 @ErrorProxy 的 loading 选项），因为创建循环中途
+    // 可能要弹出 PullImageDialog：Element 遮罩 z-index >= 2000 且 lock，会盖住自定义弹窗
+    // （固定 999），导致下载进度条被压在遮罩下面看不见。弹窗前关掉、弹窗结束后重新打开。
+    @ErrorProxy({ success: i18n.t("success") })
     protected async confirming() {
+        let l = this.$loading({ text: i18n.t("loading").toString(), lock: true });
+        try {
+            return await this.confirmingImpl(
+                () => l.close(),
+                () => { l = this.$loading({ text: i18n.t("loading").toString(), lock: true }); }
+            );
+        } finally {
+            l.close();
+        }
+    }
+
+    private async confirmingImpl(hideLoading: () => void, showLoading: () => void) {
         if (this.data.isUpdate) {
             const data = Object.assign({}, this.data);
             data.obj = Object.assign({}, this.data.obj);
@@ -292,12 +307,14 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                 if (imageAddress) {
                     // 后端 OSS digest 校验发现镜像本地缺失或已过期(5分钟缓存，同一地址批量创建
                     // 时不会重复触发 HEAD 请求)，复用"镜像不存在"时的下载进度框，拉取/更新完成
-                    // 后再重新提交一次创建
+                    // 后再重新提交一次创建。弹窗前关掉 loading 遮罩，避免进度条被压在遮罩下面。
+                    hideLoading();
                     const re = await this.$dialog(PullImageDialog).show({
                         hostIp: this.data.info.hostIp,
                         imageAddress,
                         dockerRegistry: obj.docker_registry,
                     });
+                    showLoading();
                     if (re?.canceled) {
                         failures.push({ index, name: obj.name!, message: this.$t("confirm.cancel").toString() });
                         continue;
