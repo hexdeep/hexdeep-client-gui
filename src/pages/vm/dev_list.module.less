@@ -1,6 +1,6 @@
 // 各列宽度之和（colName 按其 min-width 算），列表区域窄于这个宽度时不再压缩列宽，
 // 改为让 .table 出现横向滚动条，见下方 .table 的 overflow-x 与 .listHeader/.listBody 的 min-width。
-@tableMinWidth: 45px + 40px + 90px + 140px + 90px + 110px + 110px + 144px + 90px + 120px;
+@tableMinWidth: 40px + 90px + 140px + 90px + 110px + 125px + 160px + 90px + 70px;
 
 .deviceList {
     flex: 1;
@@ -56,14 +56,13 @@
         flex-shrink: 0;
     }
 
-    .colSelection {
-        width: 45px;
-        text-align: center;
-    }
-
-    .colNo {
+    .colCheckboxNo {
         width: 40px;
-        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        padding: 0;
     }
 
     .colName {
@@ -86,13 +85,12 @@
     }
 
     .colModel {
-        width: 110px;
+        width: 125px;
         text-overflow: ellipsis;
     }
 
     .colImage {
-        // 原180px的80%
-        width: 144px;
+        width: 160px;
         text-overflow: ellipsis;
     }
 
@@ -102,7 +100,7 @@
     }
 
     .colAction {
-        width: 120px;
+        width: 70px;
     }
 
     .emptyText {

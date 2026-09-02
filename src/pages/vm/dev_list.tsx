@@ -274,14 +274,14 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         return (
             <div class={s.table}>
                 <div class={s.listHeader}>
-                    <div class={[s.listCell, s.colSelection]}>
+                    <div class={[s.listCell, s.colCheckboxNo]}>
                         <el-checkbox
                             value={this.data2.length > 0 && this.rightChecked.length == this.data2.length}
                             indeterminate={this.rightChecked.length > 0 && this.rightChecked.length < this.data2.length}
                             onChange={() => this.selectAll()}
                         />
+                        <span>No</span>
                     </div>
-                    <div class={[s.listCell, s.colNo]}>No</div>
                     <div class={[s.listCell, s.colName]}>{this.$t("name")}</div>
                     <div class={[s.listCell, s.colAdb]}>{this.$t("vmDetail.adb")}</div>
                     <div class={[s.listCell, s.colCreatedAt]}>{this.$t("createdAt")}</div>
@@ -338,11 +338,11 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         //         img?.git_id || "-",
         //     ]).toString();
         return [
-            <div class={[s.listCell, s.colSelection]}>
+            <div class={[s.listCell, s.colCheckboxNo]}>
                 {/* el-checkbox 在没有默认插槽内容时会把 label 当作可见文本回退显示，这里传入空 span 阻止该行为 */}
                 <el-checkbox label={row.key} onChange={(c: boolean) => this.checkboxChanged(c, row)}><span /></el-checkbox>
+                <span>{row.index}</span>
             </div>,
-            <div class={[s.listCell, s.colNo]}>{row.index}</div>,
             <div class={[s.listCell, s.colName]}>
                 {name === "开通VIP显示全部" ? (
                     <OverflowTooltip
@@ -787,7 +787,6 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         return (
             <Row gap={10} crossAlign='center'>
                 {hasBtn && renderBtn()}
-                {isListView && <TextButton text={this.$t("menu.create")} onClick={() => this.create(row)} />}
                 {row.state !== '' && <el-dropdown trigger="click">
 
                     <div style="cursor: pointer;">
