@@ -91,9 +91,24 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         return this.data2.map(d => `${d.key}:${d.state}`).join(",");
     }
 
+    // 按 device.key 缓存已拿到的 git commit id：同上，重启/刷新会让 data2 里的 device 对象整体
+    // 替换成新对象(不带 git_commit_id)，若只靠 device.git_commit_id 本身判断"是否已拿到"，
+    // 版本号列会跟机型列一样在同主机任意一台云机重启后全部消失，需要刷新页面才能恢复。
+    private gitCommitIdByKey = new Map<string, string>();
+
     @Watch("deviceGitSignature", { immediate: true })
     private onDeviceSetChange() {
+        this.applyCachedGitCommitId();
         this.fillGitCommitId(this.data2);
+    }
+
+    private applyCachedGitCommitId() {
+        this.data2.forEach(device => {
+            const cached = this.gitCommitIdByKey.get(device.key!);
+            if (cached && device.git_commit_id !== cached) {
+                this.$set(device, 'git_commit_id', cached);
+            }
+        });
     }
 
     // 机型信息(厂商/型号)不随 dc_api/get 一起返回，需要单独调用 dc_api/device_model/get 按主机批量拉取。
@@ -114,8 +129,9 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
 
     @Watch("data2")
-    private onData2ChangeApplyCachedModel() {
+    private onData2ChangeApplyCached() {
         this.applyCachedDeviceModel();
+        this.applyCachedGitCommitId();
     }
 
     private applyCachedDeviceModel() {
@@ -201,6 +217,7 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
 
             try {
                 deviceApi.getContainerGitCommitIdMacvlan(device.android_sdk).then((gitCommitId: string) => {
+                    this.gitCommitIdByKey.set(device.key!, gitCommitId);
                     this.$set(device, 'git_commit_id', gitCommitId);
                 });
             } catch (e) {
