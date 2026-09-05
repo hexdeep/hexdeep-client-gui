@@ -96,7 +96,7 @@ export default class VMPage extends Vue {
     }
 
     private notifySdkUpdate(host: HostInfo, version: string, description?: string) {
-        const hostLabel = host.remark ? `${host.remark}(${host.address})` : host.address;
+        const hostLabel = host.remark ? `${host.address}(${host.remark})` : host.address;
         this.$notify({
             title: this.$t("changeSdk.updateNotifyTitle") as string,
             type: "info",
