@@ -102,11 +102,31 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
         return Array.from(new Set(this.data2.map(d => d.hostIp)));
     }
 
-    private fetchedModelHostIps = new Set<string>();
+    // 按 hostIp 缓存机型信息(name -> info)，而不是只记"是否已拉取过"：重启/刷新会让 data2 里的
+    // device 对象整体替换成不带机型字段的新对象，若只标记 hostIp 已拉取就不会再补，导致该主机下
+    // 所有云机的机型列全部消失，只能靠刷新页面重置标记来恢复。改成缓存后，data2 变化时直接从缓存
+    // 回填，不需要重新请求；只有真正没缓存过的新主机才会发请求。
+    private modelInfoByHostIp = new Map<string, Map<string, { manufacturer: string; model: string }>>();
 
     @Watch("deviceHostIps", { immediate: true })
     private onDeviceHostIpsChange(hostIps: string[]) {
         hostIps.forEach(ip => this.fillDeviceModel(ip));
+    }
+
+    @Watch("data2")
+    private onData2ChangeApplyCachedModel() {
+        this.applyCachedDeviceModel();
+    }
+
+    private applyCachedDeviceModel() {
+        this.data2.forEach(device => {
+            const infoByName = this.modelInfoByHostIp.get(device.hostIp);
+            const info = infoByName?.get(device.name);
+            if (info && (device.model_manufacturer !== info.manufacturer || device.model_name !== info.model)) {
+                this.$set(device, 'model_manufacturer', info.manufacturer);
+                this.$set(device, 'model_name', info.model);
+            }
+        });
     }
 
     private get itemsPerRow(): number {
@@ -191,27 +211,18 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
 
     private async fillDeviceModel(hostIp: string) {
-        if (this.fetchedModelHostIps.has(hostIp)) {
+        if (this.modelInfoByHostIp.has(hostIp)) {
+            this.applyCachedDeviceModel();
             return;
         }
-        this.fetchedModelHostIps.add(hostIp);
 
         try {
             const list = await deviceApi.getDeviceModels(hostIp);
-            const infoByName = new Map(list.map(m => [m.name, m]));
-            this.data2.forEach(device => {
-                if (device.hostIp !== hostIp) {
-                    return;
-                }
-                const info = infoByName.get(device.name);
-                if (info) {
-                    this.$set(device, 'model_manufacturer', info.manufacturer);
-                    this.$set(device, 'model_name', info.model);
-                }
-            });
+            const infoByName = new Map(list.map(m => [m.name, { manufacturer: m.manufacturer, model: m.model }]));
+            this.modelInfoByHostIp.set(hostIp, infoByName);
+            this.applyCachedDeviceModel();
         } catch (e) {
             // 拉取失败允许下次 deviceHostIps 变化(如切主机筛选)时重试
-            this.fetchedModelHostIps.delete(hostIp);
             console.warn('Failed to load device model info:', e);
         }
     }
