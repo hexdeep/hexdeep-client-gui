@@ -86,7 +86,7 @@ export default class VMPage extends Vue {
                 if (newer) {
                     this.sdkUpdateHost = host;
                     this.sdkLatestVersion = newer.version;
-                    this.notifySdkUpdate(newer.version, newer.description);
+                    this.notifySdkUpdate(host, newer.version, newer.description);
                     return;
                 }
             } catch (e) {
@@ -95,7 +95,8 @@ export default class VMPage extends Vue {
         }
     }
 
-    private notifySdkUpdate(version: string, description?: string) {
+    private notifySdkUpdate(host: HostInfo, version: string, description?: string) {
+        const hostLabel = host.remark ? `${host.remark}(${host.address})` : host.address;
         this.$notify({
             title: this.$t("changeSdk.updateNotifyTitle") as string,
             type: "info",
@@ -103,7 +104,7 @@ export default class VMPage extends Vue {
             customClass: s.sdkUpdateNotify,
             message: (
                 <div>
-                    <div>{this.$t("changeSdk.updateAvailable", [version])}：{description}</div>
+                    <div>{this.$t("changeSdk.updateAvailable", [hostLabel, version])}：{description}</div>
                     <el-button type="text" style="padding: 0; margin-top: 6px;" onClick={() => this.openSdkSwitch()}>
                         {this.$t("changeSdk.updateNotifyButton")}
                     </el-button>

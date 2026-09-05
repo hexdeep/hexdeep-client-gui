@@ -433,7 +433,7 @@
     },
     "changeSdk": {
       "label": "SDK版本",
-      "updateAvailable": "检测到SDK新版本 {0} 可用",
+      "updateAvailable": "{0} 检测到SDK新版本 {1} 可用",
       "updateNotifyTitle": "SDK版本更新",
       "updateNotifyButton": "立即切换",
       "toolbarHint": "SDK有更新({0})",

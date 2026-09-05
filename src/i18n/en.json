@@ -430,7 +430,7 @@
     },
     "changeSdk": {
       "label": "SDK Version",
-      "updateAvailable": "New SDK version {0} is available",
+      "updateAvailable": "{0} has new SDK version {1} available",
       "updateNotifyTitle": "SDK Update",
       "updateNotifyButton": "Switch Now",
       "toolbarHint": "SDK update available ({0})",
