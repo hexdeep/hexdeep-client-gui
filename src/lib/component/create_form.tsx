@@ -97,6 +97,9 @@ export class CreateForm extends tsx.Component<IPorps, IEvents, ISlots> {
         if (!this.data.mobile_model_version) {
             this.$set(this.data, "mobile_model_version", "v2");
         }
+        if (this.data.magisk_enable === undefined) {
+            this.$set(this.data, "magisk_enable", 0);
+        }
         // 型号(model_id)选择器不在更新流程展示（改了也不生效，见 CreateFormVersionFields），
         // 机型列表仅创建流程需要拉取
         if (!this.isUpdate) {

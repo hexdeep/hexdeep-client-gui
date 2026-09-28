@@ -127,9 +127,8 @@ export class CreateFormVersionFields extends tsx.Component<IProps, IEvents, {}> 
                         </el-radio-group>
                     </el-form-item>
 
-                    {/* GMS 由安卓侧开机流程读取 etc 目录下的配置文件决定是否启用，该读取逻辑目前只有
-                        Android 14 支持，故该开关仅在 Android 14 tab 下展示。 */}
-                    {this.androidVersion === 14 && (
+                    {/* GMS 和 Magisk 由安卓侧开机流程读取配置决定是否启用，目前仅 Android 14 支持。 */}
+                    {!this.isUpdate && this.androidVersion === 14 && (
                         <el-form-item
                             label={this.$t("create.gms_enable")}
                             prop="gms_enable"
@@ -137,6 +136,17 @@ export class CreateFormVersionFields extends tsx.Component<IProps, IEvents, {}> 
                             scopedSlots={{ label: () => this.labelWithTip(this.$t("create.gms_enable") as string, this.$t("create.gms_enable_tip") as string) }}
                         >
                             <el-switch v-model={this.data.gms_enable} active-value={1} inactive-value={0} />
+                        </el-form-item>
+                    )}
+                    {!this.isUpdate && this.androidVersion === 14 && (
+                        <el-form-item
+                            label={this.$t("create.magisk_enable")}
+                            prop="magisk_enable"
+                            label-width="130px"
+                            style="flex: 0 0 auto; width: auto;"
+                            scopedSlots={{ label: () => this.labelWithTip(this.$t("create.magisk_enable") as string, this.$t("create.magisk_enable_tip") as string) }}
+                        >
+                            <el-switch v-model={this.data.magisk_enable} active-value={1} inactive-value={0} />
                         </el-form-item>
                     )}
                 </Row>
