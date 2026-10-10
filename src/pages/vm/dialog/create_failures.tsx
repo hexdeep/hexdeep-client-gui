@@ -2,15 +2,20 @@ import { CommonDialog, Dialog } from "@/lib/dialog/dialog";
 import { Column } from "@/lib/container";
 import { MyButton } from "@/lib/my_button";
 import { VNode } from "vue";
+import { CONTAINER_LIMIT_EXCEEDED_CODE } from "@/api/api_base";
 
 export interface CreateFailureItem {
     index: number;
     name: string;
     message: string;
+    /** super_sdk 响应码（仅在失败来自 super_sdk 的非 200 响应时有值） */
+    code?: number;
 }
 
 export interface CreateFailuresData {
     failures: CreateFailureItem[];
+    /** 打开“开通VIP”流程；提供后，只要有失败项是v3云机数量超限，页脚就显示开通VIP按钮 */
+    onOpenVip?: () => Promise<void>;
 }
 
 /** 批量创建云机时，展示每个失败实例位的详细原因 */
@@ -24,9 +29,17 @@ export class CreateFailuresDialog extends CommonDialog<CreateFailuresData, void>
         return super.show(data);
     }
 
+    // 任意一台失败是因为v3云机数量超限，就提供开通VIP入口（开通VIP后上限不再生效）
+    private get hasLimitFailure(): boolean {
+        return this.data.failures.some(f => f.code === CONTAINER_LIMIT_EXCEEDED_CODE);
+    }
+
     protected override renderFooter() {
         return (
             <div class="dialog-footer">
+                {this.data.onOpenVip && this.hasLimitFailure && (
+                    <MyButton text={this.$t("create.openVip")} onClick={() => this.data.onOpenVip!()} type="primary" plain />
+                )}
                 <MyButton text={this.$t("confirm.ok")} onClick={() => this.close()} type="primary" />
             </div>
         );

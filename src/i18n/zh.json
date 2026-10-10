@@ -151,7 +151,8 @@
         "failuresTitle": "部分云机创建失败",
         "failuresIndex": "实例位",
         "failuresName": "名称",
-        "failuresReason": "失败原因"
+        "failuresReason": "失败原因",
+        "openVip": "开通VIP"
     },
     "menu": {
         "start": "开机",

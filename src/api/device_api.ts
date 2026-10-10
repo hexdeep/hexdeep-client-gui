@@ -3,7 +3,7 @@ import { makeHostVmApiUrl, makeMacvlanVmApiUrl, makeVmApiUrl } from "@/common/co
 import { Config } from "@/common/Config";
 import axios, { AxiosProgressEvent } from "axios";
 import qs from 'qs';
-import { ApiBase } from "./api_base";
+import { ApiBase, ApiCodeError } from "./api_base";
 import { CloneVmParam, CreateParam, IscsiInfo, IscsiTargetInfo, NbdInfo, SwapInfo, DeviceDetail, DiscoverInfo, DeviceInfo, DeviceModelInfo, DockerEditParam, FilelistInfo, HostDetailInfo, HostInfo, ImageInfo, S5setParam, SDKImagesRes, DiskListInfo, ClearGarbageReq, FirmwareVersionInfo, BatchCreateResponse, MobileModelList, MobileModelFile, DockerImageUsageInfo, NvmeInfo, StartupInfo, StartupRestartPolicy } from "./device_define";
 import { Completer } from "@/lib/completer";
 import { decamelizeKeys } from 'humps';
@@ -277,15 +277,16 @@ class DeviceApi extends ApiBase {
             }
         });
         const text = await result.text();
+        let json: BatchCreateResponse;
         try {
-            const json = JSON.parse(text) as BatchCreateResponse;
-            if (json.code !== 200) {
-                throw new Error((json as any).err ?? text ?? "unknown error");
-            }
-            return json;
+            json = JSON.parse(text) as BatchCreateResponse;
         } catch (e: any) {
             throw new Error(e.message ?? text ?? "unknown error");
         }
+        if (json.code !== 200) {
+            throw new ApiCodeError((json as any).err ?? text ?? "unknown error", json.code);
+        }
+        return json;
     }
 
     public async reboot(ip: string, name: string): Promise<string | undefined> {

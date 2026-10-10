@@ -14,6 +14,7 @@ import { normalizeModelSubmitFields } from "@/lib/component/mobile_model_loader"
 import { CreateFailureItem, CreateFailuresDialog } from './create_failures';
 import { PullImageDialog } from './pull_image';
 import { VipHostSelectDialog } from "./vip_host_select";
+import { ApiCodeError } from "@/api/api_base";
 import { ManageImagesDialog } from "@/pages/instance/dialog/manage_images_dialog";
 
 @Dialog
@@ -291,7 +292,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
                 await deviceApi.create({ info: this.data.info, hostId: this.data.hostId, obj });
                 createdVms.push({ index, name: obj.name! });
             } catch (e: any) {
-                failures.push({ index, name: obj.name!, message: e?.message ?? String(e) });
+                failures.push({ index, name: obj.name!, message: e?.message ?? String(e), code: e instanceof ApiCodeError ? e.code : undefined });
             }
         }
 
@@ -335,7 +336,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         const createdCount = this.pendingCreatedCount;
         this.pendingFailures = [];
         this.pendingCreatedCount = 0;
-        await this.$dialog(CreateFailuresDialog).show({ failures });
+        await this.$dialog(CreateFailuresDialog).show({ failures, onOpenVip: () => this.onVipRequired() });
         if (createdCount > 0) {
             this.close(this.data.obj);
         }

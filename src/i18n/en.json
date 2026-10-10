@@ -150,7 +150,8 @@
         "failuresTitle": "Some VMs failed to create",
         "failuresIndex": "Slot",
         "failuresName": "Name",
-        "failuresReason": "Reason"
+        "failuresReason": "Reason",
+        "openVip": "Activate VIP"
     },
     "menu": {
         "start": "Start",
