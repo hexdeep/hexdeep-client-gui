@@ -1,6 +1,6 @@
 import { deviceApi } from "@/api/device_api";
 import { DeviceInfo, HostInfo, ImageInfo, MyConfig, MyTreeNode, TreeConfig } from "@/api/device_define";
-import { compareVersion, filterWithConfig, getSuffixName, sortDevices } from "@/common/common";
+import { filterWithConfig, getSuffixName, sortDevices } from "@/common/common";
 import { Config } from "@/common/Config";
 import { i18n } from "@/i18n/i18n";
 import { Column, Row } from "@/lib/container";
@@ -16,7 +16,7 @@ import { ChangeImageDialog } from "./dialog/change_image";
 import { ImportVmDialog } from "./dialog/import_vm";
 import { UploadFileDialog } from "./dialog/upload_file";
 import { BatchSwitchFirmwareDialog } from "./dialog/batch_switch_firmware";
-import { SwitchSDKDialog } from "@/pages/instance/dialog/switch_sdk";
+import { hexclientDownloadUrl } from "@/lib/component/client_upgrade_dialog";
 import { Screenshot } from "./screenshot";
 import s from './vm.module.less';
 
@@ -41,18 +41,12 @@ export default class VMPage extends Vue {
     private imgRefreshTimer: any;
     protected batchOperateName: string = "";
 
-    // SDK版本更新提示：命中更新的主机 + 最新版本号；未检测到更新或current_version为定制版时为空
+    // Web版super_sdk不再发布新版本，后续过渡到桌面客户端：只要主机跑的是官方版本(非定制版)，
+    // 就提示下载桌面客户端，不再提示"有新版本可切换"。
     // 初始值不能是undefined：vue-class-component的collectDataFromConstructor会把初始值为undefined的
     // 字段整个排除出响应式data(见node_modules/vue-class-component/lib/data.js)，导致后续赋值不触发重渲染；
-    // 用null作为"未命中"的初始值即可被正常收集为响应式数据。
-    @ProvideReactive() private sdkUpdateHost: HostInfo | null = null;
-    @ProvideReactive() private sdkLatestVersion: string = "";
-
-    // 3.1是Web版super_sdk的最后一个版本，之后过渡到桌面客户端；命中3.1时提示下载客户端，
-    // 与"有新版本可用"提示互斥（见checkSdkUpdate里两者的分支和return）
+    // 用false作为"未命中"的初始值即可被正常收集为响应式数据。
     @ProvideReactive() private sdkClientMigrationNeeded: boolean = false;
-    private readonly hexClientDownloadUrl = "https://docs.hexdeep.com/hexclient/index.html";
-    private static readonly lastWebSdkVersion = "3.1";
 
     protected async created() {
         try {
@@ -64,53 +58,20 @@ export default class VMPage extends Vue {
         this.refreshHost().then(() => this.checkSdkUpdate());
     }
 
-    private get sdkUpdateAvailable(): boolean {
-        return !!this.sdkUpdateHost;
-    }
-
     private async checkSdkUpdate() {
         for (const host of this.hosts) {
             try {
                 const res = await deviceApi.getSDKImages(host.address);
                 const current = res.images.find(x => x.version === res.current_version);
-                // current_version在版本列表中没有命中，说明是定制版，不提示更新
+                // current_version在版本列表中没有命中，说明是定制版，不提示
                 if (!current) continue;
-                if (current.version === VMPage.lastWebSdkVersion) {
-                    this.sdkClientMigrationNeeded = true;
-                    this.notifyDesktopClientMigration();
-                    return;
-                }
-                const newer = res.images
-                    .filter(x => compareVersion(x.version, current.version) > 0)
-                    .sort((a, b) => compareVersion(b.version, a.version))[0];
-                if (newer) {
-                    this.sdkUpdateHost = host;
-                    this.sdkLatestVersion = newer.version;
-                    this.notifySdkUpdate(host, newer.version, newer.description);
-                    return;
-                }
+                this.sdkClientMigrationNeeded = true;
+                this.notifyDesktopClientMigration();
+                return;
             } catch (e) {
-                console.warn(`检测SDK版本更新失败(${host.address}):`, e);
+                console.warn(`检测SDK版本失败(${host.address}):`, e);
             }
         }
-    }
-
-    private notifySdkUpdate(host: HostInfo, version: string, description?: string) {
-        const hostLabel = host.remark ? `${host.address}(${host.remark})` : host.address;
-        this.$notify({
-            title: this.$t("changeSdk.updateNotifyTitle") as string,
-            type: "info",
-            duration: 0,
-            customClass: s.sdkUpdateNotify,
-            message: (
-                <div>
-                    <div>{this.$t("changeSdk.updateAvailable", [hostLabel, version])}：{description}</div>
-                    <el-button type="text" style="padding: 0; margin-top: 6px;" onClick={() => this.openSdkSwitch()}>
-                        {this.$t("changeSdk.updateNotifyButton")}
-                    </el-button>
-                </div>
-            ) as any
-        });
     }
 
     private notifyDesktopClientMigration() {
@@ -131,17 +92,7 @@ export default class VMPage extends Vue {
     }
 
     private openDesktopClientDownload() {
-        window.open(this.hexClientDownloadUrl, "_blank");
-    }
-
-    private async openSdkSwitch() {
-        if (!this.sdkUpdateHost) return;
-        const host = this.sdkUpdateHost;
-        const result = await this.$dialog(SwitchSDKDialog).show(host);
-        if (result) {
-            // 与host_detail_new.tsx的switchSDK()保持一致：切换成功后整页刷新
-            location.reload();
-        }
+        window.open(hexclientDownloadUrl(), "_blank");
     }
 
     protected async refreshImages() {
@@ -540,11 +491,6 @@ export default class VMPage extends Vue {
                             {this.sdkClientMigrationNeeded && (
                                 <span class={s.sdkUpdateHint} onClick={() => this.openDesktopClientDownload()}>
                                     {this.$t("changeSdk.desktopClientToolbarHint")}
-                                </span>
-                            )}
-                            {this.sdkUpdateAvailable && (
-                                <span class={s.sdkUpdateHint} onClick={() => this.openSdkSwitch()}>
-                                    {this.$t("changeSdk.toolbarHint", [this.sdkLatestVersion])}
                                 </span>
                             )}
                             <MyButton type="primary" text={this.$t("import.btn")} onClick={this.importVm} />
