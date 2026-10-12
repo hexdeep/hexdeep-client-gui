@@ -627,6 +627,18 @@
         "operation": "操作",
         "goToPurchase": "去开通"
     },
+    "clientUpgrade": {
+        "title": {
+            "purchase": "请使用新版客户端",
+            "feedback": "请使用新版客户端"
+        },
+        "message": {
+            "purchase": "当前客户端已停用实例位购买、VIP 购买和设备二次绑定功能，请下载新版桌面客户端，使用账号登录后完成购买。",
+            "feedback": "当前客户端已停用问题反馈功能，请下载新版桌面客户端后提交反馈。"
+        },
+        "tip": "已有的云机和实例位不受影响，可继续正常使用。",
+        "download": "下载新版客户端"
+    },
     "feedback": {
         "button": "问题反馈",
         "title": "问题反馈",

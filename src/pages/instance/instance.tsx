@@ -13,6 +13,7 @@ import { InstancesDetailDialog } from "./dialog/instances_detail";
 import { PurchaseDialog } from "./dialog/purchase";
 import { SwitchSDKDialog } from "./dialog/switch_sdk";
 import { HostDetailDialog } from "./dialog/host_detail_new";
+import { ClientUpgradeDialog } from "@/lib/component/client_upgrade_dialog";
 
 @Component
 export default class InstancePage extends Vue {
@@ -61,6 +62,13 @@ export default class InstancePage extends Vue {
     }
 
     protected purchase() {
+        // 老客户端已停用实例位购买（依赖设备ID加密头的旧接口），引导下载新客户端
+        this.$dialog(ClientUpgradeDialog).show({ kind: "purchase" });
+        return;
+    }
+
+    // 旧购买流程，已停用，保留以便需要时恢复
+    protected legacyPurchase() {
         let purchaseInfo: PurchaseInfo = {
             package_id: 0,
             hosts: new Map(),

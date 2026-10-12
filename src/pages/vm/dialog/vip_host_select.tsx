@@ -9,6 +9,7 @@ import { i18n } from "@/i18n/i18n";
 import { deviceApi } from "@/api/device_api";
 import { VipPurchaseDialog } from "./vip_purchase";
 import { timeDiff } from "@/common/common";
+import { ClientUpgradeDialog } from "@/lib/component/client_upgrade_dialog";
 
 export interface VipHostSelectData {
     hosts: HostInfo[];
@@ -188,6 +189,13 @@ export class VipHostSelectDialog extends CommonDialog<VipHostSelectData, boolean
     }
 
     private async onPurchase() {
+        // 老客户端已停用VIP购买（依赖设备ID加密头的旧接口），引导下载新客户端
+        this.$dialog(ClientUpgradeDialog).show({ kind: "purchase" });
+        return;
+    }
+
+    // 旧购买流程，已停用，保留以便需要时恢复
+    private async legacyPurchase() {
         const selectedHosts = this.hostList.filter(h => this.selectedIds.includes(h.device_id));
         const result = await this.$dialog(VipPurchaseDialog).show({
             hosts: selectedHosts

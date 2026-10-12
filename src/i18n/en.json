@@ -623,6 +623,18 @@
         "operation": "Operation",
         "goToPurchase": "Go to Purchase"
     },
+    "clientUpgrade": {
+        "title": {
+            "purchase": "Please use the new client",
+            "feedback": "Please use the new client"
+        },
+        "message": {
+            "purchase": "Purchasing instance slots, VIP and device rebinding is no longer available in this client. Please download the new desktop client and sign in with your account to purchase.",
+            "feedback": "Feedback is no longer available in this client. Please download the new desktop client to submit feedback."
+        },
+        "tip": "Your existing cloud phones and instance slots are not affected and keep working.",
+        "download": "Download new client"
+    },
     "feedback": {
         "button": "Feedback",
         "title": "Feedback",

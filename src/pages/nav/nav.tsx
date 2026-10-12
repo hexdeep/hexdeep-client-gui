@@ -5,7 +5,7 @@ import { EditPassDialog } from "./edit_pass";
 import s from './nav.module.less';
 import { Config } from '@/common/Config';
 import { Menu } from 'element-ui';
-import { FeedbackDialog } from '../feedback/feedback_dialog';
+import { ClientUpgradeDialog } from '@/lib/component/client_upgrade_dialog';
 
 @Component
 export default class Nav extends Vue {
@@ -36,7 +36,8 @@ export default class Nav extends Vue {
     ];
 
     private onFeedbackClick() {
-        this.$dialog(FeedbackDialog).show();
+        // 老客户端已停用反馈，引导下载新客户端（FeedbackDialog 代码保留）
+        this.$dialog(ClientUpgradeDialog).show({ kind: "feedback" });
     }
 
     private onCommand(cmd: string) {
