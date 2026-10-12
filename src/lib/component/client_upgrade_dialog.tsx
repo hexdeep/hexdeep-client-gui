@@ -42,7 +42,6 @@ export class ClientUpgradeDialog extends CommonDialog<{ kind: ClientUpgradeKind 
         return (
             <Column gap={12} style={{ padding: "24px 20px", lineHeight: "1.7", color: "#606266" }}>
                 <div>{this.$t(`clientUpgrade.message.${this.data.kind}`)}</div>
-                <div style={{ fontSize: "12px", color: "#909399" }}>{this.$t("clientUpgrade.tip")}</div>
             </Column>
         );
     }
@@ -81,11 +80,10 @@ export class ClientUpgradeMask extends Vue {
                         {this.$t(`clientUpgrade.title.${this.kind}`)}
                     </div>
                     <div>{this.$t(`clientUpgrade.message.${this.kind}`)}</div>
-                    <div style={{ fontSize: "12px", color: "#909399", margin: "8px 0 20px" }}>
-                        {this.$t("clientUpgrade.tip")}
+                    <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+                        <MyButton type="primary" text={this.$t("clientUpgrade.download")}
+                            onClick={() => window.open(hexclientDownloadUrl(), "_blank")} />
                     </div>
-                    <MyButton type="primary" text={this.$t("clientUpgrade.download")}
-                        onClick={() => window.open(hexclientDownloadUrl(), "_blank")} />
                 </div>
             </div>
         );

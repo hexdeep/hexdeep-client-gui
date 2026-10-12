@@ -66,29 +66,11 @@ export default class VMPage extends Vue {
                 // current_version在版本列表中没有命中，说明是定制版，不提示
                 if (!current) continue;
                 this.sdkClientMigrationNeeded = true;
-                this.notifyDesktopClientMigration();
                 return;
             } catch (e) {
                 console.warn(`检测SDK版本失败(${host.address}):`, e);
             }
         }
-    }
-
-    private notifyDesktopClientMigration() {
-        this.$notify({
-            title: this.$t("changeSdk.desktopClientNotifyTitle") as string,
-            type: "warning",
-            duration: 0,
-            customClass: s.sdkUpdateNotify,
-            message: (
-                <div>
-                    <div>{this.$t("changeSdk.desktopClientAvailable")}</div>
-                    <el-button type="text" style="padding: 0; margin-top: 6px;" onClick={() => this.openDesktopClientDownload()}>
-                        {this.$t("changeSdk.desktopClientDownloadButton")}
-                    </el-button>
-                </div>
-            ) as any
-        });
     }
 
     private openDesktopClientDownload() {

@@ -629,10 +629,9 @@
             "feedback": "Please send feedback in HexClient"
         },
         "message": {
-            "purchase": "Purchasing instance slots, VIP and device rebinding is no longer available in this client. Please download the new desktop client and sign in with your account to purchase.",
-            "feedback": "Feedback is no longer available in this client. Please download the new desktop client to submit feedback."
+            "purchase": "Paid features have moved to the HexClient desktop app. Please download the client to purchase.",
+            "feedback": "Feedback has moved to the HexClient desktop app. Please download it to submit feedback."
         },
-        "tip": "Your existing cloud phones and instance slots are not affected and keep working.",
         "download": "Download new client"
     },
     "feedback": {

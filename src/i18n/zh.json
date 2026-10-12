@@ -633,10 +633,9 @@
             "feedback": "请前往 HexClient 反馈"
         },
         "message": {
-            "purchase": "实例位、VIP 购买和设备二次绑定已迁移到 HexClient 桌面客户端，请下载后使用账号登录购买。",
-            "feedback": "问题反馈已迁移到 HexClient 桌面客户端，下载后即可提交，我们会在那里回复你。"
+            "purchase": "付费功能已迁移到 HexClient 桌面客户端，请下载客户端购买。",
+            "feedback": "问题反馈已迁移到 HexClient 桌面客户端，请下载后提交反馈。"
         },
-        "tip": "已有的云机和实例位不受影响，可继续正常使用。",
         "download": "下载新版客户端"
     },
     "feedback": {
