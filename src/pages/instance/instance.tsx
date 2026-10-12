@@ -13,7 +13,7 @@ import { InstancesDetailDialog } from "./dialog/instances_detail";
 import { PurchaseDialog } from "./dialog/purchase";
 import { SwitchSDKDialog } from "./dialog/switch_sdk";
 import { HostDetailDialog } from "./dialog/host_detail_new";
-import { ClientUpgradeDialog } from "@/lib/component/client_upgrade_dialog";
+import { ClientUpgradeDialog, ClientUpgradeMask } from "@/lib/component/client_upgrade_dialog";
 
 @Component
 export default class InstancePage extends Vue {
@@ -124,7 +124,9 @@ export default class InstancePage extends Vue {
 
     protected render() {
         return (
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, position: "relative" }}>
+                {/* 老客户端已停用购买：常驻遮罩，可见实例位情况但不可操作、不可关闭 */}
+                <ClientUpgradeMask {...{ props: { kind: "purchase" } }} />
                 <Column gap={20} class={["contentBox", s.Instance]}>
                     <Row mainAlign="space-between">
                         <Row crossAlign="center" gap={20}>

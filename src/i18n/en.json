@@ -437,10 +437,10 @@
       "updateNotifyTitle": "SDK Update",
       "updateNotifyButton": "Switch Now",
       "toolbarHint": "SDK update available ({0})",
-      "desktopClientNotifyTitle": "Please Download the Desktop Client",
-      "desktopClientAvailable": "Please download the desktop client",
-      "desktopClientDownloadButton": "Download Desktop Client",
-      "desktopClientToolbarHint": "Please download the desktop client"
+      "desktopClientNotifyTitle": "The new HexClient is here",
+      "desktopClientAvailable": "The web version is no longer updated. Please download the HexClient desktop app; purchases and feedback have moved there too.",
+      "desktopClientDownloadButton": "Download now",
+      "desktopClientToolbarHint": "Get the new client"
     },
     "customSdk": "Custom SDK",
     "instance": {
@@ -625,8 +625,8 @@
     },
     "clientUpgrade": {
         "title": {
-            "purchase": "Please use the new client",
-            "feedback": "Please use the new client"
+            "purchase": "Please purchase in HexClient",
+            "feedback": "Please send feedback in HexClient"
         },
         "message": {
             "purchase": "Purchasing instance slots, VIP and device rebinding is no longer available in this client. Please download the new desktop client and sign in with your account to purchase.",
