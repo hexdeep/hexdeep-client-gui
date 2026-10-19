@@ -16,7 +16,7 @@ import { ChangeImageDialog } from "./dialog/change_image";
 import { ImportVmDialog } from "./dialog/import_vm";
 import { UploadFileDialog } from "./dialog/upload_file";
 import { BatchSwitchFirmwareDialog } from "./dialog/batch_switch_firmware";
-import { hexclientDownloadUrl } from "@/lib/component/client_upgrade_dialog";
+import { HEXCLIENT_DOWNLOAD_PAGE } from "@/lib/component/client_upgrade_dialog";
 import { Screenshot } from "./screenshot";
 import s from './vm.module.less';
 
@@ -74,7 +74,7 @@ export default class VMPage extends Vue {
     }
 
     private openDesktopClientDownload() {
-        window.open(hexclientDownloadUrl(), "_blank");
+        window.open(HEXCLIENT_DOWNLOAD_PAGE, "_blank");
     }
 
     protected async refreshImages() {

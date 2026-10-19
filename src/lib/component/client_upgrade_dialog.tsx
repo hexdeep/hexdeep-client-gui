@@ -6,23 +6,8 @@ import { MyButton } from "@/lib/my_button";
 
 export type ClientUpgradeKind = "purchase" | "feedback";
 
-// hexdeep_server 的 302 接口：按 system 跳转到最新版 hexclient 安装包
-const HEXCLIENT_DOWNLOAD_URL = "https://api.hexdeep.com/hexclient/download";
-
-/** 按当前浏览器环境推断 hexclient 的 system 参数，推断不出时交给服务端默认值 */
-function detectHexclientSystem(): string {
-    const ua = navigator.userAgent;
-    if (/android/i.test(ua)) return "android";
-    if (/windows/i.test(ua)) return "windows";
-    if (/macintosh|mac os x/i.test(ua)) return "macos";
-    if (/linux|x11/i.test(ua)) return "debian";
-    return "";
-}
-
-export function hexclientDownloadUrl(): string {
-    const system = detectHexclientSystem();
-    return system ? `${HEXCLIENT_DOWNLOAD_URL}?system=${system}` : HEXCLIENT_DOWNLOAD_URL;
-}
+// hexclient 下载页（文档站），各平台安装包由页面自行列出，不再按当前系统请求接口获取下载地址
+export const HEXCLIENT_DOWNLOAD_PAGE = "https://docs.hexdeep.com/hexclient/";
 
 /** 老客户端已停用付费和反馈功能，用此遮罩引导用户下载新桌面客户端 */
 @Dialog
@@ -35,7 +20,7 @@ export class ClientUpgradeDialog extends CommonDialog<{ kind: ClientUpgradeKind 
     }
 
     private download() {
-        window.open(hexclientDownloadUrl(), "_blank");
+        window.open(HEXCLIENT_DOWNLOAD_PAGE, "_blank");
     }
 
     protected renderDialog(): VNode {
@@ -82,7 +67,7 @@ export class ClientUpgradeMask extends Vue {
                     <div>{this.$t(`clientUpgrade.message.${this.kind}`)}</div>
                     <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
                         <MyButton type="primary" text={this.$t("clientUpgrade.download")}
-                            onClick={() => window.open(hexclientDownloadUrl(), "_blank")} />
+                            onClick={() => window.open(HEXCLIENT_DOWNLOAD_PAGE, "_blank")} />
                     </div>
                 </div>
             </div>
