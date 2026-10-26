@@ -44,6 +44,7 @@
     "random": "Random",
     "custom": "Custom",
     "noRun": "Not Running",
+    "containerNotRunning": "The container is not running",
     "invalidIp": "Invalid IP Address",
     "invalidSubnet": "Invalid subnet format, e.g., 200.100.10.0/24",
     "invalidDnsUrls": "Invalid DNS format, e.g., 8.8.8.8,1.1.1.1",

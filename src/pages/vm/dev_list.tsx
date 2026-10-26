@@ -779,7 +779,11 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
 
 
-    private async androidSdkApi(data: DeviceInfo) {
+    private androidSdkApi(data: DeviceInfo) {
+        if (data.state !== "running") {
+            this.$message.error(this.$t("containerNotRunning").toString());
+            return;
+        }
         window.open("http://" + data.android_sdk, "_blank");
     }
 
