@@ -436,15 +436,15 @@
         "versionMismatch": "镜像版本不兼容：v2 镜像不能更新到 v3，v3 镜像也不能更新到 v2。v2 镜像之间可以互相更新。"
     },
     "changeSdk": {
-      "label": "SDK版本",
-      "updateAvailable": "{0} 检测到SDK新版本 {1} 可用",
-      "updateNotifyTitle": "SDK版本更新",
-      "updateNotifyButton": "立即切换",
-      "toolbarHint": "SDK有更新({0})",
-      "desktopClientNotifyTitle": "HexClient 新版客户端已发布",
-      "desktopClientAvailable": "网页版不再更新。请下载 HexClient 桌面客户端，购买和反馈也已迁移至客户端。",
-      "desktopClientDownloadButton": "立即下载",
-      "desktopClientToolbarHint": "下载新版客户端"
+        "label": "SDK版本",
+        "updateAvailable": "{0} 检测到SDK新版本 {1} 可用",
+        "updateNotifyTitle": "SDK版本更新",
+        "updateNotifyButton": "立即切换",
+        "toolbarHint": "SDK有更新({0})",
+        "desktopClientNotifyTitle": "HexClient 新版客户端已发布",
+        "desktopClientAvailable": "网页版不再更新。请下载 HexClient 桌面客户端，购买和反馈也已迁移至客户端。",
+        "desktopClientDownloadButton": "立即下载",
+        "desktopClientToolbarHint": "下载新版客户端"
     },
     "customSdk": "自定义SDK",
     "instance": {
@@ -578,6 +578,10 @@
         "portNotNull": "代理 端口不能为空"
     },
     "pullImage": {
+        "repositoryTitle": "指定镜像名称",
+        "repositoryMessage": "该 HTTP(S) 镜像需要指定 repository 参数",
+        "repositoryPlaceholder": "例如 hexdeep:base",
+        "repositoryInvalid": "请输入有效的 repository:tag",
         "title": "正在下载镜像",
         "failed": "镜像下载失败"
     },

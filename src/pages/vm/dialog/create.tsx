@@ -31,6 +31,8 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     private pendingFailures: CreateFailureItem[] = [];
     private pendingCreatedCount = 0;
 
+    private static readonly REPOSITORY_PATTERN = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*|\d{1,3}(?:\.\d{1,3}){3})(?::\d{1,5})?(?:\/[a-zA-Z0-9]+(?:[._-][a-zA-Z0-9]+)*)*:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/;
+
     private static readonly CACHE_KEY = "CreateFormCache";
     private static readonly CACHE_FIELDS = ["name", "sandbox_size", "width", "height", "dpi", "x_dpi", "y_dpi", "fps", "mobile_model_version", "mobile_model_source", "model_id", "model_manufacturer"] as const;
 
@@ -167,6 +169,27 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         this.rentalRecord = record.length > 0 ? record.first.device_indexes : [];
     }
 
+    /** HTTP(S) 镜像包导入后没有天然的镜像名，需要用户指定 repository:tag。 */
+    private async requestRepository(): Promise<string | undefined> {
+        try {
+            const result = await this.$prompt(
+                this.$t("pullImage.repositoryMessage").toString(),
+                this.$t("pullImage.repositoryTitle").toString(),
+                {
+                    confirmButtonText: this.$t("confirm.ok").toString(),
+                    cancelButtonText: this.$t("confirm.cancel").toString(),
+                    inputPlaceholder: this.$t("pullImage.repositoryPlaceholder").toString(),
+                    inputPattern: CreateDialog.REPOSITORY_PATTERN,
+                    inputErrorMessage: this.$t("pullImage.repositoryInvalid").toString(),
+                    closeOnClickModal: false,
+                }
+            );
+            return (result as { value: string }).value.trim();
+        } catch {
+            return undefined;
+        }
+    }
+
     @ErrorProxy({ validatForm: "formRef" })
     protected override async onConfirm() {
         // 更新流程现在也允许在表单里改机型版本，兼容性检查要用表单当前值，不能再用云机
@@ -200,11 +223,22 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         if (!isImageVersionCompatibleByModelVersion(normalizedModelVersion, image?.major_version)) {
             throw new Error(this.$t("changeImage.versionMismatch").toString());
         }
+        let pulledRepository: string | undefined;
+        const isHttpImage = !!image_addr && /^https?:\/\//i.test(image_addr);
+        if (isHttpImage && image) {
+            // 官方 HTTP(S) 镜像使用镜像名称生成 repository，仅替换第一个连字符。
+            pulledRepository = image.name.replace("-", ":");
+        }
         if (image_addr && ((image_addr.includes('.') && image_addr.includes('/')))) {
             if (!image || !image.download) {
+                if (isHttpImage && !pulledRepository) {
+                    pulledRepository = await this.requestRepository();
+                    if (!pulledRepository) return;
+                }
                 const re = await this.$dialog(PullImageDialog).show({
                     hostIp: this.data.info.hostIp,
                     imageAddress: image_addr!,
+                    repository: pulledRepository,
                     dockerRegistry: this.data.obj.docker_registry,
                 });
                 if (re?.canceled) return;
@@ -214,7 +248,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         if (!this.data.isUpdate) {
             this.saveCacheValues();
         }
-        await this.confirming();
+        await this.confirming(pulledRepository);
         await this.showPendingFailures();
     }
 
@@ -238,7 +272,7 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
     }
 
     @ErrorProxy({ success: i18n.t("success"), loading: i18n.t("loading") })
-    protected async confirming() {
+    protected async confirming(pulledRepository?: string) {
         if (this.data.isUpdate) {
             const data = Object.assign({}, this.data);
             data.obj = Object.assign({}, this.data.obj);
@@ -249,6 +283,8 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
             } else {
                 delete data.obj.custom_image;
             }
+            // HTTP(S) 地址只用于下载。仅修改请求副本，让界面继续显示原镜像名称。
+            if (pulledRepository) data.obj.image_addr = pulledRepository;
             normalizeModelSubmitFields(data.obj);
             await deviceApi.update(data);
             this.close(data.obj);
@@ -265,6 +301,8 @@ export class CreateDialog extends CommonDialog<DockerEditParam, CreateParam> {
         } else {
             delete baseObj.custom_image;
         }
+        // HTTP(S) 地址只用于下载。创建接口引用下载后得到的本地 repository。
+        if (pulledRepository) baseObj.image_addr = pulledRepository;
         normalizeModelSubmitFields(baseObj);
 
         const baseName = this.data.obj.name;

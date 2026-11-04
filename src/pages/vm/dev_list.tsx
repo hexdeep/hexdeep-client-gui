@@ -286,7 +286,10 @@ export class DeviceList extends tsx.Component<IProps, IEvents> {
     }
 
     private renderVmImage(r: DeviceInfo): ImageInfo | undefined {
-        return this.images.find(x => x.address == r.image_addr);
+        // 优先按原地址匹配；HTTP(S) 官方镜像下载后，云机保存的是 repository（如 android:v3），
+        // 而官方镜像列表的名称仍是 android-v3，因此再用“冒号转连字符”的名称规则匹配。
+        return this.images.find(x => x.address === r.image_addr)
+            ?? this.images.find(x => x.name === r.image_addr.replace(/:/g, "-"));
     }
 
     protected render() {

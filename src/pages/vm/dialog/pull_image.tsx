@@ -6,6 +6,7 @@ import s from "./pull_image.module.less";
 interface PullImageRequest {
     hostIp: string;
     imageAddress: string;
+    repository?: string;
     dockerRegistry?: string;
 }
 
@@ -28,7 +29,7 @@ export class PullImageDialog extends CommonDialog<PullImageRequest, PullImageRes
         this.pullTask = deviceApi.pullImages(
             data.hostIp,
             data.imageAddress,
-            undefined,
+            data.repository,
             (percent) => {
                 // percent<0 表示服务端此时无法计算具体百分比（比如走普通 registry docker pull），
                 // 保留上一次已知的百分比，不倒退成 0，也不让进度条乱跳。

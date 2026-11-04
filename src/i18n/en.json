@@ -433,15 +433,15 @@
         "versionMismatch": "Incompatible image versions: v1/v2 images cannot be updated to v3, and v3 images cannot be updated to v1/v2. v1 and v2 can update each other."
     },
     "changeSdk": {
-      "label": "SDK Version",
-      "updateAvailable": "{0} has new SDK version {1} available",
-      "updateNotifyTitle": "SDK Update",
-      "updateNotifyButton": "Switch Now",
-      "toolbarHint": "SDK update available ({0})",
-      "desktopClientNotifyTitle": "The new HexClient is here",
-      "desktopClientAvailable": "The web version is no longer updated. Please download the HexClient desktop app; purchases and feedback have moved there too.",
-      "desktopClientDownloadButton": "Download now",
-      "desktopClientToolbarHint": "Get the new client"
+        "label": "SDK Version",
+        "updateAvailable": "{0} has new SDK version {1} available",
+        "updateNotifyTitle": "SDK Update",
+        "updateNotifyButton": "Switch Now",
+        "toolbarHint": "SDK update available ({0})",
+        "desktopClientNotifyTitle": "The new HexClient is here",
+        "desktopClientAvailable": "The web version is no longer updated. Please download the HexClient desktop app; purchases and feedback have moved there too.",
+        "desktopClientDownloadButton": "Download now",
+        "desktopClientToolbarHint": "Get the new client"
     },
     "customSdk": "Custom SDK",
     "instance": {
@@ -574,6 +574,10 @@
         "portNotNull": "Proxy Port cannot be empty"
     },
     "pullImage": {
+        "repositoryTitle": "Specify image name",
+        "repositoryMessage": "A repository parameter is required for this HTTP(S) image",
+        "repositoryPlaceholder": "For example: hexdeep:base",
+        "repositoryInvalid": "Enter a valid repository:tag",
         "title": "Downloading image",
         "failed": "Download image failed"
     },
