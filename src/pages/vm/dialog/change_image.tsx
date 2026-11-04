@@ -20,6 +20,8 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
     protected obj = { image_addr: "", custom_image: "", docker_registry: "" };
     protected hasVip = false; // 当前主机是否已开通VIP
     protected allHosts: HostInfo[] = []; // 所有主机列表
+
+    private static readonly REPOSITORY_PATTERN = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*|\d{1,3}(?:\.\d{1,3}){3})(?::\d{1,5})?(?:\/[a-zA-Z0-9]+(?:[._-][a-zA-Z0-9]+)*)*:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/;
     
     public override show(data: DeviceInfo[]) {
         this.title = this.$t("changeImage.title").toString();
@@ -81,6 +83,27 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
         }
     }
 
+    /** 与创建页面一致：HTTP(S) 自定义镜像必须指定合法的 repository:tag。 */
+    private async requestRepository(): Promise<string | undefined> {
+        try {
+            const result = await this.$prompt(
+                this.$t("pullImage.repositoryMessage").toString(),
+                this.$t("pullImage.repositoryTitle").toString(),
+                {
+                    confirmButtonText: this.$t("confirm.ok").toString(),
+                    cancelButtonText: this.$t("confirm.cancel").toString(),
+                    inputPlaceholder: this.$t("pullImage.repositoryPlaceholder").toString(),
+                    inputPattern: ChangeImageDialog.REPOSITORY_PATTERN,
+                    inputErrorMessage: this.$t("pullImage.repositoryInvalid").toString(),
+                    closeOnClickModal: false,
+                }
+            );
+            return (result as { value: string }).value.trim();
+        } catch {
+            return undefined;
+        }
+    }
+
     @ErrorProxy({ validatForm: "formRef" })
     protected override async onConfirm() {
         const image_addr = this.obj.image_addr == "[customImage]" ? this.obj.custom_image : this.obj.image_addr;
@@ -90,15 +113,28 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
             throw new Error(this.$t("changeImage.versionMismatch").toString());
         }
 
-        if (this.obj.image_addr && ((this.obj.image_addr.includes('.') && this.obj.image_addr.includes('/')))) {
+        const isHttpImage = /^https?:\/\//i.test(image_addr);
+        let pulledRepository: string | undefined;
+        if (isHttpImage) {
+            if (selectedImage) {
+                // 官方 HTTP(S) 镜像：与创建页面一致，由 name 的第一个连字符生成 repository。
+                pulledRepository = selectedImage.name.replace("-", ":");
+            } else {
+                pulledRepository = await this.requestRepository();
+                if (!pulledRepository) return;
+            }
+        }
+
+        if (image_addr && image_addr.includes('.') && image_addr.includes('/')) {
             var gp = this.data.groupBy(x => x.hostIp);
             for (var ip of Object.keys(gp)) {
                 var imgs = await deviceApi.getImages(ip);
-                var image = imgs.find(x => x.address == this.obj.image_addr);
-                if (image && !image.download && (image.address.includes('.') && image.address.includes('/'))) {
+                var image = imgs.find(x => x.address === image_addr);
+                if (!image || !image.download) {
                     const re = await this.$dialog(PullImageDialog).show({
                         hostIp: ip,
-                        imageAddress: this.obj.image_addr!,
+                        imageAddress: image_addr,
+                        repository: pulledRepository,
                         dockerRegistry: this.obj.docker_registry,
                     });
                     if (re?.canceled) return;
@@ -107,7 +143,7 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
             }
         }
 
-        this.confirming();
+        await this.confirming(pulledRepository);
     }
 
     @Watch("dockerRegistries", { immediate: true })
@@ -134,10 +170,12 @@ export class ChangeImageDialog extends CommonDialog<DeviceInfo[], boolean> {
     }
 
     @ErrorProxy({ success: i18n.t("changeImage.success"), loading: i18n.t("loading") })
-    protected async confirming() {
+    protected async confirming(pulledRepository?: string) {
         var tasks: Promise<void>[] = [];
         let error: any;
-        const image_addr = this.obj.image_addr == "[customImage]" ? this.obj.custom_image : this.obj.image_addr;
+        // HTTP(S) 地址仅用于下载，更新接口引用本地 repository；不修改 obj，保持界面选中项不变。
+        const image_addr = pulledRepository
+            ?? (this.obj.image_addr == "[customImage]" ? this.obj.custom_image : this.obj.image_addr);
         this.data.forEach(x => {
             tasks.push(deviceApi.update({ info: x, hostId: x.hostId, obj: { name: "", image_addr: image_addr } }).catch(e => {
                 error = e;
