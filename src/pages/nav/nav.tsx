@@ -5,7 +5,6 @@ import { EditPassDialog } from "./edit_pass";
 import s from './nav.module.less';
 import { Config } from '@/common/Config';
 import { Menu } from 'element-ui';
-import { ClientUpgradeDialog } from '@/lib/component/client_upgrade_dialog';
 
 @Component
 export default class Nav extends Vue {
@@ -34,11 +33,6 @@ export default class Nav extends Vue {
             icon: 'icon-dingdan'
         },
     ];
-
-    private onFeedbackClick() {
-        // 老客户端已停用反馈，引导下载新客户端（FeedbackDialog 代码保留）
-        this.$dialog(ClientUpgradeDialog).show({ kind: "feedback" });
-    }
 
     private onCommand(cmd: string) {
         switch (cmd) {
@@ -136,10 +130,10 @@ export default class Nav extends Vue {
                             <i class={`iconfont icon-github-fill`} />
                             <span>{this.$t("nav.openSource")}</span>
                         </a>
-                        <div onClick={this.onFeedbackClick} onMouseenter={this.onMouseenter} onMouseleave={this.onMouseleave} class={s.menu} >
-                            <i class="el-icon-service" />
-                            <span>{this.$t("feedback.button")}</span>
-                        </div>
+                        <a href="https://shop.hexdeep.com" onMouseenter={this.onMouseenter} target="_blank" onMouseleave={this.onMouseleave} draggable={false} class={s.menu} >
+                            <i class="el-icon-shopping-cart-2" />
+                            <span>{this.$t("nav.shop")}</span>
+                        </a>
                     </div>
                     <el-dropdown onCommand={this.selectLang}>
                         <div class={s.tools}>

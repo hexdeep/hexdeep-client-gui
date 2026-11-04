@@ -483,7 +483,8 @@
         "instances": "Instances",
         "orders": "Orders",
         "apiDoc": "API Doc",
-        "openSource": "Open Source"
+        "openSource": "Open Source",
+        "shop": "Shop"
     },
     "order": {
         "paid": "Paid",

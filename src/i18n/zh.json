@@ -487,7 +487,8 @@
         "instances": "实例",
         "orders": "订单",
         "apiDoc": "API文档",
-        "openSource": "开源项目"
+        "openSource": "开源项目",
+        "shop": "商城"
     },
     "order": {
         "paid": "已支付",
